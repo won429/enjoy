@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>엔조이 인기가요 — v16-compat-debug</title>
+<title>엔조이 인기가요 — v16-compat-debug-configurable</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -58,10 +58,35 @@
 .table th{background:#f7f7f7}
 #debug-overlay{position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;background:#200;color:#f88;padding:10px;border:1px solid #f00;border-radius:8px;font:12px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;white-space:pre-wrap;max-height:40vh;overflow:auto;display:none}
 #debug-overlay b{color:#fff}
+/* settings button */
+#settingsBtn{position:fixed;left:10px;top:10px;z-index:1200;background:#111;color:#fff;border:0;border-radius:999px;padding:.4em .8em;font-weight:900;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.settings-panel{position:fixed;right:10px;top:46px;width:min(360px,92vw);z-index:1201;background:#fff;border-radius:12px;box-shadow:0 14px 36px rgba(0,0,0,.35);padding:12px;display:none}
+.settings-panel h4{margin:0 0 8px 0}
+.settings-panel label{display:block;font-size:12px;color:#555;margin-top:8px}
+.settings-panel input{width:100%;padding:10px;border-radius:8px;border:1px solid #0001}
+.settings-panel .row{display:flex;gap:8px;margin-top:10px}
+.settings-panel .row button{flex:1;padding:.8em 1em;border-radius:8px;border:0;font-weight:900;cursor:pointer}
+.settings-panel .row .primary{background:#111;color:#fff}
+.settings-panel .row .secondary{background:#f0f0f0}
+.small{font-size:12px;color:#666}
 </style>
 </head>
 <body>
 <div id="debug-overlay"></div>
+<button id="settingsBtn">설정</button>
+<div class="settings-panel" id="settingsPanel">
+  <h4>Firebase 설정 (Web config)</h4>
+  <div class="small">Firebase 콘솔 → 프로젝트 설정 → 일반 → 내 앱(Web) → <b>firebaseConfig</b> 값 복사</div>
+  <label>apiKey</label><input id="cfgApiKey" placeholder="AIza...">
+  <label>authDomain</label><input id="cfgAuthDomain" placeholder="your-project.firebaseapp.com">
+  <label>projectId</label><input id="cfgProjectId" placeholder="your-project-id">
+  <div class="row">
+    <button class="secondary" id="cfgLoad">불러오기</button>
+    <button class="secondary" id="cfgClear">초기화</button>
+    <button class="primary" id="cfgSave">저장 & 재시작</button>
+  </div>
+</div>
+
 <span id="statusPill" class="status-pill local">SYNC: LOCAL</span>
 <canvas id="confetti-canvas" aria-hidden="true"></canvas>
 <main class="wrap">
@@ -157,7 +182,7 @@
     if (!box) return;
     box.style.display = 'block';
     var now = new Date().toISOString().replace('T',' ').split('.')[0];
-    box.textContent = '[ERROR] ' + now + '\n' + msg;
+    box.textContent = '[ERROR] ' + now + '\\n' + msg;
   }
   window.addEventListener('error', function (e) {
     show((e.message || 'Script error') + ' @ ' + (e.filename||'') + ':' + (e.lineno||''));
@@ -169,31 +194,64 @@
   });
 })();
 
+// ===== Settings (paste your firebaseConfig) =====
+const LS_KEY='enjoy_vote_firebase_config';
+const defaultConfig={ apiKey:"", authDomain:"", projectId:"" };
+
+function getConfig(){
+  try{ const raw=localStorage.getItem(LS_KEY); if(!raw) return defaultConfig; const obj=JSON.parse(raw); return Object.assign({}, defaultConfig, obj||{}); }catch(e){ return defaultConfig; }
+}
+function saveConfig(cfg){ localStorage.setItem(LS_KEY, JSON.stringify(cfg)); }
+function clearConfig(){ localStorage.removeItem(LS_KEY); }
+
+(function initSettings(){
+  const btn=document.getElementById('settingsBtn');
+  const panel=document.getElementById('settingsPanel');
+  const api=document.getElementById('cfgApiKey');
+  const domain=document.getElementById('cfgAuthDomain');
+  const pid=document.getElementById('cfgProjectId');
+  const load=document.getElementById('cfgLoad');
+  const clear=document.getElementById('cfgClear');
+  const save=document.getElementById('cfgSave');
+  btn.addEventListener('click', ()=>{ panel.style.display = (panel.style.display==='block'?'none':'block'); });
+  load.addEventListener('click', ()=>{ const c=getConfig(); api.value=c.apiKey||''; domain.value=c.authDomain||''; pid.value=c.projectId||''; });
+  clear.addEventListener('click', ()=>{ if(confirm('저장된 Firebase 설정을 삭제할까요?')){ clearConfig(); location.reload(); } });
+  save.addEventListener('click', ()=>{
+    const cfg={ apiKey:api.value.trim(), authDomain:domain.value.trim(), projectId:pid.value.trim() };
+    if(!cfg.apiKey || !cfg.authDomain || !cfg.projectId){ alert('apiKey / authDomain / projectId를 모두 입력하세요.'); return; }
+    saveConfig(cfg);
+    alert('저장되었습니다. 페이지를 새로고침합니다.'); location.reload();
+  });
+})();
+
 // ---- Firebase init (compat) ----
-const FIREBASE_CONFIG = { apiKey:"AIzaSyB6Or1cCX9z68R91gBt6dg4s4ykRmOr-dmo", authDomain:"enjoy-vote.firebaseapp.com", projectId:"enjoy-vote" };
 const statusPill = document.getElementById('statusPill');
 let fb = { enabled:false, app:null, auth:null, db:null };
 
-try {
-  fb.app = firebase.initializeApp(FIREBASE_CONFIG);
-  fb.auth = firebase.auth();
-  fb.db   = firebase.firestore();
-  fb.auth.signInAnonymously().then(()=>{
-    fb.enabled = true;
-    statusPill.textContent = "SYNC: CLOUD";
-    statusPill.className = "status-pill cloud";
-  }).catch(err=>{
-    console.warn("Anonymous sign-in failed:", err);
-    statusPill.textContent = "SYNC: LOCAL (익명 로그인 비활성)";
+(function initFirebase(){
+  const cfg=getConfig();
+  if(!cfg.apiKey){ statusPill.textContent='SYNC: LOCAL (설정 필요: 좌상단 [설정] 클릭)'; statusPill.className='status-pill local'; return; }
+  try {
+    fb.app = firebase.initializeApp(cfg);
+    fb.auth = firebase.auth();
+    fb.db   = firebase.firestore();
+    fb.auth.signInAnonymously().then(()=>{
+      fb.enabled = true;
+      statusPill.textContent = "SYNC: CLOUD";
+      statusPill.className = "status-pill cloud";
+    }).catch(err=>{
+      console.warn("Anonymous sign-in failed:", err);
+      statusPill.textContent = "SYNC: LOCAL (익명 로그인 비활성)";
+      statusPill.className = "status-pill local";
+      var ov=document.getElementById('debug-overlay'); if(ov){ ov.style.display='block'; ov.textContent='[ERROR] auth: '+(err && (err.message||err)); }
+    });
+  } catch(e) {
+    console.warn("Firebase init failed:", e);
+    statusPill.textContent = "SYNC: LOCAL (연결 실패)";
     statusPill.className = "status-pill local";
-    var ov=document.getElementById('debug-overlay'); if(ov){ ov.style.display='block'; ov.textContent='[ERROR] auth: '+(err && (err.message||err)); }
-  });
-} catch(e) {
-  console.warn("Firebase init failed:", e);
-  statusPill.textContent = "SYNC: LOCAL (연결 실패)";
-  statusPill.className = "status-pill local";
-  var ov=document.getElementById('debug-overlay'); if(ov){ ov.style.display='block'; ov.textContent='[ERROR] init: '+(e && (e.message||e)); }
-}
+    var ov=document.getElementById('debug-overlay'); if(ov){ ov.style.display='block'; ov.textContent='[ERROR] init: '+(e && (e.message||e)); }
+  }
+})();
 
 // ---- Utils ----
 function fmt2(n){return (n<10?'0':'')+n;}
