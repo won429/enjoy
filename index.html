@@ -3,17 +3,16 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>엔조이 인기가요 — Production</title>
-<!-- Firebase compat SDK (no modules) -->
+<title>엔조이 인기가요 — Production (btm pill, 23h)</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
 :root{--bg-top:#bcbcbc;--bg-bottom:#9d9d9d;--panel:#f3ece2;--chipL:#7b7b7b;--chipR:#5c7a80;--cL:#a6a6a6;--cR:#6ca6a6;--shadow:0 6px 18px rgba(0,0,0,.12);--r:14px;--pad:10px;--gap:10px;--fs-s:13px;--fs-m:15px;--fs-l:18px;--bar-h:18px;--label-w:88px;--value-w:82px}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,Roboto,"Segoe UI",sans-serif;background:linear-gradient(var(--bg-top),var(--bg-bottom));color:#222}
-.wrap{max-width:820px;margin:0 auto;padding:6px var(--pad) 48px;display:grid;gap:12px;position:relative}
+.wrap{max-width:820px;margin:0 auto;padding:6px var(--pad) 64px;display:grid;gap:12px;position:relative}
 .title{justify-self:center;background:#000;color:#fff;padding:.4em .9em;border-radius:999px;font-weight:800;font-size:var(--fs-l);box-shadow:var(--shadow)}
-.status-pill{position:fixed;right:10px;top:10px;z-index:1200;font-weight:900;border-radius:999px;padding:.35em .8em;box-shadow:0 2px 8px rgba(0,0,0,.2);font-size:12px}
+.status-pill{position:fixed;left:50%;transform:translateX(-50%);bottom:10px;z-index:1200;font-weight:900;border-radius:999px;padding:.35em .8em;box-shadow:0 2px 8px rgba(0,0,0,.2);font-size:12px}
 .status-pill.cloud{background:#0f9d58;color:#fff} .status-pill.local{background:#9e9e9e;color:#fff}
 .card{background:var(--panel);border-radius:var(--r);box-shadow:var(--shadow);padding:12px;display:grid;gap:10px}
 .header{display:flex;align-items:center;gap:10px;margin-top:2px;justify-content:center}
@@ -187,7 +186,7 @@ function nowIso(){const d=new Date();return d.getFullYear()+"-"+fmt2(d.getMonth(
   let P=[]; const R=(a,b)=>Math.random()*(b-a)+a;
   const M=(x0,y0)=>({x:x0,y:y0,vx:R(-4,4),vy:R(-9,-4),s:Math.floor(R(6,12)),r:R(0,360),vr:R(-8,8),l:0,t:Math.floor(R(60,110)),c:['#ff6b6b','#ffd166','#6ce5d5','#6c8aff','#a56cff'][Math.floor(R(0,5))]});
   let raf=null;
-  function step(){ x.clearRect(0,0,W,H); for(let i=P.length-1;i>=0;i--){ const p=P[i]; p.vy+=0.35;p.vx*=0.995;p.vy*=0.998;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;p.l++; x.save();x.translate(p.x,p.y);x.rotate(p.r*Math.PI/180);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6);x.restore(); if(p.y>H+50||p.l>p.t) P.splice(i,1);} if(P.length>0) raf=requestAnimationFrame(step); else{ cancelAnimationFrame(raf);raf=null;x.clearRect(0,0,W,H);} }
+  function step(){ x.clearRect(0,0,W,H); for(let i=P.length-1;i>=0;i--){ const p=P[i]; p.vy+=0.35;p.vx*=0.995;p.vy*=0.998;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;p.l++; x.save();x.translate(p.x,p.y);x.rotate(p.r*Math.PI/180);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6);x.restore(); if(p.y>H+50||p.l>p.t) P.splice(i,1);} if(P.length>0) raf=requestAnimationFrame(step); else{ cancelAnimationFrame(raf);raf=null;x.clearRect(0,0,0,0);} }
   window.launchConfetti=function(){ P=[]; const cx=W/2,cy=H*0.28; for(let i=0;i<Math.max(40,Math.floor((W*H)/80000));i++) P.push(M(cx+R(-120,120),cy+R(-30,30))); if(!raf) raf=requestAnimationFrame(step); }
   addEventListener('resize',()=>{W=innerWidth;H=innerHeight;c.width=W;c.height=H;});
 })();
@@ -205,7 +204,7 @@ const openDraw=document.getElementById('openDraw'); if(openDraw){ openDraw.addEv
 // ---- Countdown ----
 (function(){
   const el=document.getElementById('countdownText');
-  function target(){ const t=new Date(); t.setHours(22,0,0,0); return t; }
+  function target(){ const t=new Date(); t.setHours(23,0,0,0); return t; } // 23:00로 변경
   function tick(){
     const now=new Date(), tt=target(); let diff=tt-now;
     if(diff<=0){ el.textContent='00시간 00분 00초'; return; }
@@ -216,7 +215,7 @@ const openDraw=document.getElementById('openDraw'); if(openDraw){ openDraw.addEv
 })();
 
 // ---- Participants & Firestore helpers ----
-const dict={"8499":"조현식","8675":"이상훈","5769":"홍준호","6364":"이진호","4867":"박성원","4867_1":"테스트","4867_2":"관리자"};
+const dict={"8499":"조현식","8675":"이상훈","5769":"홍준호","6364":"이진호","4867":"박성원","4867_1":"테스트","4867_2":"관리자","4867_3":"성원이"};
 const items=["다이소 상품권","배달의 민족 상품권","요기요 상품권","현금","편의점 상품권","카페 상품권"];
 
 async function getSpin(key){
