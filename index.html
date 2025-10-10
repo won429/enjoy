@@ -3,13 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>엔조이 인기가요 — 결과 (v16-compat)</title>
-
-<!-- Firebase compat SDK (no modules/import), safest for GH Pages/iOS -->
+<title>엔조이 인기가요 — v16-compat-debug</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-
 <style>
 :root{--bg-top:#bcbcbc;--bg-bottom:#9d9d9d;--panel:#f3ece2;--chipL:#7b7b7b;--chipR:#5c7a80;--cL:#a6a6a6;--cR:#6ca6a6;--shadow:0 6px 18px rgba(0,0,0,.12);--r:14px;--pad:10px;--gap:10px;--fs-s:13px;--fs-m:15px;--fs-l:18px;--bar-h:18px;--label-w:88px;--value-w:82px}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,Roboto,"Segoe UI",sans-serif;background:linear-gradient(var(--bg-top),var(--bg-bottom));color:#222}
@@ -59,9 +56,12 @@
 .table{width:100%;border-collapse:collapse;font-size:14px}
 .table th,.table td{border-bottom:1px solid #00000014;padding:8px 6px;text-align:left}
 .table th{background:#f7f7f7}
+#debug-overlay{position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;background:#200;color:#f88;padding:10px;border:1px solid #f00;border-radius:8px;font:12px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;white-space:pre-wrap;max-height:40vh;overflow:auto;display:none}
+#debug-overlay b{color:#fff}
 </style>
 </head>
 <body>
+<div id="debug-overlay"></div>
 <span id="statusPill" class="status-pill local">SYNC: LOCAL</span>
 <canvas id="confetti-canvas" aria-hidden="true"></canvas>
 <main class="wrap">
@@ -89,7 +89,7 @@
   </div>
 </main>
 
-<!-- Winner Modal (detailed) -->
+<!-- Winner Modal -->
 <div class="modal-backdrop" id="winnerModal"><div class="modal">
   <header><div>최종 우승자</div><button class="close" data-close="winner">×</button></header>
   <div class="content">
@@ -150,6 +150,25 @@
 </div></div>
 
 <script>
+// ===== DEBUG OVERLAY =====
+(function () {
+  function show(msg) {
+    var box = document.getElementById('debug-overlay');
+    if (!box) return;
+    box.style.display = 'block';
+    var now = new Date().toISOString().replace('T',' ').split('.')[0];
+    box.textContent = '[ERROR] ' + now + '\n' + msg;
+  }
+  window.addEventListener('error', function (e) {
+    show((e.message || 'Script error') + ' @ ' + (e.filename||'') + ':' + (e.lineno||''));
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    var r = e.reason;
+    var msg = (r && (r.message || r.code || r.name)) ? (r.name ? (r.name+': ') : '') + (r.code ? (r.code+' ') : '') + (r.message || r) : (''+r);
+    show('Unhandled promise rejection: ' + msg);
+  });
+})();
+
 // ---- Firebase init (compat) ----
 const FIREBASE_CONFIG = { apiKey:"AIzaSyB6Or1cCX9z68R91gBt6dg4s4ykRmOr-dmo", authDomain:"enjoy-vote.firebaseapp.com", projectId:"enjoy-vote" };
 const statusPill = document.getElementById('statusPill');
@@ -167,18 +186,20 @@ try {
     console.warn("Anonymous sign-in failed:", err);
     statusPill.textContent = "SYNC: LOCAL (익명 로그인 비활성)";
     statusPill.className = "status-pill local";
+    var ov=document.getElementById('debug-overlay'); if(ov){ ov.style.display='block'; ov.textContent='[ERROR] auth: '+(err && (err.message||err)); }
   });
 } catch(e) {
   console.warn("Firebase init failed:", e);
   statusPill.textContent = "SYNC: LOCAL (연결 실패)";
   statusPill.className = "status-pill local";
+  var ov=document.getElementById('debug-overlay'); if(ov){ ov.style.display='block'; ov.textContent='[ERROR] init: '+(e && (e.message||e)); }
 }
 
 // ---- Utils ----
 function fmt2(n){return (n<10?'0':'')+n;}
 function nowIso(){const d=new Date();return d.getFullYear()+"-"+fmt2(d.getMonth()+1)+"-"+fmt2(d.getDate())+" "+fmt2(d.getHours())+":"+fmt2(d.getMinutes())+":"+fmt2(d.getSeconds());}
 
-// ---- Confetti (compact) ----
+// ---- Confetti ----
 (function(){
   const c=document.getElementById('confetti-canvas'), x=c.getContext('2d');
   let W=innerWidth,H=innerHeight; c.width=W;c.height=H;
@@ -246,7 +267,6 @@ async function setSpinOnce(key,data){
 }
 async function renderAdmin(){
   const tbody=document.querySelector('#adminTable tbody'); tbody.innerHTML="";
-  // merge predefined list + played map
   let map={};
   if(fb.enabled){
     const snaps = await fb.db.collection('surprise_spins').get();
@@ -322,6 +342,7 @@ async function renderAdmin(){
           alert(currentName+"님은 이미 참여하셨습니다. 이전 당첨: "+(prev?prev.prize:"확인 불가"));
           result.textContent="이미 참여 기록이 있습니다.";
         }else{
+          var ov=document.getElementById('debug-overlay'); if(ov){ ov.style.display='block'; ov.textContent='[ERROR] '+(err && (err.message||err)); }
           alert("기록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
           console.error(err);
         }
