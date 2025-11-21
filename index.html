@@ -59,18 +59,15 @@
             visibility: hidden;
             transition: opacity 0.8s ease-out, visibility 0.8s;
         }
-        
-        /* 팝업 애니메이션 */
-        .scale-in { animation: scaleIn 0.2s ease-out forwards; }
-        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body class="text-white overflow-hidden select-none h-[100dvh] w-screen fixed bg-[#121212]">
 
     <!-- ==================== 0. 인트로 화면 ==================== -->
     <div id="boot-screen" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center">
-        <!-- 로고 -->
+        <!-- 로고 (SVG + 텍스트) -->
         <div class="mb-12 flex items-center gap-3 scale-125">
+            <!-- 아이콘 -->
             <div class="text-sky-400 flex items-center justify-center">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M5 10v4"></path>
@@ -80,17 +77,20 @@
                     <path d="M21 11v2"></path>
                 </svg>
             </div>
+            <!-- 로고 텍스트: enjoy studio -->
             <h1 class="font-logo tracking-tight text-white text-3xl lowercase pt-1">
                 enjoy studio
             </h1>
         </div>
         
-        <div class="w-48 h-1 bg-[#333] rounded-full overflow-hidden">
+        <!-- 로딩 바 (3초 설정) -->
+        <div class="w-48 h-1 bg-[#333] rounded-full overflow-hidden mb-6">
             <div id="boot-progress" class="h-full bg-white w-0 rounded-full transition-all duration-[3000ms] ease-out"></div>
         </div>
         
-        <p id="touch-hint" class="text-white/50 text-xs opacity-0 transition-opacity duration-500 font-medium tracking-widest mt-4">
-            Touch to Start
+        <!-- 터치 유도 문구 (사파리/모바일 대응용 - 한글화 및 애니메이션 추가) -->
+        <p id="touch-hint" class="text-white/50 text-xs opacity-0 transition-opacity duration-500 font-medium tracking-widest animate-pulse">
+            화면을 터치하면 시작됩니다
         </p>
     </div>
 
@@ -113,7 +113,9 @@
         
         <!-- 상단 네비게이션 -->
         <div class="px-6 pt-8 pb-4 flex justify-between items-center bg-[#121212]">
+            <!-- 로고 컨테이너 -->
             <div class="flex items-center gap-2"> 
+                <!-- 아이콘 -->
                 <div class="text-sky-400 flex items-center justify-center">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M5 10v4"></path>
@@ -123,12 +125,12 @@
                         <path d="M21 11v2"></path>
                     </svg>
                 </div>
+                <!-- 로고 텍스트 -->
                 <h1 class="font-logo tracking-tight text-white text-2xl lowercase pt-1">
                     enjoy studio
                 </h1>
             </div>
             
-            <!-- 프로필 아이콘 삭제됨 -->
             <div class="w-6"></div> <!-- 균형을 위한 빈 공간 -->
         </div>
 
@@ -238,6 +240,7 @@
                     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] rounded-full overflow-hidden border-4 border-[#222] z-10 bg-gray-800">
                         <img id="cover-image" src="./cover.jpg" class="w-full h-full object-cover opacity-90">
                     </div>
+                    <!-- LP 질감 -->
                     <div class="absolute inset-0 rounded-full border-[1px] border-white/5 pointer-events-none" style="clip-path: circle(48%)"></div>
                     <div class="absolute inset-0 rounded-full border-[1px] border-white/5 pointer-events-none" style="clip-path: circle(42%)"></div>
                     <div class="absolute inset-0 rounded-full border-[1px] border-white/5 pointer-events-none" style="clip-path: circle(36%)"></div>
@@ -247,7 +250,6 @@
 
             <div class="w-full mb-8 flex items-end justify-between">
                 <div class="flex-1 min-w-0 mr-4">
-                    <!-- 폰트 수정: font-logo 제거하고 기본 폰트 적용 -->
                     <h2 id="song-title" class="text-2xl font-bold text-white mb-1 truncate scroll-m-0 tracking-tight">빛</h2>
                     <p id="song-artist" class="text-white/60 text-base font-medium truncate">엔쪽이 OST Part.2</p>
                 </div>
@@ -256,17 +258,16 @@
                 </button>
             </div>
 
-            <!-- 진행 바 (터치 영역 확대 & 스타일 개선) -->
+            <!-- 진행 바 (터치 영역 확대) -->
             <div class="w-full mb-4 relative h-10 flex items-center justify-center" id="progress-container">
                 <div class="absolute left-0 right-0 h-1 bg-white/10 rounded-full overflow-hidden pointer-events-none">
                     <div id="progress-fill" class="absolute top-0 left-0 h-full bg-white rounded-full smooth-transition group-hover:bg-sky-400" style="width: 0%"></div>
                 </div>
                 <div id="progress-handle" class="absolute h-3 w-3 bg-white rounded-full opacity-0 group-hover:opacity-100 smooth-transition pointer-events-none left-0 -ml-[6px]"></div>
-                <!-- 터치 조절용 input (touch-action: none 설정으로 스크롤 간섭 방지) -->
                 <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" style="touch-action: none;">
             </div>
             
-            <div class="flex justify-between text-[10px] text-white/40 font-mono font-medium tracking-wider -mt-4">
+            <div class="w-full flex justify-between text-[10px] text-white/40 font-mono font-medium tracking-wider -mt-4">
                 <span id="current-time">00:00</span>
                 <span id="duration">00:00</span>
             </div>
@@ -304,12 +305,10 @@
 
     <script>
         // ==================== 데이터 ====================
-        // 메인 곡 (재생 가능)
         const songs = [
             { id: 1, title: "빛", artist: "엔쪽이 OST Part.2", src: "./music.mp3", cover: "./cover.jpg" }
         ];
 
-        // Coming Soon 곡 (재생 불가, 팝업용)
         const comingSoonSongs = [
             { id: 2, title: "힘내라", artist: "엔쪽이 OST Part.1", cover: "./cover.jpg" },
             { id: 3, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", cover: "./cover3.jpg" }
@@ -357,6 +356,11 @@
 
             setTimeout(tryEnterHome, 3000);
 
+            // 부팅음 에러 핸들링 (파일 없으면 무시하고 넘어감)
+            bootSound.addEventListener('error', () => {
+                enterHome();
+            });
+
             renderChartList();
             renderComingSoonList();
             loadSongData(0); 
@@ -366,12 +370,21 @@
             bootSound.play()
                 .then(() => enterHome())
                 .catch(e => {
-                    console.log("Autoplay blocked, waiting for touch.");
-                    touchHint.classList.remove('opacity-0');
-                    bootScreen.addEventListener('click', () => {
-                        bootSound.play();
+                    // 파일이 없거나(error 이벤트로 처리됨) 자동재생 막힌 경우
+                    // 여기서는 자동재생 막힌 경우를 주로 처리
+                    console.log("Autoplay blocked or file missing:", e);
+                    
+                    // 파일이 없어서 에러난 게 아니라면(즉, 자동재생 정책 때문이라면) 터치 유도
+                    if(bootSound.error === null) {
+                        touchHint.classList.remove('opacity-0');
+                        bootScreen.addEventListener('click', () => {
+                            bootSound.play().catch(() => {}); // 클릭해도 실패하면(파일없음 등) 그냥 진행
+                            enterHome();
+                        }, { once: true });
+                    } else {
+                        // 파일이 없어서 에러난 거면 바로 진입 (위의 error 이벤트가 처리하겠지만 안전장치)
                         enterHome();
-                    }, { once: true });
+                    }
                 });
         }
 
@@ -380,21 +393,12 @@
             homeScreen.classList.remove('opacity-0');
         }
 
-        // 팝업 제어
         function showPopup() {
             popupModal.classList.remove('hidden');
         }
         
-        popupClose.onclick = () => {
-            popupModal.classList.add('hidden');
-        }
-        
-        // 배경 클릭 시 닫기
-        popupModal.onclick = (e) => {
-            if (e.target === popupModal) {
-                popupModal.classList.add('hidden');
-            }
-        }
+        popupClose.onclick = () => popupModal.classList.add('hidden');
+        popupModal.onclick = (e) => { if (e.target === popupModal) popupModal.classList.add('hidden'); }
 
         function renderChartList() {
             chartList.innerHTML = '';
@@ -421,7 +425,6 @@
 
         function renderComingSoonList() {
             comingSoonList.innerHTML = '';
-            
             comingSoonSongs.forEach((song) => {
                 const div = document.createElement('div');
                 div.className = "flex-shrink-0 w-32 group cursor-pointer";
@@ -437,7 +440,6 @@
                     <h3 class="text-sm font-bold text-white truncate">${song.title}</h3>
                     <p class="text-[10px] text-gray-400 truncate font-medium">${song.artist}</p>
                 `;
-                // 클릭 시 팝업 띄우기
                 div.onclick = () => showPopup();
                 comingSoonList.appendChild(div);
             });
@@ -446,16 +448,13 @@
         function loadSongData(index) {
             const song = songs[index];
             audio.src = song.src;
-            
             document.getElementById('song-title').innerText = song.title;
             document.getElementById('song-artist').innerText = song.artist;
             document.getElementById('cover-image').src = song.cover;
             playerBgImage.src = song.cover;
-            
             miniTitle.innerText = song.title;
             miniArtist.innerText = song.artist;
             miniCover.src = song.cover;
-
             errorBox.classList.add('hidden');
         }
 
@@ -526,6 +525,70 @@
         document.getElementById('btn-prev').onclick = playPrev;
         audio.addEventListener('ended', playNext);
 
+        // ==================== CUSTOM TOUCH SCRUBBER ====================
+        function getClientX(e) {
+            return e.touches ? e.touches[0].clientX : e.clientX;
+        }
+
+        function updateProgressVisuals(percent) {
+            progressFill.style.width = `${percent}%`;
+            progressHandle.style.left = `${percent}%`;
+            if (audio.duration) {
+                timeCurr.innerText = formatTime((percent / 100) * audio.duration);
+            }
+        }
+
+        function onScrub(e) {
+            const rect = progressContainer.getBoundingClientRect();
+            const clientX = getClientX(e);
+            let percent = ((clientX - rect.left) / rect.width) * 100;
+            percent = Math.max(0, Math.min(100, percent));
+            return percent;
+        }
+
+        function startScrub(e) {
+            isDragging = true;
+            const percent = onScrub(e);
+            updateProgressVisuals(percent);
+            progressFill.classList.remove('smooth-transition'); 
+            progressFill.classList.add('no-transition');
+            e.preventDefault(); 
+        }
+
+        function moveScrub(e) {
+            if (!isDragging) return;
+            const percent = onScrub(e);
+            updateProgressVisuals(percent);
+            e.preventDefault();
+        }
+
+        function endScrub(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            const percentStr = progressFill.style.width; 
+            const percent = parseFloat(percentStr) || 0;
+            
+            if(audio.duration) {
+                audio.currentTime = (percent / 100) * audio.duration;
+            }
+
+            progressFill.classList.remove('no-transition');
+            progressFill.classList.add('smooth-transition');
+        }
+
+        // 이벤트 등록
+        progressContainer.addEventListener('mousedown', startScrub);
+        progressContainer.addEventListener('touchstart', startScrub);
+
+        document.addEventListener('mousemove', moveScrub);
+        document.addEventListener('touchmove', moveScrub, { passive: false });
+
+        document.addEventListener('mouseup', endScrub);
+        document.addEventListener('touchend', endScrub);
+
+
+        // 자동 업데이트 (드래그 중 아닐 때만)
         audio.addEventListener('timeupdate', () => {
             if (!isDragging) {
                 const { currentTime, duration } = audio;
@@ -533,43 +596,11 @@
                 const percent = (currentTime / duration) * 100;
                 
                 progressFill.style.width = `${percent}%`;
-                if(progressHandle) progressHandle.style.left = `${percent}%`;
-                seekSlider.value = percent;
+                progressHandle.style.left = `${percent}%`;
                 miniProgress.style.width = `${percent}%`;
                 
                 timeCurr.innerText = formatTime(currentTime);
                 timeDur.innerText = formatTime(duration);
-            }
-        });
-
-        seekSlider.addEventListener('input', (e) => {
-            isDragging = true; 
-            const percent = e.target.value;
-            progressFill.style.width = `${percent}%`;
-            if(progressHandle) progressHandle.style.left = `${percent}%`;
-            
-            const duration = audio.duration || 0;
-            timeCurr.innerText = formatTime((percent / 100) * duration);
-            
-            progressFill.classList.remove('smooth-transition');
-            progressFill.classList.add('no-transition');
-            if(progressHandle) {
-                progressHandle.classList.remove('smooth-transition');
-                progressHandle.classList.add('no-transition');
-            }
-        });
-
-        seekSlider.addEventListener('change', (e) => {
-            const percent = e.target.value;
-            const duration = audio.duration || 0;
-            audio.currentTime = (percent / 100) * duration;
-            isDragging = false; 
-            
-            progressFill.classList.remove('no-transition');
-            progressFill.classList.add('smooth-transition');
-            if(progressHandle) {
-                progressHandle.classList.remove('no-transition');
-                progressHandle.classList.add('smooth-transition');
             }
         });
 
