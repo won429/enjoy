@@ -518,6 +518,7 @@
             // 반복 재생 버튼 로직
             btnRepeat.onclick = () => {
                 isRepeat = !isRepeat;
+                audio.loop = isRepeat; // 오디오의 반복 속성과 동기화 (더 안정적)
                 if (isRepeat) {
                     btnRepeat.classList.remove('text-white/30');
                     btnRepeat.classList.add('text-sky-400');
@@ -652,15 +653,10 @@
             
             // 노래 끝났을 때 처리 (반복 재생 여부 확인)
             audio.addEventListener('ended', () => {
-                if (isRepeat) {
-                    audio.currentTime = 0;
-                    audio.play();
-                } else {
-                    // 반복 아니면 정지 (UI 업데이트)
-                    audio.pause();
-                    updateUI(false); // 재생 버튼 모양으로 변경
-                    audio.currentTime = 0; // 처음으로 되감기
-                }
+                // audio.loop가 true일 경우 브라우저가 알아서 반복하므로 이 이벤트는 발생하지 않음
+                // 따라서 이 이벤트가 발생했다는 것은 '반복 재생 아님'을 의미함 -> 정지 처리
+                togglePlay(false);
+                audio.currentTime = 0; 
             });
 
             // 재생바 터치 로직
