@@ -95,6 +95,27 @@
                 #111 4px
             );
         }
+
+        /* ❤️ 하트 날아가는 효과 애니메이션 */
+        @keyframes flyUpHeart {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            50% { opacity: 1; }
+            100% { transform: translate(-50%, -50%) translateY(-60px) scale(1.5); opacity: 0; }
+        }
+        @keyframes returnHeart {
+            0% { transform: translate(-50%, -50%) translateY(-60px) scale(1.5); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translate(-50%, -50%) translateY(0) scale(1); opacity: 0; } /* 마지막에 사라짐 */
+        }
+        
+        .heart-effect {
+            position: fixed;
+            z-index: 9999;
+            pointer-events: none;
+            color: #38bdf8; /* sky-400 */
+        }
+        .anim-fly-up { animation: flyUpHeart 0.8s ease-out forwards; }
+        .anim-return { animation: returnHeart 0.6s ease-in forwards; }
     </style>
 </head>
 <body class="text-white overflow-hidden select-none h-[100dvh] w-screen fixed bg-[#121212]">
@@ -288,7 +309,7 @@
                     <p id="song-artist" class="text-white/60 text-base font-medium truncate">엔쪽이 OST Part.2</p>
                 </div>
                 <!-- ❤️ 좋아요 버튼 -->
-                <button id="btn-like" class="text-white/40 hover:text-sky-400 transition-all transform active:scale-90 p-2">
+                <button id="btn-like" class="text-white/40 hover:text-sky-400 transition-all transform active:scale-90 p-2 relative">
                     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 </button>
             </div>
@@ -307,7 +328,7 @@
                 <span id="duration">00:00</span>
             </div>
 
-            <!-- 컨트롤러 (수정됨: 이전/다음 버튼 아이콘 변경) -->
+            <!-- 컨트롤러 -->
             <div class="mt-auto w-full flex justify-between items-center px-4 pb-safe pt-2">
                 <!-- 셔플 (장식) -->
                 <button class="text-white/30 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
@@ -315,7 +336,7 @@
                 </button>
 
                 <div class="flex items-center gap-6">
-                    <!-- 이전 (수정됨: 막대 있는 아이콘) -->
+                    <!-- 이전 -->
                     <button id="btn-prev" class="text-white hover:text-sky-400 active:scale-90 transition-all p-2">
                         <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                             <path d="M6 6h2v12H6V6zm3.5 6l8.5 6V6l-8.5 6z"/>
@@ -328,7 +349,7 @@
                         <svg id="icon-pause" class="hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                     </button>
                     
-                    <!-- 다음 (수정됨: 막대 있는 아이콘) -->
+                    <!-- 다음 -->
                     <button id="btn-next" class="text-white hover:text-sky-400 active:scale-90 transition-all p-2">
                          <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                             <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
@@ -442,21 +463,56 @@
             popupClose.onclick = () => popupModal.classList.add('hidden');
             popupModal.onclick = (e) => { if (e.target === popupModal) popupModal.classList.add('hidden'); };
 
-            // 좋아요 버튼 로직
+            // ❤️ 좋아요 버튼 로직 (애니메이션 추가됨)
+            
+            const createFloatingHeart = (type) => {
+                const heart = document.createElement('div');
+                const rect = btnLike.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+
+                heart.className = 'heart-effect';
+                heart.innerHTML = `<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+                
+                // 위치 설정
+                heart.style.left = `${centerX}px`;
+                heart.style.top = `${centerY}px`;
+
+                if (type === 'up') {
+                    heart.classList.add('anim-fly-up');
+                } else {
+                    heart.classList.add('anim-return');
+                }
+
+                document.body.appendChild(heart);
+                setTimeout(() => heart.remove(), 1000);
+            };
+
             btnLike.onclick = () => {
                 isLiked = !isLiked;
                 const svg = btnLike.querySelector('svg');
+                
                 if (isLiked) {
+                    // 좋아요 상태로 변경
                     svg.setAttribute('fill', 'currentColor');
                     btnLike.classList.remove('text-white/40');
                     btnLike.classList.add('text-sky-400');
-                    btnLike.classList.add('scale-125');
-                    setTimeout(() => btnLike.classList.remove('scale-125'), 200);
+                    
+                    // ❤️ 위로 날아가는 효과 실행
+                    createFloatingHeart('up');
                 } else {
+                    // 좋아요 취소 상태로 변경
                     svg.setAttribute('fill', 'none');
                     btnLike.classList.add('text-white/40');
                     btnLike.classList.remove('text-sky-400');
+
+                    // ❤️ 위에서 돌아오는 효과 실행
+                    createFloatingHeart('down');
                 }
+                
+                // 버튼 클릭 효과 (스케일)
+                btnLike.classList.add('scale-125');
+                setTimeout(() => btnLike.classList.remove('scale-125'), 200);
             };
 
             // 반복 재생 버튼 로직
@@ -600,7 +656,7 @@
                     audio.currentTime = 0;
                     audio.play();
                 } else {
-                    // 반복 아니면 확실하게 정지 처리
+                    // 반복 아니면 정지 (UI 업데이트)
                     audio.pause();
                     updateUI(false); // 재생 버튼 모양으로 변경
                     audio.currentTime = 0; // 처음으로 되감기
