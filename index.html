@@ -48,11 +48,31 @@
         .smooth-transition { transition: width 0.1s linear, left 0.1s linear; }
         .no-transition { transition: none !important; }
 
-        /* 슬라이더 기본 스타일 제거 (그림자 방지) */
+        /* 슬라이더 커스텀 (그림자 완전 제거 & 터치 영역 확보) */
+        input[type=range] {
+            -webkit-appearance: none; /* 기본 스타일 제거 */
+            background: transparent;
+        }
+        input[type=range]:focus {
+            outline: none; /* 포커스 아웃라인 제거 */
+        }
+        /* 썸(핸들) 스타일 - 투명하지만 터치 영역은 존재 */
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            box-shadow: none;
+            height: 20px; /* 터치 영역 확보 */
+            width: 20px;
+            background: transparent;
+            cursor: pointer;
+            margin-top: -8px; 
+            box-shadow: none !important; /* 그림자 강제 제거 */
+        }
+        input[type=range]::-moz-range-thumb {
+            height: 20px;
+            width: 20px;
+            background: transparent;
+            cursor: pointer;
             border: none;
+            box-shadow: none !important;
         }
     </style>
 </head>
@@ -64,24 +84,21 @@
         <!-- 상단 네비게이션 -->
         <div class="px-6 pt-8 pb-4 flex justify-between items-center bg-[#121212]">
             <!-- 로고 컨테이너 -->
-            <div class="flex items-center gap-2"> 
-                <!-- 아이콘 -->
+            <div class="flex items-center gap-1.5"> 
+                <!-- 아이콘: 더 얇고 세련된 파형 -->
                 <div class="text-sky-400 flex items-center justify-center">
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5 10v4"></path>
-                        <path d="M9 7v10"></path>
-                        <path d="M13 4v16"></path>
-                        <path d="M17 8v8"></path>
-                        <path d="M21 11v2"></path>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 12h.01"></path>
+                        <path d="M7 9v6"></path>
+                        <path d="M12 5v14"></path>
+                        <path d="M17 9v6"></path>
+                        <path d="M20 12h.01"></path>
                     </svg>
                 </div>
-                <!-- 로고 텍스트: 
-                     en- (큰 글씨) -> font-bold(700)으로 두께를 살짝 줄임
-                     VIBE (작은 글씨) -> font-black(900)으로 두께를 가장 두껍게 유지
-                     결과: 시각적으로 두 글자의 획 두께가 비슷해 보임 -->
+                <!-- 로고 텍스트: 높이 밸런스 완벽 조절 (en은 크게, VIBE는 작게) -->
                 <h1 class="font-logo tracking-tight flex items-baseline">
-                    <span class="text-sky-400 text-4xl font-bold mr-0.5">en-</span>
-                    <span class="text-white text-2xl font-black">VIBE</span>
+                    <span class="text-sky-400 text-[2.2rem] font-bold leading-none mr-[1px]">en-</span>
+                    <span class="text-white text-[1.6rem] font-black leading-none">VIBE</span>
                 </h1>
             </div>
             
@@ -94,9 +111,10 @@
         <!-- 메인 스크롤 영역 -->
         <div class="flex-1 overflow-y-auto scrollbar-hide pb-32">
             
-            <!-- (1) TODAY'S PICK -->
+            <!-- (1) New Album 섹션 -->
             <div class="mb-8 pl-6">
-                <p class="text-[10px] text-sky-400/80 font-bold tracking-[0.2em] mb-4 font-logo">TODAY'S PICK</p>
+                <p class="text-sm text-sky-400 font-bold mb-4">New Album</p>
+                
                 <div class="flex gap-4 overflow-x-auto scrollbar-hide pr-6">
                     <!-- 유일한 곡 카드 -->
                     <div class="flex-shrink-0 w-40 group cursor-pointer" onclick="openPlayer(0)">
@@ -108,7 +126,8 @@
                                 </div>
                             </div>
                         </div>
-                        <h3 class="text-base font-bold text-white truncate font-logo tracking-tight">빛</h3>
+                        <h3 class="text-base font-bold text-white truncate">빛</h3>
+                        <!-- Part.2로 수정됨 -->
                         <p class="text-xs text-gray-400 truncate font-medium">엔쪽이 OST Part.2</p>
                         
                         <div class="mt-3 inline-flex items-center gap-2 bg-sky-500 text-white px-3 py-1.5 rounded-full font-bold text-xs hover:bg-sky-400 transition-colors shadow-lg shadow-sky-500/20">
@@ -129,7 +148,7 @@
         </div>
 
         <!-- 🔥 미니 플레이어 -->
-        <div id="mini-player" class="absolute bottom-0 left-0 right-0 bg-[#1E1E1E]/90 backdrop-blur-xl border-t border-white/5 px-4 pt-3 pb-safe cursor-pointer translate-y-full transition-transform duration-300 z-20 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]" onclick="openPlayer(currentIdx)">
+        <div id="mini-player" class="absolute bottom-0 left-0 right-0 bg-[#1E1E1E]/95 backdrop-blur-xl border-t border-white/5 px-4 pt-3 pb-safe cursor-pointer translate-y-full transition-transform duration-300 z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.3)]" onclick="openPlayer(currentIdx)">
             <div class="flex items-center justify-between mb-1">
                 <div class="flex items-center gap-3">
                     <div class="w-11 h-11 rounded-lg overflow-hidden bg-gray-800 relative shadow-inner">
@@ -203,17 +222,22 @@
                 </button>
             </div>
 
-            <!-- 진행 바 (그림자 제거 완벽 적용) -->
+            <!-- 진행 바 (새로운 플랫 디자인 + 조절 버그 수정) -->
             <div class="w-full mb-4">
-                <div class="relative h-1.5 bg-white/10 rounded-full cursor-pointer group py-2" id="progress-container">
-                    <div class="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-1.5 bg-white/10 rounded-full overflow-hidden pointer-events-none">
+                <div class="relative h-4 flex items-center group" id="progress-container">
+                    <!-- 배경 라인 (얇게) -->
+                    <div class="absolute left-0 right-0 h-1 bg-white/10 rounded-full overflow-hidden pointer-events-none">
+                        <!-- 진행 채움 -->
                         <div id="progress-fill" class="absolute top-0 left-0 h-full bg-white rounded-full smooth-transition group-hover:bg-sky-400" style="width: 0%"></div>
                     </div>
-                    <!-- shadow 클래스 제거 -->
-                    <div id="progress-handle" class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 smooth-transition pointer-events-none scale-125" style="left: 0%"></div>
-                    <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
+                    
+                    <!-- 핸들 (그림자 없는 완전 평면 원) -->
+                    <div id="progress-handle" class="absolute h-3 w-3 bg-white rounded-full opacity-0 group-hover:opacity-100 smooth-transition pointer-events-none left-0 -ml-[6px]"></div>
+                    
+                    <!-- 실제 입력 (투명, 터치 영역 확보, z-index 최상위) -->
+                    <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" style="touch-action: pan-y;">
                 </div>
-                <div class="flex justify-between text-[10px] text-white/40 mt-1 font-mono font-medium tracking-wider">
+                <div class="flex justify-between text-[10px] text-white/40 font-mono font-medium tracking-wider -mt-1">
                     <span id="current-time">00:00</span>
                     <span id="duration">00:00</span>
                 </div>
