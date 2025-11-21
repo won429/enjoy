@@ -293,8 +293,8 @@
                 </button>
             </div>
 
-            <!-- 진행 바 -->
-            <div class="w-full mb-4 relative h-10 flex items-center justify-center" id="progress-container">
+            <!-- 진행 바 (레이아웃 수정됨) -->
+            <div class="w-full mb-1 relative h-10 flex items-center justify-center" id="progress-container">
                 <div class="absolute left-0 right-0 h-1 bg-white/10 rounded-full overflow-hidden pointer-events-none">
                     <div id="progress-fill" class="absolute top-0 left-0 h-full bg-white rounded-full smooth-transition group-hover:bg-[#005ED2]" style="width: 0%"></div>
                 </div>
@@ -302,7 +302,8 @@
                 <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" style="touch-action: none;">
             </div>
             
-            <div class="w-full flex justify-between text-[10px] text-white/40 font-mono font-medium tracking-wider -mt-4">
+            <!-- 시간 표시 (레이아웃 및 로직 수정됨) -->
+            <div class="w-full flex justify-between text-[10px] text-white/40 font-mono font-medium tracking-wider">
                 <span id="current-time">00:00</span>
                 <span id="duration">00:00</span>
             </div>
@@ -564,6 +565,10 @@
                 miniArtist.innerText = song.artist;
                 miniCover.src = song.cover;
                 errorBox.classList.add('hidden');
+                
+                // 시간 초기화
+                timeCurr.innerText = "00:00";
+                timeDur.innerText = "00:00";
             };
 
             const openPlayer = (index) => {
@@ -691,20 +696,30 @@
             document.addEventListener('mouseup', endScrub);
             document.addEventListener('touchend', endScrub);
 
+            // 시간 업데이트 (로직 개선됨)
             audio.addEventListener('timeupdate', () => {
-                if (!isDragging && !isNaN(audio.duration)) {
+                // 현재 시간은 항상 업데이트
+                timeCurr.innerText = formatTime(audio.currentTime);
+
+                if (!isDragging && !isNaN(audio.duration) && isFinite(audio.duration)) {
                     const percent = (audio.currentTime / audio.duration) * 100;
                     progressFill.style.width = `${percent}%`;
                     progressHandle.style.left = `${percent}%`;
                     document.getElementById('mini-progress').style.width = `${percent}%`; 
                     seekSlider.value = percent;
-                    timeCurr.innerText = formatTime(audio.currentTime);
+                    
+                    // 전체 시간도 업데이트 (가끔 처음에 로드 안 될 수 있으므로)
                     timeDur.innerText = formatTime(audio.duration);
                 }
             });
+            
+            // 메타데이터 로드 시 전체 시간 설정 (추가됨)
+            audio.addEventListener('loadedmetadata', () => {
+                timeDur.innerText = formatTime(audio.duration);
+            });
 
             function formatTime(s) {
-                if(isNaN(s)) return "00:00";
+                if(isNaN(s) || !isFinite(s)) return "00:00";
                 const min = Math.floor(s / 60);
                 const sec = Math.floor(s % 60);
                 return `${min}:${sec < 10 ? '0'+sec : sec}`;
