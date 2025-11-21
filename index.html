@@ -77,8 +77,8 @@
                     <path d="M21 11v2"></path>
                 </svg>
             </div>
-            <!-- 로고 텍스트: 패딩 제거하여 완벽한 중앙 정렬 -->
-            <h1 class="font-logo tracking-tight text-white text-3xl lowercase">
+            <!-- 로고 텍스트: enjoy studio -->
+            <h1 class="font-logo tracking-tight text-white text-3xl lowercase pt-1">
                 enjoy studio
             </h1>
         </div>
@@ -106,8 +106,8 @@
                         <path d="M21 11v2"></path>
                     </svg>
                 </div>
-                <!-- 로고 텍스트: 패딩 제거하여 완벽한 중앙 정렬 -->
-                <h1 class="font-logo tracking-tight text-white text-2xl lowercase">
+                <!-- 로고 텍스트 -->
+                <h1 class="font-logo tracking-tight text-white text-2xl lowercase pt-1">
                     enjoy studio
                 </h1>
             </div>
@@ -231,19 +231,13 @@
                 </button>
             </div>
 
-            <!-- 진행 바 (Ultra Flat & Shadowless) -->
+            <!-- 진행 바 -->
             <div class="w-full mb-4">
                 <div class="relative h-4 flex items-center group" id="progress-container">
-                    <!-- 배경 라인 (얇게) -->
                     <div class="absolute left-0 right-0 h-1 bg-white/10 rounded-full overflow-hidden pointer-events-none">
-                        <!-- 진행 채움 -->
                         <div id="progress-fill" class="absolute top-0 left-0 h-full bg-white rounded-full smooth-transition group-hover:bg-sky-400" style="width: 0%"></div>
                     </div>
-                    
-                    <!-- 핸들 (그림자 없는 완전 평면 원, 마우스 올릴때만 보임) -->
                     <div id="progress-handle" class="absolute h-3 w-3 bg-white rounded-full opacity-0 group-hover:opacity-100 smooth-transition pointer-events-none left-0 -ml-[6px]"></div>
-                    
-                    <!-- 실제 입력 (투명, 터치 영역 확보, z-index 최상위) -->
                     <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" style="touch-action: pan-y;">
                 </div>
                 <div class="flex justify-between text-[10px] text-white/40 font-mono font-medium tracking-wider -mt-1">
@@ -278,6 +272,9 @@
         </div>
     </div>
 
+    <!-- 부팅 효과음 추가 -->
+    <audio id="boot-sound" src="./boot.mp3" preload="auto"></audio>
+    <!-- 메인 오디오 태그 -->
     <audio id="audio" playsinline webkit-playsinline></audio>
 
     <script>
@@ -291,6 +288,7 @@
         let isDragging = false; 
 
         const audio = document.getElementById('audio');
+        const bootSound = document.getElementById('boot-sound');
         const chartList = document.getElementById('chart-list');
         const playerScreen = document.getElementById('player-screen');
         const miniPlayer = document.getElementById('mini-player');
@@ -322,11 +320,14 @@
                 bootProgress.style.width = "100%";
             }, 100);
 
-            // 3.5초 후 홈 화면 진입
+            // 3초 후 홈 화면 진입 + 부팅음 재생 시도
             setTimeout(() => {
+                // 효과음 재생 시도 (브라우저 정책에 따라 차단될 수 있음)
+                bootSound.play().catch(e => console.log("부팅음 자동 재생이 브라우저 정책에 의해 차단되었습니다.", e));
+
                 bootScreen.classList.add('fade-out');
                 homeScreen.classList.remove('opacity-0');
-            }, 3500);
+            }, 3000);
 
             renderChartList();
             loadSongData(0); 
