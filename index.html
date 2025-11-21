@@ -6,10 +6,10 @@
     <title>en-VIBE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 구글 폰트: 로고용 Outfit 폰트 (900 Black 추가) -->
+    <!-- 구글 폰트: 로고용 Outfit 폰트 (Bold 700, ExtraBold 800) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&display=swap" rel="stylesheet">
     
     <style>
         /* 기본 폰트: 프리텐다드 */
@@ -21,7 +21,7 @@
             background-color: #030712;
         }
         
-        /* 로고 전용 폰트 (Outfit) */
+        /* 로고 전용 폰트 */
         .font-logo {
             font-family: 'Outfit', sans-serif;
             letter-spacing: -0.02em;
@@ -56,10 +56,11 @@
         
         <!-- 상단 네비게이션 -->
         <div class="px-6 pt-8 pb-4 flex justify-between items-center bg-[#121212]">
-            <div class="flex items-center gap-2"> 
-                <!-- 세련된 오디오 파형 아이콘 -->
-                <div class="text-sky-400 flex items-center justify-center translate-y-[2px]">
-                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+            <!-- 로고 컨테이너: 아이콘과 텍스트를 중앙 정렬 -->
+            <div class="flex items-center gap-2.5"> 
+                <!-- 아이콘 -->
+                <div class="text-sky-400 flex items-center justify-center">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M5 10v4"></path>
                         <path d="M9 7v10"></path>
                         <path d="M13 4v16"></path>
@@ -67,12 +68,14 @@
                         <path d="M21 11v2"></path>
                     </svg>
                 </div>
-                <!-- 폰트 키높이 완벽 매칭: en을 훨씬 크게 설정하여 VIBE와 높이 맞춤 -->
-                <h1 class="font-black font-logo tracking-tight flex items-end leading-none">
-                    <span class="text-sky-400 text-5xl -mb-1 mr-0.5">en-</span>
-                    <span class="text-4xl">VIBE</span>
+                <!-- 텍스트: 베이스라인 정렬로 높이 완벽하게 맞춤, 같은 폰트 사이즈로 두께 통일 -->
+                <h1 class="font-extrabold font-logo text-3xl tracking-tight flex items-baseline gap-0.5">
+                    <span class="text-sky-400">en-</span>
+                    <span class="text-white">VIBE</span>
                 </h1>
             </div>
+            
+            <!-- 프로필 아이콘 -->
             <div class="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center overflow-hidden ring-1 ring-white/10">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             </div>
@@ -85,6 +88,7 @@
             <div class="mb-8 pl-6">
                 <p class="text-[10px] text-sky-400/80 font-bold tracking-[0.2em] mb-4 font-logo">TODAY'S PICK</p>
                 <div class="flex gap-4 overflow-x-auto scrollbar-hide pr-6">
+                    <!-- 유일한 곡 카드 -->
                     <div class="flex-shrink-0 w-40 group cursor-pointer" onclick="openPlayer(0)">
                         <div class="w-40 h-40 rounded-2xl overflow-hidden bg-gray-800 mb-3 shadow-lg relative">
                             <img src="./cover.jpg" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.style.display='none'">
@@ -108,7 +112,6 @@
             <!-- (2) 실시간 차트 -->
             <div class="px-6">
                 <div class="flex justify-between items-center mb-4">
-                    <!-- 차트 타이틀 변경 -->
                     <h3 class="text-lg font-bold">실시간 차트 TOP 100</h3>
                 </div>
                 <div id="chart-list" class="space-y-1"></div>
