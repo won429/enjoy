@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>en-VIBE</title>
+    <title>enjoy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- 구글 폰트: 로고용 Outfit 폰트 -->
@@ -48,57 +48,69 @@
         .smooth-transition { transition: width 0.1s linear, left 0.1s linear; }
         .no-transition { transition: none !important; }
 
-        /* 슬라이더 커스텀 (그림자 완전 제거 & 터치 영역 확보) */
-        input[type=range] {
-            -webkit-appearance: none; /* 기본 스타일 제거 */
-            background: transparent;
-        }
-        input[type=range]:focus {
-            outline: none; /* 포커스 아웃라인 제거 */
-        }
-        /* 썸(핸들) 스타일 - 투명하지만 터치 영역은 존재 */
+        /* 슬라이더 기본 스타일 제거 (그림자 방지) */
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            height: 20px; /* 터치 영역 확보 */
-            width: 20px;
-            background: transparent;
-            cursor: pointer;
-            margin-top: -8px; 
-            box-shadow: none !important; /* 그림자 강제 제거 */
-        }
-        input[type=range]::-moz-range-thumb {
-            height: 20px;
-            width: 20px;
-            background: transparent;
-            cursor: pointer;
+            box-shadow: none;
             border: none;
-            box-shadow: none !important;
+        }
+
+        /* 인트로 페이드 아웃 애니메이션 */
+        .fade-out {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
         }
     </style>
 </head>
 <body class="text-white overflow-hidden select-none h-[100dvh] w-screen fixed bg-[#121212]">
 
+    <!-- ==================== 0. 인트로 화면 (사이트 이름 로고) ==================== -->
+    <div id="boot-screen" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center">
+        <!-- 로고 (SVG + 텍스트) -->
+        <div class="mb-12 flex items-center gap-3 scale-150">
+            <!-- 아이콘 -->
+            <div class="text-sky-400 flex items-center justify-center">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 10v4"></path>
+                    <path d="M9 7v10"></path>
+                    <path d="M13 4v16"></path>
+                    <path d="M17 8v8"></path>
+                    <path d="M21 11v2"></path>
+                </svg>
+            </div>
+            <!-- 로고 텍스트: enjoy (소문자, 흰색) -->
+            <h1 class="font-logo tracking-tight text-white text-4xl font-black lowercase">
+                enjoy
+            </h1>
+        </div>
+        
+        <!-- 로딩 바 (3초 설정) -->
+        <div class="w-48 h-1 bg-[#333] rounded-full overflow-hidden">
+            <div id="boot-progress" class="h-full bg-white w-0 rounded-full transition-all duration-[3000ms] ease-out"></div>
+        </div>
+    </div>
+
     <!-- ==================== 1. 홈 화면 ==================== -->
-    <div id="home-screen" class="relative z-10 h-full flex flex-col fade-in">
+    <div id="home-screen" class="relative z-10 h-full flex flex-col opacity-0 transition-opacity duration-1000">
         
         <!-- 상단 네비게이션 -->
         <div class="px-6 pt-8 pb-4 flex justify-between items-center bg-[#121212]">
             <!-- 로고 컨테이너 -->
-            <div class="flex items-center gap-1.5"> 
-                <!-- 아이콘: 더 얇고 세련된 파형 -->
+            <div class="flex items-center gap-2"> 
+                <!-- 아이콘 -->
                 <div class="text-sky-400 flex items-center justify-center">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 12h.01"></path>
-                        <path d="M7 9v6"></path>
-                        <path d="M12 5v14"></path>
-                        <path d="M17 9v6"></path>
-                        <path d="M20 12h.01"></path>
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 10v4"></path>
+                        <path d="M9 7v10"></path>
+                        <path d="M13 4v16"></path>
+                        <path d="M17 8v8"></path>
+                        <path d="M21 11v2"></path>
                     </svg>
                 </div>
-                <!-- 로고 텍스트: 높이 밸런스 완벽 조절 (en은 크게, VIBE는 작게) -->
-                <h1 class="font-logo tracking-tight flex items-baseline">
-                    <span class="text-sky-400 text-[2.2rem] font-bold leading-none mr-[1px]">en-</span>
-                    <span class="text-white text-[1.6rem] font-black leading-none">VIBE</span>
+                <!-- 로고 텍스트: enjoy (소문자, 흰색) -->
+                <h1 class="font-logo tracking-tight text-white text-3xl font-black lowercase pt-1">
+                    enjoy
                 </h1>
             </div>
             
@@ -127,7 +139,6 @@
                             </div>
                         </div>
                         <h3 class="text-base font-bold text-white truncate">빛</h3>
-                        <!-- Part.2로 수정됨 -->
                         <p class="text-xs text-gray-400 truncate font-medium">엔쪽이 OST Part.2</p>
                         
                         <div class="mt-3 inline-flex items-center gap-2 bg-sky-500 text-white px-3 py-1.5 rounded-full font-bold text-xs hover:bg-sky-400 transition-colors shadow-lg shadow-sky-500/20">
@@ -222,7 +233,7 @@
                 </button>
             </div>
 
-            <!-- 진행 바 (새로운 플랫 디자인 + 조절 버그 수정) -->
+            <!-- 진행 바 (Ultra Flat & Shadowless) -->
             <div class="w-full mb-4">
                 <div class="relative h-4 flex items-center group" id="progress-container">
                     <!-- 배경 라인 (얇게) -->
@@ -231,7 +242,7 @@
                         <div id="progress-fill" class="absolute top-0 left-0 h-full bg-white rounded-full smooth-transition group-hover:bg-sky-400" style="width: 0%"></div>
                     </div>
                     
-                    <!-- 핸들 (그림자 없는 완전 평면 원) -->
+                    <!-- 핸들 (그림자 없는 완전 평면 원, 마우스 올릴때만 보임) -->
                     <div id="progress-handle" class="absolute h-3 w-3 bg-white rounded-full opacity-0 group-hover:opacity-100 smooth-transition pointer-events-none left-0 -ml-[6px]"></div>
                     
                     <!-- 실제 입력 (투명, 터치 영역 확보, z-index 최상위) -->
@@ -286,6 +297,9 @@
         const playerScreen = document.getElementById('player-screen');
         const miniPlayer = document.getElementById('mini-player');
         const errorBox = document.getElementById('error-box');
+        const bootScreen = document.getElementById('boot-screen');
+        const bootProgress = document.getElementById('boot-progress');
+        const homeScreen = document.getElementById('home-screen');
         
         const miniCover = document.getElementById('mini-cover');
         const miniTitle = document.getElementById('mini-title');
@@ -305,6 +319,17 @@
         const playerBgImage = document.getElementById('player-bg-image');
 
         function init() {
+            // 부팅 애니메이션 시작 (3초)
+            setTimeout(() => {
+                bootProgress.style.width = "100%";
+            }, 100);
+
+            // 3.5초 후 홈 화면 진입 (게이지 다 차고 조금 뒤에)
+            setTimeout(() => {
+                bootScreen.classList.add('fade-out');
+                homeScreen.classList.remove('opacity-0');
+            }, 3500);
+
             renderChartList();
             loadSongData(0); 
         }
