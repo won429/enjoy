@@ -75,9 +75,12 @@
                         <path d="M21 11v2"></path>
                     </svg>
                 </div>
-                <!-- 로고 텍스트: VIBE를 작게 줄여서 en의 높이에 맞춤 -->
+                <!-- 로고 텍스트: 
+                     en- (큰 글씨) -> font-bold(700)으로 두께를 살짝 줄임
+                     VIBE (작은 글씨) -> font-black(900)으로 두께를 가장 두껍게 유지
+                     결과: 시각적으로 두 글자의 획 두께가 비슷해 보임 -->
                 <h1 class="font-logo tracking-tight flex items-baseline">
-                    <span class="text-sky-400 text-4xl font-black mr-0.5">en-</span>
+                    <span class="text-sky-400 text-4xl font-bold mr-0.5">en-</span>
                     <span class="text-white text-2xl font-black">VIBE</span>
                 </h1>
             </div>
@@ -200,25 +203,17 @@
                 </button>
             </div>
 
-            <!-- 진행 바 (Redesign) -->
-            <div class="w-full mb-6">
-                
-                <!-- 메인 트랙 -->
-                <div class="relative w-full h-4 flex items-center cursor-pointer group" id="progress-container">
-                    <!-- 배경 라인 -->
-                    <div class="absolute left-0 right-0 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <!-- 진행 채움 -->
-                        <div id="progress-fill" class="h-full bg-sky-400 w-0 rounded-full smooth-transition"></div>
+            <!-- 진행 바 (그림자 제거 완벽 적용) -->
+            <div class="w-full mb-4">
+                <div class="relative h-1.5 bg-white/10 rounded-full cursor-pointer group py-2" id="progress-container">
+                    <div class="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-1.5 bg-white/10 rounded-full overflow-hidden pointer-events-none">
+                        <div id="progress-fill" class="absolute top-0 left-0 h-full bg-white rounded-full smooth-transition group-hover:bg-sky-400" style="width: 0%"></div>
                     </div>
-                    
-                    <!-- 핸들 (동그라미) - 중앙 정렬 및 그림자 제거 -->
-                    <div id="progress-handle" class="absolute h-3.5 w-3.5 bg-white rounded-full left-0 -ml-[7px] opacity-0 group-hover:opacity-100 smooth-transition pointer-events-none shadow-none"></div>
-                    
-                    <!-- 입력 범위 (투명) -->
-                    <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer">
+                    <!-- shadow 클래스 제거 -->
+                    <div id="progress-handle" class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 smooth-transition pointer-events-none scale-125" style="left: 0%"></div>
+                    <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
                 </div>
-
-                <div class="flex justify-between text-[11px] text-white/40 font-medium tracking-wider -mt-1">
+                <div class="flex justify-between text-[10px] text-white/40 mt-1 font-mono font-medium tracking-wider">
                     <span id="current-time">00:00</span>
                     <span id="duration">00:00</span>
                 </div>
