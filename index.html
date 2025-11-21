@@ -307,7 +307,7 @@
                 <span id="duration">00:00</span>
             </div>
 
-            <!-- 컨트롤러 (아이콘 수정됨) -->
+            <!-- 컨트롤러 (수정됨: 이전/다음 버튼 아이콘 변경) -->
             <div class="mt-auto w-full flex justify-between items-center px-4 pb-safe pt-2">
                 <!-- 셔플 (장식) -->
                 <button class="text-white/30 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
@@ -315,9 +315,11 @@
                 </button>
 
                 <div class="flex items-center gap-6">
-                    <!-- 이전 (아이콘 수정됨) -->
+                    <!-- 이전 (수정됨: 막대 있는 아이콘) -->
                     <button id="btn-prev" class="text-white hover:text-sky-400 active:scale-90 transition-all p-2">
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                            <path d="M6 6h2v12H6V6zm3.5 6l8.5 6V6l-8.5 6z"/>
+                        </svg>
                     </button>
                     
                     <!-- 재생 -->
@@ -326,13 +328,15 @@
                         <svg id="icon-pause" class="hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                     </button>
                     
-                    <!-- 다음 (아이콘 수정됨) -->
+                    <!-- 다음 (수정됨: 막대 있는 아이콘) -->
                     <button id="btn-next" class="text-white hover:text-sky-400 active:scale-90 transition-all p-2">
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+                         <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                        </svg>
                     </button>
                 </div>
 
-                <!-- 반복 버튼 (기능 추가됨) -->
+                <!-- 반복 버튼 -->
                 <button id="btn-repeat" class="text-white/30 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
                 </button>
