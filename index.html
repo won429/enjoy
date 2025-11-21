@@ -610,7 +610,10 @@
             };
 
             const togglePlay = (forcePlay = null) => {
-                if (forcePlay === true || audio.paused) {
+                // 수정된 논리: forcePlay가 false이면 명시적으로 멈춤 (기존 버그 수정)
+                const shouldPlay = forcePlay === null ? audio.paused : forcePlay;
+
+                if (shouldPlay) {
                     audio.play().then(() => updateUI(true)).catch(e => {
                         console.error(e);
                         errorBox.classList.remove('hidden');
