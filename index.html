@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* 기본 폰트: 프리텐다드 (세련된 고딕) */
+        /* 기본 폰트: 프리텐다드 */
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
         
         body { 
@@ -16,10 +16,9 @@
             background-color: #030712;
         }
         
-        /* 로고 전용 폰트 설정 (애플 폰트 우선 적용 + 자간 조정) */
         .font-logo {
             font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", sans-serif;
-            letter-spacing: -0.03em; /* 글자 간격을 살짝 좁혀서 로고처럼 연출 */
+            letter-spacing: -0.03em;
         }
         
         /* LP 회전 애니메이션 */
@@ -37,8 +36,11 @@
         .fade-in { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* 모바일 하단 안전 영역 */
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+        
+        /* 재생바 트랜지션 제어용 클래스 */
+        .smooth-transition { transition: width 0.1s linear, left 0.1s linear; }
+        .no-transition { transition: none !important; }
     </style>
 </head>
 <body class="text-white overflow-hidden select-none h-[100dvh] w-screen fixed bg-[#121212]">
@@ -48,7 +50,6 @@
         
         <!-- 상단 네비게이션 -->
         <div class="px-6 pt-8 pb-4 flex justify-between items-center bg-[#121212]">
-            <!-- 폰트 변경 적용된 부분 (.font-logo) -->
             <h1 class="text-2xl font-bold flex items-center gap-2 font-logo">
                 <span class="text-sky-400">엔조이</span> 뮤직
             </h1>
@@ -63,10 +64,7 @@
             <!-- (1) TODAY'S PICK -->
             <div class="mb-8 pl-6">
                 <p class="text-xs text-gray-400 font-bold tracking-widest mb-4 font-logo">TODAY'S PICK</p>
-                
-                <!-- 가로 스크롤 컨테이너 -->
                 <div class="flex gap-4 overflow-x-auto scrollbar-hide pr-6">
-                    <!-- 유일한 곡 카드 -->
                     <div class="flex-shrink-0 w-40 group cursor-pointer" onclick="openPlayer(0)">
                         <div class="w-40 h-40 rounded-2xl overflow-hidden bg-gray-800 mb-3 shadow-lg relative">
                             <img src="./cover.jpg" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.style.display='none'">
@@ -77,9 +75,9 @@
                             </div>
                         </div>
                         <h3 class="text-base font-bold text-white truncate">빛</h3>
-                        <p class="text-xs text-gray-400 truncate">엔쪽이 OST Part.1</p>
+                        <!-- 수정된 부분: Part.2 -->
+                        <p class="text-xs text-gray-400 truncate">엔쪽이 OST Part.2</p>
                         
-                        <!-- 재생 버튼 (하늘색) -->
                         <div class="mt-3 inline-flex items-center gap-2 bg-sky-500 text-white px-3 py-1.5 rounded-full font-bold text-xs hover:bg-sky-400 transition-colors shadow-lg shadow-sky-500/30">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                             Play Now
@@ -88,16 +86,13 @@
                 </div>
             </div>
 
-            <!-- (2) 실시간 차트 (1위만 존재) -->
+            <!-- (2) 실시간 차트 -->
             <div class="px-6">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-bold font-logo">실시간 차트</h3>
                     <span class="text-xs text-gray-500">NOW</span>
                 </div>
-                
-                <div id="chart-list" class="space-y-1">
-                    <!-- 자바스크립트로 리스트가 채워집니다 -->
-                </div>
+                <div id="chart-list" class="space-y-1"></div>
             </div>
         </div>
 
@@ -121,7 +116,6 @@
                 </div>
             </div>
             <div class="absolute top-0 left-0 right-0 h-0.5 bg-white/10">
-                <!-- 미니 플레이어 바 (하늘색) -->
                 <div id="mini-progress" class="h-full bg-sky-500 w-0 transition-all duration-300"></div>
             </div>
         </div>
@@ -148,7 +142,7 @@
         </div>
 
         <!-- 플레이어 메인 -->
-        <div class="relative z-10 flex-1 flex flex-col items-center justify-center px-8 pb-12">
+        <div class="relative z-10 flex-1 flex flex-col items-center justify-center px-8 pb-8">
              <div id="error-box" class="hidden bg-red-500/90 text-white text-xs p-3 rounded-xl mb-8 text-center animate-pulse w-full max-w-xs">
                 <p>파일을 찾을 수 없습니다.</p>
                 <p class="mt-1 opacity-75 text-[10px]">music.mp3 와 cover.jpg 확인 필요</p>
@@ -168,47 +162,61 @@
             <div class="w-full mb-8 flex items-end justify-between">
                 <div class="flex-1 min-w-0 mr-4">
                     <h2 id="song-title" class="text-2xl font-bold text-white mb-1 truncate scroll-m-0">빛</h2>
-                    <p id="song-artist" class="text-white/60 text-base font-medium truncate">엔쪽이 OST Part.1</p>
+                    <p id="song-artist" class="text-white/60 text-base font-medium truncate">엔쪽이 OST Part.2</p>
                 </div>
                 <button class="text-sky-400 hover:scale-110 transition-transform">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 </button>
             </div>
 
-            <div class="w-full mb-2">
-                <div class="relative h-1.5 bg-white/10 rounded-full cursor-pointer group" id="progress-container">
-                    <!-- 전체 플레이어 진행바 (하늘색) -->
-                    <div id="progress-fill" class="absolute top-0 left-0 h-full bg-white rounded-full transition-all duration-100 group-hover:bg-sky-400" style="width: 0%"></div>
-                    <div class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" id="progress-handle" style="left: 0%"></div>
-                    <input type="range" id="seek-slider" min="0" max="100" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+            <!-- 진행 바 (드래그 최적화 적용) -->
+            <div class="w-full mb-4">
+                <div class="relative h-1.5 bg-white/10 rounded-full cursor-pointer group py-2" id="progress-container">
+                    <div class="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-1.5 bg-white/10 rounded-full overflow-hidden pointer-events-none">
+                        <!-- smooth-transition 클래스로 제어 -->
+                        <div id="progress-fill" class="absolute top-0 left-0 h-full bg-white rounded-full smooth-transition group-hover:bg-sky-400" style="width: 0%"></div>
+                    </div>
+                    <!-- 핸들 -->
+                    <div id="progress-handle" class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow opacity-0 group-hover:opacity-100 smooth-transition pointer-events-none" style="left: 0%"></div>
+                    <!-- 실제 입력 (투명) -->
+                    <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
                 </div>
-                <div class="flex justify-between text-xs text-white/40 mt-2 font-mono font-medium">
+                <div class="flex justify-between text-xs text-white/40 mt-1 font-mono font-medium">
                     <span id="current-time">00:00</span>
                     <span id="duration">00:00</span>
                 </div>
             </div>
 
-            <div class="mt-auto w-full flex justify-between items-center px-2 pb-safe pt-4">
-                <button class="text-white/40 hover:text-white transition-colors">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 8l-4 4 4 4"></path><path d="M10 12H20"></path></svg>
+            <!-- 🔥 컨트롤러 디자인 업그레이드 (5버튼 밸런스형) -->
+            <div class="mt-auto w-full flex justify-between items-center px-4 pb-safe pt-2">
+                
+                <!-- 셔플 (장식용) -->
+                <button class="text-white/40 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
                 </button>
-                <div class="flex items-center gap-8">
-                    <button id="btn-prev" class="text-white hover:text-sky-400 active:scale-90 transition-all">
+
+                <!-- 메인 컨트롤 그룹 -->
+                <div class="flex items-center gap-6">
+                    <!-- 이전 곡 -->
+                    <button id="btn-prev" class="text-white hover:text-sky-400 active:scale-90 transition-all p-2">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
                     </button>
                     
-                    <!-- 전체 플레이어 재생 버튼 (하늘색) -->
-                    <button id="btn-play" class="w-20 h-20 flex items-center justify-center bg-sky-500 text-white rounded-full shadow-[0_0_30px_rgba(56,189,248,0.3)] hover:scale-105 hover:bg-sky-400 active:scale-95 transition-all">
-                        <svg id="icon-play" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                        <svg id="icon-pause" class="hidden" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                    <!-- 재생/일시정지 (크고 아름답게) -->
+                    <button id="btn-play" class="w-16 h-16 flex items-center justify-center bg-white text-black rounded-full shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 hover:bg-sky-400 hover:text-white hover:shadow-[0_0_40px_rgba(56,189,248,0.4)] active:scale-95 transition-all duration-300">
+                        <svg id="icon-play" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        <svg id="icon-pause" class="hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                     </button>
                     
-                    <button id="btn-next" class="text-white hover:text-sky-400 active:scale-90 transition-all">
+                    <!-- 다음 곡 -->
+                    <button id="btn-next" class="text-white hover:text-sky-400 active:scale-90 transition-all p-2">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
                     </button>
                 </div>
-                <button class="text-white/40 hover:text-white transition-colors">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+
+                <!-- 반복 (장식용) -->
+                <button class="text-white/40 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
                 </button>
             </div>
         </div>
@@ -219,7 +227,7 @@
     <script>
         // ==================== 데이터 ====================
         const songs = [
-            { id: 1, title: "빛", artist: "엔쪽이 OST Part.1", src: "./music.mp3", cover: "./cover.jpg" }
+            { id: 1, title: "빛", artist: "엔쪽이 OST Part.2", src: "./music.mp3", cover: "./cover.jpg" }
         ];
 
         let currentIdx = 0;
@@ -361,6 +369,7 @@
         document.getElementById('btn-prev').onclick = playPrev;
         audio.addEventListener('ended', playNext);
 
+        // ========== 재생바 드래그 최적화 로직 (중요!) ==========
         audio.addEventListener('timeupdate', () => {
             if (!isDragging) {
                 const { currentTime, duration } = audio;
@@ -377,8 +386,17 @@
             }
         });
 
+        // 1. 드래그 시작 & 이동 (즉각 반응)
         seekSlider.addEventListener('input', (e) => {
-            isDragging = true; 
+            isDragging = true;
+            // 드래그 중엔 부드러운 애니메이션 제거 (즉각 반응을 위해)
+            progressFill.classList.remove('smooth-transition');
+            progressFill.classList.add('no-transition');
+            if(progressHandle) {
+                progressHandle.classList.remove('smooth-transition');
+                progressHandle.classList.add('no-transition');
+            }
+
             const percent = e.target.value;
             progressFill.style.width = `${percent}%`;
             if(progressHandle) progressHandle.style.left = `${percent}%`;
@@ -387,11 +405,20 @@
             timeCurr.innerText = formatTime((percent / 100) * duration);
         });
 
+        // 2. 드래그 종료 (실제 이동)
         seekSlider.addEventListener('change', (e) => {
+            isDragging = false;
+            // 드래그 끝나면 다시 부드러운 애니메이션 복구
+            progressFill.classList.remove('no-transition');
+            progressFill.classList.add('smooth-transition');
+            if(progressHandle) {
+                progressHandle.classList.remove('no-transition');
+                progressHandle.classList.add('smooth-transition');
+            }
+
             const percent = e.target.value;
             const duration = audio.duration || 0;
             audio.currentTime = (percent / 100) * duration;
-            isDragging = false; 
         });
 
         function formatTime(s) {
