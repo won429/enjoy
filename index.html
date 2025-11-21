@@ -87,6 +87,11 @@
         <div class="w-48 h-1 bg-[#333] rounded-full overflow-hidden">
             <div id="boot-progress" class="h-full bg-white w-0 rounded-full transition-all duration-[3000ms] ease-out"></div>
         </div>
+        
+        <!-- 터치 유도 문구 (사파리 대응용, 처음엔 숨김) -->
+        <p id="touch-hint" class="text-white/50 text-xs opacity-0 transition-opacity duration-500 font-medium tracking-widest mt-4">
+            Touch to Start
+        </p>
     </div>
 
     <!-- ==================== 1. 홈 화면 ==================== -->
@@ -126,7 +131,7 @@
                 <p class="text-sm text-sky-400 font-bold mb-4">New Album</p>
                 
                 <div class="flex gap-4 overflow-x-auto scrollbar-hide pr-6">
-                    <!-- 유일한 곡 카드 -->
+                    <!-- 곡 1: 빛 -->
                     <div class="flex-shrink-0 w-40 group cursor-pointer" onclick="openPlayer(0)">
                         <div class="w-40 h-40 rounded-2xl overflow-hidden bg-gray-800 mb-3 shadow-lg relative">
                             <img src="./cover.jpg" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.style.display='none'">
@@ -147,12 +152,23 @@
                 </div>
             </div>
 
-            <!-- (2) 실시간 차트 -->
-            <div class="px-6">
+            <!-- (2) 실시간 차트 (Top 100) -->
+            <div class="px-6 mb-10">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-bold">실시간 차트 TOP 100</h3>
                 </div>
-                <div id="chart-list" class="space-y-1"></div>
+                <div id="chart-list" class="space-y-1">
+                    <!-- 자바스크립트로 렌더링 -->
+                </div>
+            </div>
+
+            <!-- (3) Coming Soon 섹션 -->
+            <div class="pl-6 mb-8">
+                <p class="text-sm text-sky-400 font-bold mb-4">Coming Soon</p>
+                
+                <div class="flex gap-4 overflow-x-auto scrollbar-hide pr-6" id="coming-soon-list">
+                    <!-- 자바스크립트로 렌더링 -->
+                </div>
             </div>
         </div>
 
@@ -165,7 +181,7 @@
                     </div>
                     <div class="flex flex-col justify-center">
                         <h4 id="mini-title" class="text-sm font-bold text-white truncate max-w-[150px]">빛</h4>
-                        <p id="mini-artist" class="text-xs text-gray-400 truncate">엔쪽이 OST</p>
+                        <p id="mini-artist" class="text-xs text-gray-400 truncate">엔쪽이 OST Part.2</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-4 pr-2">
@@ -231,19 +247,18 @@
                 </button>
             </div>
 
-            <!-- 진행 바 -->
-            <div class="w-full mb-4">
-                <div class="relative h-4 flex items-center group" id="progress-container">
-                    <div class="absolute left-0 right-0 h-1 bg-white/10 rounded-full overflow-hidden pointer-events-none">
-                        <div id="progress-fill" class="absolute top-0 left-0 h-full bg-white rounded-full smooth-transition group-hover:bg-sky-400" style="width: 0%"></div>
-                    </div>
-                    <div id="progress-handle" class="absolute h-3 w-3 bg-white rounded-full opacity-0 group-hover:opacity-100 smooth-transition pointer-events-none left-0 -ml-[6px]"></div>
-                    <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" style="touch-action: pan-y;">
+            <!-- 진행 바 (터치 영역 확대) -->
+            <div class="w-full mb-4 relative h-10 flex items-center justify-center" id="progress-container">
+                <div class="absolute left-0 right-0 h-1 bg-white/10 rounded-full overflow-hidden pointer-events-none">
+                    <div id="progress-fill" class="absolute top-0 left-0 h-full bg-white rounded-full smooth-transition group-hover:bg-sky-400" style="width: 0%"></div>
                 </div>
-                <div class="flex justify-between text-[10px] text-white/40 font-mono font-medium tracking-wider -mt-1">
-                    <span id="current-time">00:00</span>
-                    <span id="duration">00:00</span>
-                </div>
+                <div id="progress-handle" class="absolute h-3 w-3 bg-white rounded-full opacity-0 group-hover:opacity-100 smooth-transition pointer-events-none left-0 -ml-[6px]"></div>
+                <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" style="touch-action: none;">
+            </div>
+            
+            <div class="flex justify-between text-[10px] text-white/40 font-mono font-medium tracking-wider -mt-4">
+                <span id="current-time">00:00</span>
+                <span id="duration">00:00</span>
             </div>
 
             <!-- 컨트롤러 -->
@@ -279,8 +294,11 @@
 
     <script>
         // ==================== 데이터 ====================
+        // [0]: 메인 곡, [1],[2]: Coming Soon 곡들
         const songs = [
-            { id: 1, title: "빛", artist: "엔쪽이 OST Part.2", src: "./music.mp3", cover: "./cover.jpg" }
+            { id: 1, title: "빛", artist: "엔쪽이 OST Part.2", src: "./music.mp3", cover: "./cover.jpg" },
+            { id: 2, title: "힘내라", artist: "엔쪽이 OST Part.1", src: "./music.mp3", cover: "./cover2.jpg" }, // cover2.jpg 사용
+            { id: 3, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", src: "./music.mp3", cover: "./cover3.jpg" } // cover3.jpg 사용
         ];
 
         let currentIdx = 0;
@@ -290,12 +308,14 @@
         const audio = document.getElementById('audio');
         const bootSound = document.getElementById('boot-sound');
         const chartList = document.getElementById('chart-list');
+        const comingSoonList = document.getElementById('coming-soon-list');
         const playerScreen = document.getElementById('player-screen');
         const miniPlayer = document.getElementById('mini-player');
         const errorBox = document.getElementById('error-box');
         const bootScreen = document.getElementById('boot-screen');
         const bootProgress = document.getElementById('boot-progress');
         const homeScreen = document.getElementById('home-screen');
+        const touchHint = document.getElementById('touch-hint');
         
         const miniCover = document.getElementById('mini-cover');
         const miniTitle = document.getElementById('mini-title');
@@ -315,45 +335,85 @@
         const playerBgImage = document.getElementById('player-bg-image');
 
         function init() {
-            // 부팅 애니메이션 시작 (3초)
             setTimeout(() => {
                 bootProgress.style.width = "100%";
             }, 100);
 
-            // 3초 후 홈 화면 진입 + 부팅음 재생 시도
-            setTimeout(() => {
-                // 효과음 재생 시도 (브라우저 정책에 따라 차단될 수 있음)
-                bootSound.play().catch(e => console.log("부팅음 자동 재생이 브라우저 정책에 의해 차단되었습니다.", e));
-
-                bootScreen.classList.add('fade-out');
-                homeScreen.classList.remove('opacity-0');
-            }, 3000);
+            setTimeout(tryEnterHome, 3000);
 
             renderChartList();
+            renderComingSoonList();
             loadSongData(0); 
         }
 
+        function tryEnterHome() {
+            bootSound.play()
+                .then(() => enterHome())
+                .catch(e => {
+                    console.log("Autoplay blocked, waiting for touch.");
+                    touchHint.classList.remove('opacity-0');
+                    bootScreen.addEventListener('click', () => {
+                        bootSound.play();
+                        enterHome();
+                    }, { once: true });
+                });
+        }
+
+        function enterHome() {
+            bootScreen.classList.add('fade-out');
+            homeScreen.classList.remove('opacity-0');
+        }
+
+        // 실시간 차트 렌더링 (1위 '빛'만 표시)
         function renderChartList() {
             chartList.innerHTML = '';
-            songs.forEach((song, index) => {
-                const rank = index + 1;
+            // 첫 번째 곡만 차트에 표시
+            const song = songs[0]; 
+            const rank = 1;
+            const div = document.createElement('div');
+            div.className = "flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 active:scale-98 transition-all cursor-pointer group";
+            div.innerHTML = `
+                <div class="w-6 text-center text-sky-400 text-lg font-bold font-logo">${rank}</div>
+                <div class="w-12 h-12 rounded-lg bg-gray-800 overflow-hidden relative flex-shrink-0">
+                    <img src="${song.cover}" class="w-full h-full object-cover" onerror="this.style.opacity='0.5'">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-base font-medium text-white truncate">${song.title}</h3>
+                    <p class="text-xs text-gray-400 truncate">${song.artist}</p>
+                </div>
+                <button class="text-gray-600 hover:text-white">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                </button>
+            `;
+            div.onclick = () => openPlayer(0);
+            chartList.appendChild(div);
+        }
+
+        // Coming Soon 렌더링 (2, 3번째 곡)
+        function renderComingSoonList() {
+            comingSoonList.innerHTML = '';
+            // songs 배열의 1번 인덱스부터 끝까지
+            const comingSoonSongs = songs.slice(1);
+            
+            comingSoonSongs.forEach((song) => {
+                const realIndex = song.id - 1; 
+
                 const div = document.createElement('div');
-                div.className = "flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 active:scale-98 transition-all cursor-pointer group";
+                div.className = "flex-shrink-0 w-32 group cursor-pointer";
                 div.innerHTML = `
-                    <div class="w-6 text-center text-sky-400 text-lg font-bold font-logo">${rank}</div>
-                    <div class="w-12 h-12 rounded-lg bg-gray-800 overflow-hidden relative flex-shrink-0">
-                        <img src="${song.cover}" class="w-full h-full object-cover" onerror="this.style.opacity='0.5'">
+                    <div class="w-32 h-32 rounded-xl overflow-hidden bg-gray-800 mb-2 shadow-lg relative">
+                        <img src="${song.cover}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.style.display='none'">
+                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <h3 class="text-base font-medium text-white truncate">${song.title}</h3>
-                        <p class="text-xs text-gray-400 truncate">${song.artist}</p>
-                    </div>
-                    <button class="text-gray-600 hover:text-white">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                    </button>
+                    <h3 class="text-sm font-bold text-white truncate">${song.title}</h3>
+                    <p class="text-[10px] text-gray-400 truncate font-medium">${song.artist}</p>
                 `;
-                div.onclick = () => openPlayer(index);
-                chartList.appendChild(div);
+                div.onclick = () => openPlayer(realIndex);
+                comingSoonList.appendChild(div);
             });
         }
 
@@ -440,7 +500,7 @@
         document.getElementById('btn-prev').onclick = playPrev;
         audio.addEventListener('ended', playNext);
 
-        // ========== 재생바 드래그 최적화 로직 ==========
+        // ========== 재생바 드래그 로직 수정 (터치 영역 확대) ==========
         audio.addEventListener('timeupdate', () => {
             if (!isDragging) {
                 const { currentTime, duration } = audio;
