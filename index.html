@@ -19,19 +19,23 @@
             background-color: #030712;
         }
         
-        /* 로고 폰트 */
+        /* 로고 전용 폰트 */
         .font-logo {
             font-family: 'Hakgyoansim Dunggeunmiso', sans-serif;
             font-weight: 700; 
         }
         
-        /* LP 회전 */
+        /* LP 회전 애니메이션 */
         @keyframes spin-lp {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-        .spinning {
+        .lp-animation {
             animation: spin-lp 10s linear infinite;
+            animation-play-state: paused;
+        }
+        .lp-animation.running {
+            animation-play-state: running;
         }
         
         .scrollbar-hide::-webkit-scrollbar { display: none; }
@@ -59,8 +63,8 @@
             visibility: hidden;
             transition: opacity 0.8s ease-out, visibility 0.8s;
         }
-
-        /* 🔥 [버그 수정] 부팅 게이지 애니메이션 강제 적용 */
+        
+        /* 부팅 게이지 애니메이션 강제 */
         #boot-progress {
             width: 0%;
             transition: width 3s cubic-bezier(0.22, 1, 0.36, 1);
@@ -68,13 +72,35 @@
         .progress-full {
             width: 100% !important;
         }
+
+        /* ✨ 배경 밴딩 방지 노이즈 */
+        .bg-noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.07;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
     </style>
 </head>
 <body class="text-white overflow-hidden select-none h-[100dvh] w-screen fixed bg-[#121212]">
 
+    <!-- 배경 이미지 (그라데이션 제거, 순수 블러 이미지 사용) -->
+    <div class="absolute inset-0 z-[-1] pointer-events-none overflow-hidden">
+        <!-- 배경 이미지 -->
+        <img id="bg-image" src="./cover.jpg" class="w-full h-full object-cover opacity-40 blur-3xl scale-125 transition-opacity duration-1000" onerror="this.style.opacity='0'">
+        <!-- 노이즈 필터 (밴딩 방지) -->
+        <div class="bg-noise"></div>
+        <!-- 전체적인 어두운 톤 보정 (그라데이션 아님) -->
+        <div class="absolute inset-0 bg-black/30"></div>
+    </div>
+
     <!-- ==================== 0. 인트로 화면 ==================== -->
     <div id="boot-screen" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center cursor-pointer">
-        <!-- 로고 -->
         <div class="mb-12 flex items-center gap-3 scale-125">
             <div class="text-sky-400 flex items-center justify-center">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -89,14 +115,9 @@
                 enjoy studio
             </h1>
         </div>
-        
-        <!-- 로딩 바 -->
         <div class="w-48 h-1 bg-[#333] rounded-full overflow-hidden mb-6">
-            <!-- 클래스로 제어하여 애니메이션 보장 -->
             <div id="boot-progress" class="h-full bg-white rounded-full"></div>
         </div>
-        
-        <!-- 터치 유도 문구 -->
         <p id="touch-hint" class="text-white/50 text-xs opacity-0 transition-opacity duration-500 font-medium tracking-widest animate-pulse">
             화면을 터치하면 시작됩니다
         </p>
@@ -120,7 +141,7 @@
     <div id="home-screen" class="relative z-10 h-full flex flex-col opacity-0 transition-opacity duration-1000">
         
         <!-- 상단 네비게이션 -->
-        <div class="px-6 pt-8 pb-4 flex justify-between items-center bg-[#121212]">
+        <div class="px-6 pt-8 pb-4 flex justify-between items-center">
             <div class="flex items-center gap-2"> 
                 <div class="text-sky-400 flex items-center justify-center">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -146,7 +167,7 @@
                 <p class="text-sm text-sky-400 font-bold mb-4">New Album</p>
                 <div class="flex gap-4 overflow-x-auto scrollbar-hide pr-6">
                     <!-- 곡 1: 빛 -->
-                    <div class="flex-shrink-0 w-40 group cursor-pointer" onclick="openPlayer(0)">
+                    <div class="flex-shrink-0 w-40 group cursor-pointer" id="main-album-card">
                         <div class="w-40 h-40 rounded-2xl overflow-hidden bg-gray-800 mb-3 shadow-lg relative">
                             <img src="./cover.jpg" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.style.display='none'">
                             <div class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -181,8 +202,8 @@
         </div>
 
         <!-- 🔥 미니 플레이어 -->
-        <div id="mini-player" class="absolute bottom-0 left-0 right-0 bg-[#1E1E1E]/95 backdrop-blur-xl border-t border-white/5 px-4 pt-3 pb-safe cursor-pointer translate-y-full transition-transform duration-300 z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.3)]" onclick="openPlayer(currentIdx)">
-            <div class="flex items-center justify-between mb-1">
+        <div id="mini-player" class="absolute bottom-0 left-0 right-0 bg-[#1E1E1E]/95 backdrop-blur-xl border-t border-white/5 px-4 pt-3 pb-safe cursor-pointer translate-y-full transition-transform duration-300 z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.3)]">
+            <div class="flex items-center justify-between mb-1 pointer-events-none"> <!-- 내부 클릭 방지 후 부모에서 처리 -->
                 <div class="flex items-center gap-3">
                     <div class="w-11 h-11 rounded-lg overflow-hidden bg-gray-800 relative shadow-inner">
                         <img id="mini-cover" src="./cover.jpg" class="w-full h-full object-cover">
@@ -192,8 +213,8 @@
                         <p id="mini-artist" class="text-xs text-gray-400 truncate">엔쪽이 OST Part.2</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-4 pr-2">
-                    <button id="mini-play-btn" class="w-9 h-9 flex items-center justify-center bg-white text-black rounded-full shadow-md active:scale-90 transition-transform" onclick="event.stopPropagation(); togglePlay();">
+                <div class="flex items-center gap-4 pr-2 pointer-events-auto"> <!-- 버튼만 클릭 가능하게 -->
+                    <button id="mini-play-btn" class="w-9 h-9 flex items-center justify-center bg-white text-black rounded-full shadow-md active:scale-90 transition-transform">
                         <svg id="mini-icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                         <svg id="mini-icon-pause" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                     </button>
@@ -208,10 +229,10 @@
 
     <!-- ==================== 2. 전체 플레이어 화면 ==================== -->
     <div id="player-screen" class="fixed inset-0 z-50 bg-[#0a0a0a] transform translate-y-full transition-transform duration-500 flex flex-col h-[100dvh]">
-        <!-- 배경 블러 -->
-        <div class="absolute inset-0 z-0 opacity-40 pointer-events-none">
-            <img id="player-bg-image" src="./cover.jpg" class="w-full h-full object-cover blur-3xl scale-150 brightness-75">
-            <div class="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]"></div>
+        <!-- 플레이어용 배경 (같은 이미지 공유) -->
+        <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+             <img id="player-bg-image" src="./cover.jpg" class="w-full h-full object-cover blur-3xl scale-150 brightness-50">
+             <div class="bg-noise"></div>
         </div>
 
         <!-- 상단바 -->
@@ -233,7 +254,7 @@
             </div>
 
             <div class="relative w-full max-w-[320px] aspect-square mb-auto mt-4 group">
-                <div id="lp-disk" class="w-full h-full rounded-full shadow-[0_30px_60px_-12px_rgba(0,0,0,0.8)] border-[4px] border-[#1a1a1a] relative bg-[#111] overflow-hidden ring-1 ring-white/10">
+                <div id="lp-disk" class="w-full h-full rounded-full shadow-[0_30px_60px_-12px_rgba(0,0,0,0.8)] border-[4px] border-[#1a1a1a] relative bg-[#111] overflow-hidden ring-1 ring-white/10 lp-animation">
                     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] rounded-full overflow-hidden border-4 border-[#222] z-10 bg-gray-800">
                         <img id="cover-image" src="./cover.jpg" class="w-full h-full object-cover opacity-90">
                     </div>
@@ -254,7 +275,7 @@
                 </button>
             </div>
 
-            <!-- 진행 바 (터치 영역 확대 및 CSS 제어) -->
+            <!-- 진행 바 -->
             <div class="w-full mb-4 relative h-10 flex items-center justify-center" id="progress-container">
                 <div class="absolute left-0 right-0 h-1 bg-white/10 rounded-full overflow-hidden pointer-events-none">
                     <div id="progress-fill" class="absolute top-0 left-0 h-full bg-white rounded-full smooth-transition group-hover:bg-sky-400" style="width: 0%"></div>
@@ -323,6 +344,7 @@
             const comingSoonList = document.getElementById('coming-soon-list');
             const playerScreen = document.getElementById('player-screen');
             const miniPlayer = document.getElementById('mini-player');
+            const miniPlayBtn = document.getElementById('mini-play-btn');
             const errorBox = document.getElementById('error-box');
             const bootScreen = document.getElementById('boot-screen');
             const bootProgress = document.getElementById('boot-progress');
@@ -347,13 +369,14 @@
             const timeCurr = document.getElementById('current-time');
             const timeDur = document.getElementById('duration');
             const playerBgImage = document.getElementById('player-bg-image');
+            const mainAlbumCard = document.getElementById('main-album-card');
 
             // 1. 부팅 애니메이션 시작
             setTimeout(() => {
-                bootProgress.classList.add('progress-full'); // CSS 클래스로 강제 적용
+                bootProgress.classList.add('progress-full');
             }, 100);
 
-            // 2. 부팅 완료 및 홈 진입 (3초 후)
+            // 2. 부팅 완료 및 홈 진입
             const enterHome = () => {
                 bootScreen.classList.add('fade-out');
                 homeScreen.classList.remove('opacity-0');
@@ -365,7 +388,6 @@
                     playPromise
                         .then(() => enterHome())
                         .catch(e => {
-                            // 자동 재생 막힘 -> 터치 유도
                             touchHint.classList.remove('opacity-0');
                             bootScreen.addEventListener('click', () => {
                                 bootSound.play().catch(() => {}); 
@@ -378,13 +400,7 @@
             };
 
             setTimeout(tryEnterHome, 3000);
-
-            // 안전장치: 4.5초 지나도 안 넘어가면 강제 이동
-            setTimeout(() => {
-                if (!bootScreen.classList.contains('fade-out')) {
-                    enterHome();
-                }
-            }, 4500);
+            setTimeout(() => { if (!bootScreen.classList.contains('fade-out')) enterHome(); }, 4500);
 
 
             // 팝업 로직
@@ -411,7 +427,7 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
                     </button>
                 `;
-                div.onclick = () => openPlayer(0);
+                div.addEventListener('click', () => openPlayer(0));
                 chartList.appendChild(div);
             };
 
@@ -432,7 +448,7 @@
                         <h3 class="text-sm font-bold text-white truncate">${song.title}</h3>
                         <p class="text-[10px] text-gray-400 truncate font-medium">${song.artist}</p>
                     `;
-                    div.onclick = () => showPopup();
+                    div.addEventListener('click', showPopup);
                     comingSoonList.appendChild(div);
                 });
             };
@@ -451,7 +467,8 @@
                 errorBox.classList.add('hidden');
             };
 
-            window.openPlayer = (index) => {
+            // 전역 함수 대신 내부 함수로 정의하고 이벤트로 연결
+            const openPlayer = (index) => {
                 if (currentIdx === index) {
                     playerScreen.classList.remove('translate-y-full');
                     return;
@@ -462,6 +479,12 @@
                 miniPlayer.classList.remove('translate-y-full');
                 setTimeout(() => togglePlay(true), 300);
             };
+
+            // 이벤트 연결
+            mainAlbumCard.addEventListener('click', () => openPlayer(0));
+            miniPlayer.addEventListener('click', () => {
+                playerScreen.classList.remove('translate-y-full');
+            });
 
             document.getElementById('btn-minimize').onclick = () => {
                 playerScreen.classList.add('translate-y-full');
@@ -486,27 +509,32 @@
                 if (playing) {
                     iconPlay.classList.add('hidden'); iconPause.classList.remove('hidden');
                     miniIconPlay.classList.add('hidden'); miniIconPause.classList.remove('hidden');
-                    lpDisk.classList.add('spinning');
+                    lpDisk.classList.add('running');
                 } else {
                     iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden');
                     miniIconPlay.classList.remove('hidden'); miniIconPause.classList.add('hidden');
-                    lpDisk.classList.remove('spinning');
+                    lpDisk.classList.remove('running');
                 }
             };
 
-            // 이벤트 리스너
-            btnPlay.onclick = () => togglePlay();
-            document.getElementById('btn-next').onclick = () => {
-                audio.currentTime = 0; togglePlay(true); // 곡 하나라 처음으로
-            };
-            document.getElementById('btn-prev').onclick = () => {
+            // 이벤트 리스너 (직접 연결)
+            btnPlay.addEventListener('click', () => togglePlay());
+            miniPlayBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // 부모 클릭 방지
+                togglePlay();
+            });
+            
+            document.getElementById('btn-next').addEventListener('click', () => {
                 audio.currentTime = 0; togglePlay(true);
-            };
+            });
+            document.getElementById('btn-prev').addEventListener('click', () => {
+                audio.currentTime = 0; togglePlay(true);
+            });
             audio.addEventListener('ended', () => {
                  audio.currentTime = 0; togglePlay(true);
             });
 
-            // 재생바 터치 로직 (커스텀)
+            // 재생바 터치 로직
             function getClientX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
             
             function updateProgressVisuals(percent) {
@@ -559,7 +587,7 @@
                     const percent = (audio.currentTime / audio.duration) * 100;
                     progressFill.style.width = `${percent}%`;
                     progressHandle.style.left = `${percent}%`;
-                    miniProgress.style.width = `${percent}%`;
+                    document.getElementById('mini-progress').style.width = `${percent}%`; // 미니 플레이어 바 업데이트
                     seekSlider.value = percent;
                     timeCurr.innerText = formatTime(audio.currentTime);
                     timeDur.innerText = formatTime(audio.duration);
