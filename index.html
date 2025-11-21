@@ -358,15 +358,15 @@
         // ==================== 안전한 실행 보장 ====================
         document.addEventListener('DOMContentLoaded', () => {
 
-            // 🎵 업데이트된 노래 데이터 (힘내라 -> songs로 이동)
+            // 🎵 업데이트된 노래 데이터 (빵글빵글 빵글송 커버 이미지 변경됨)
             const songs = [
                 { id: 1, title: "빛", artist: "엔쪽이 OST Part.2", src: "./music.mp3", cover: "./cover.jpg" },
-                { id: 2, title: "힘내라", artist: "엔쪽이 OST Part.1", src: "./music2.mp3", cover: "./cover.jpg" } // 새 노래 (music2.mp3 업로드 필요)
+                { id: 2, title: "힘내라", artist: "엔쪽이 OST Part.1", src: "./music2.mp3", cover: "./cover.jpg" },
+                { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg" } // 이미지 파일명을 cover2.jpg로 변경
             ];
             
             const comingSoonSongs = [
-                // 힘내라는 위로 이동함
-                { id: 3, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", cover: "./cover3.jpg" }
+                { id: 4, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", cover: "./cover3.jpg" }
             ];
 
             let currentIdx = 0;
