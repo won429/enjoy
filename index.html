@@ -1,326 +1,679 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward, ListMusic, AlertCircle, Shuffle, Repeat } from 'lucide-react'; // Shuffle, Repeat 아이콘 추가
-
-const App = () => {
-  // 🎵 기본 플레이리스트
-  const defaultPlaylist = [
-    {
-      id: 1,
-      title: "빛", 
-      artist: "엔쪽이 OST Part.1",
-      src: "https://files.catbox.moe/77ewj6.mp3", 
-      cover: "https://files.catbox.moe/gcuicg.jpg"
-    }
-  ];
-
-  const [playlist, setPlaylist] = useState(defaultPlaylist);
-  const [currentSongIndex, setCurrentSongIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [showPlaylist, setShowPlaylist] = useState(false);
-  const [errorMsg, setErrorMsg] = useState(""); 
-  const [isShuffle, setIsShuffle] = useState(false); // 셔플 상태
-  const [isRepeat, setIsRepeat] = useState(false); // 반복 재생 상태
-  
-  const audioRef = useRef(null);
-  const currentSong = playlist[currentSongIndex];
-
-  // 곡 변경 시 에러 초기화 및 자동 재생 시도
-  useEffect(() => {
-    setErrorMsg(""); 
-    if (audioRef.current) {
-      audioRef.current.load(); 
-      if (isPlaying) {
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(e => {
-            console.log("자동 재생 차단:", e);
-            setIsPlaying(false);
-          });
-        }
-      }
-    }
-  }, [currentSongIndex, playlist]);
-
-  // 재생 상태 변경
-  useEffect(() => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(e => console.error("재생 실패:", e));
-        }
-      } else {
-        audioRef.current.pause();
-      }
-    }
-  }, [isPlaying]);
-
-  // 에러 핸들러
-  const handleAudioError = (e) => {
-    console.error("오디오 로드 에러:", e);
-    setIsPlaying(false);
-    if (currentSong.src.includes("drive.google.com")) {
-        setErrorMsg("구글 드라이브 링크는 재생불가. 캣박스를 이용하세요.");
-    } else {
-        setErrorMsg("음원 주소를 확인해주세요.");
-    }
-  };
-
-  // 이전/다음 곡
-  const playNext = () => {
-    setCurrentSongIndex((prev) => (prev + 1) % playlist.length);
-    setIsPlaying(true);
-  };
-  const playPrev = () => {
-    setCurrentSongIndex((prev) => (prev - 1 + playlist.length) % playlist.length);
-    setIsPlaying(true);
-  };
-
-  // 시간 업데이트
-  const onTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-      setDuration(audioRef.current.duration || 0);
-    }
-  };
-
-  const handleProgressChange = (e) => {
-    const newTime = e.target.value;
-    audioRef.current.currentTime = newTime;
-    setCurrentTime(newTime);
-  };
-
-  const formatTime = (time) => {
-    if (isNaN(time)) return "00:00";
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-6 font-sans overflow-hidden relative select-none">
-      
-      {/* 회전 애니메이션 스타일 */}
-      <style>{`
-        @keyframes spin-lp {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-
-      {/* 배경 블러 효과 */}
-      <div className="absolute inset-0">
-        <img 
-            src={currentSong.cover} 
-            alt="bg" 
-            className="w-full h-full object-cover opacity-30 blur-3xl scale-125 transition-all duration-1000"
-        />
-        <div className="absolute inset-0 bg-black/40"></div>
-      </div>
-
-      <div className="bg-white/5 backdrop-blur-2xl border border-white/10 p-8 rounded-[40px] shadow-2xl w-full max-w-md relative z-10 overflow-hidden flex flex-col min-h-[640px]">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>enjoy studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 폰트 추가: 학교안심 둥근미소 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fonts-archive/HakgyoansimDunggeunmiso/HakgyoansimDunggeunmiso.css" type="text/css"/>
+    
+    <style>
+        /* 기본 폰트 */
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
         
-        {/* 상단 헤더 (재생목록 버튼 배치) */}
-        <div className="flex justify-between items-center mb-8 relative">
-          {/* 왼쪽: 빈 공간 (균형을 위해) */}
-          <div className="w-10"></div>
-          
-          {/* 중앙: NOW PLAYING */}
-          <div className="flex items-center gap-2 px-4 py-1 bg-white/5 rounded-full border border-white/5">
-            <span className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-green-400 animate-pulse' : 'bg-white/30'}`}></span>
-            <span className="text-[10px] font-bold tracking-[0.2em] text-white/80">NOW PLAYING</span>
-          </div>
-          
-          {/* 오른쪽: 재생목록 버튼 (원래 위치로 이동) */}
-          <button 
-            onClick={() => setShowPlaylist(!showPlaylist)}
-            className={`p-2 rounded-full transition-colors ${showPlaylist ? 'bg-white text-black shadow-lg' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
-          >
-            <ListMusic size={22} />
-          </button>
-        </div>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, "Noto Sans KR", sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            background-color: #030712;
+        }
+        
+        /* 로고 전용 폰트 */
+        .font-logo {
+            font-family: 'Hakgyoansim Dunggeunmiso', sans-serif;
+            font-weight: 700; 
+        }
+        
+        /* LP 회전 애니메이션 */
+        @keyframes spin-lp {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .lp-animation {
+            animation: spin-lp 10s linear infinite;
+            animation-play-state: paused; /* 기본 멈춤 */
+        }
+        .lp-animation.running {
+            animation-play-state: running; /* 재생 시 회전 */
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-        {/* 에러 메시지 */}
-        {errorMsg && (
-            <div className="bg-red-500/90 text-white text-xs p-3 rounded-xl mb-4 flex items-center gap-2 justify-center animate-bounce">
-                <AlertCircle size={16} /> {errorMsg}
-            </div>
-        )}
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        {/* 메인 컨텐츠 영역 */}
-        {!showPlaylist ? (
-            <div className="flex-1 flex flex-col animate-fade-in">
-                {/* 앨범 아트 (회전하는 LP판 스타일 강화) */}
-                <div className="relative w-72 h-72 mx-auto mb-10 group">
-                    <div 
-                        className="w-full h-full rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.5)] border-8 border-gray-900 overflow-hidden relative bg-gray-900"
-                        style={{ 
-                            animation: isPlaying ? 'spin-lp 10s linear infinite' : 'none',
-                        }}
-                    >   
-                        {/* 앨범 커버 이미지 (LP 라벨처럼 작게) */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full overflow-hidden border-4 border-gray-800/50 z-10">
-                             <img src={currentSong.cover} alt="Album Art" className="w-full h-full object-cover opacity-90" />
-                        </div>
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+        
+        /* 재생바 트랜지션 */
+        .smooth-transition { transition: width 0.1s linear, left 0.1s linear; }
+        .no-transition { transition: none !important; }
 
-                        {/* LP판 질감 및 그루브 */}
-                        <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.05),rgba(255,255,255,0.1))] pointer-events-none"></div>
-                        <div className="absolute inset-0 rounded-full border-[2px] border-white/5 pointer-events-none" style={{clipPath: 'circle(48%)'}}></div>
-                        <div className="absolute inset-0 rounded-full border-[2px] border-white/5 pointer-events-none" style={{clipPath: 'circle(40%)'}}></div>
-                        <div className="absolute inset-0 rounded-full border-[2px] border-white/5 pointer-events-none" style={{clipPath: 'circle(32%)'}}></div>
+        /* 슬라이더 기본 스타일 제거 */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            box-shadow: none;
+            border: none;
+        }
 
-                        
-                        {/* 중앙 구멍 (스핀들) */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white/80 rounded-full border-2 border-gray-400 shadow-inner z-20">
-                        </div>
-                    </div>
+        /* 인트로 페이드 아웃 */
+        .fade-out {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+        
+        /* 부팅 게이지 애니메이션 */
+        #boot-progress {
+            width: 0%;
+            transition: width 3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .progress-full {
+            width: 100% !important;
+        }
 
-                    {/* 중앙 재생 버튼 (정지 시에만 표시) */}
-                    {!isPlaying && (
-                        <div 
-                            className="absolute inset-0 flex items-center justify-center z-30 cursor-pointer"
-                            onClick={() => setIsPlaying(true)}
-                        >
-                            <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-white/30 transition-all hover:scale-105">
-                                <Play size={36} fill="white" className="text-white ml-1" />
-                            </div>
-                        </div>
-                    )}
-                </div>
+        /* 배경 노이즈 */
+        .bg-noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.07;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
 
-                {/* 곡 정보 */}
-                <div className="text-center mb-8 px-4">
-                    <h2 className="text-2xl font-bold text-white mb-2 truncate drop-shadow-md tracking-tight">
-                        {currentSong.title}
-                    </h2>
-                    <p className="text-white/50 text-sm font-medium tracking-wide uppercase">
-                        {currentSong.artist}
-                    </p>
-                </div>
+        /* LP 질감 */
+        .lp-texture {
+            background: repeating-radial-gradient(
+                #111 0, 
+                #111 2px, 
+                #1a1a1a 3px, 
+                #111 4px
+            );
+        }
+    </style>
+</head>
+<body class="text-white overflow-hidden select-none h-[100dvh] w-screen fixed bg-[#121212]">
 
-                {/* 진행 바 */}
-                <div className="mb-4 px-2">
-                    <div className="flex justify-between text-[10px] text-white/40 mb-2 font-mono tracking-wider">
-                        <span>{formatTime(currentTime)}</span>
-                        <span>{formatTime(duration)}</span>
-                    </div>
-                    <div className="relative h-1.5 bg-white/10 rounded-full cursor-pointer group py-2" onClick={(e) => {
-                         const rect = e.currentTarget.getBoundingClientRect();
-                         const percent = (e.clientX - rect.left) / rect.width;
-                         if(audioRef.current) audioRef.current.currentTime = percent * duration;
-                    }}>
-                         {/* 실제 바 라인 */}
-                        <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                             <div 
-                                className="h-full bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"
-                                style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
-                            ></div>
-                        </div>
-                        {/* 드래그 핸들 (호버시 표시) */}
-                        <div 
-                            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                            style={{ left: `${duration ? (currentTime / duration) * 100 : 0}%` }}
-                        ></div>
-                        
-                        <input
-                            type="range"
-                            min="0"
-                            max={duration || 100}
-                            value={currentTime}
-                            onChange={handleProgressChange}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                    </div>
-                </div>
-            </div>
-        ) : (
-            /* 재생목록 화면 */
-            <div className="flex-1 overflow-y-auto mb-6 pr-2 animate-fade-in">
-                <h3 className="text-white/90 text-lg font-bold mb-6 px-2 flex items-center gap-2">
-                    <ListMusic size={20} /> Playlist
-                </h3>
-                <div className="space-y-3">
-                    {playlist.map((song, idx) => (
-                        <div 
-                            key={song.id}
-                            onClick={() => { setCurrentSongIndex(idx); setIsPlaying(true); }}
-                            className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all ${currentSongIndex === idx ? 'bg-white/10 border border-white/10' : 'hover:bg-white/5 border border-transparent'}`}
-                        >
-                            <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800 shadow-lg">
-                                <img src={song.cover} className="w-full h-full object-cover" />
-                                {currentSongIndex === idx && isPlaying && (
-                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping"></div>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h4 className={`text-sm font-bold truncate ${currentSongIndex === idx ? 'text-white' : 'text-white/70'}`}>
-                                    {song.title}
-                                </h4>
-                                <p className="text-xs text-white/40 truncate mt-1">{song.artist}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )}
-
-        {/* 하단 컨트롤 바 (셔플, 이전, 재생, 다음, 반복 버튼) */}
-        <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between relative px-4">
-            
-            {/* 셔플 버튼 */}
-            <button 
-                onClick={() => setIsShuffle(!isShuffle)}
-                className={`p-2 rounded-full transition-colors ${isShuffle ? 'text-green-400 hover:text-green-300' : 'text-white/40 hover:text-white'}`}
-            >
-                <Shuffle size={24} />
-            </button>
-
-            {/* 이전 곡 버튼 */}
-            <button onClick={playPrev} className="text-white/40 hover:text-white transition-colors active:scale-90 p-2">
-                <SkipBack size={32} />
-            </button>
-            
-            {/* 재생/일시정지 버튼 */}
-            <button 
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="w-16 h-16 flex items-center justify-center bg-white text-black rounded-full shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-all active:scale-95 active:shadow-none"
-            >
-                {isPlaying ? <Pause size={36} fill="currentColor" /> : <Play size={36} fill="currentColor" className="ml-1" />}
-            </button>
-            
-            {/* 다음 곡 버튼 */}
-            <button onClick={playNext} className="text-white/40 hover:text-white transition-colors active:scale-90 p-2">
-                <SkipForward size={32} />
-            </button>
-
-            {/* 반복 재생 버튼 */}
-            <button 
-                onClick={() => setIsRepeat(!isRepeat)}
-                className={`p-2 rounded-full transition-colors ${isRepeat ? 'text-green-400 hover:text-green-300' : 'text-white/40 hover:text-white'}`}
-            >
-                <Repeat size={24} />
-            </button>
-
-        </div>
-
-        {/* 오디오 태그 */}
-        <audio 
-          ref={audioRef} 
-          src={currentSong.src} 
-          onTimeUpdate={onTimeUpdate} 
-          onEnded={playNext}
-          onError={handleAudioError}
-          crossOrigin="anonymous"
-          volume={1.0} // 볼륨 조절 기능이 없어졌으므로 최대 볼륨으로 고정
-        />
-
-      </div>
+    <!-- 배경 이미지 -->
+    <div class="absolute inset-0 z-[-1] pointer-events-none overflow-hidden">
+        <img id="bg-image" src="./cover.jpg" class="w-full h-full object-cover opacity-40 blur-3xl scale-125 transition-opacity duration-1000" onerror="this.style.opacity='0'">
+        <div class="bg-noise"></div>
+        <div class="absolute inset-0 bg-black/30"></div>
     </div>
-  );
-};
 
-export default App;
+    <!-- ==================== 0. 인트로 화면 ==================== -->
+    <div id="boot-screen" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center cursor-pointer">
+        <div class="mb-12 flex items-center gap-3 scale-125">
+            <div class="text-sky-400 flex items-center justify-center">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 10v4"></path>
+                    <path d="M9 7v10"></path>
+                    <path d="M13 4v16"></path>
+                    <path d="M17 8v8"></path>
+                    <path d="M21 11v2"></path>
+                </svg>
+            </div>
+            <h1 class="font-logo tracking-tight text-white text-3xl lowercase pt-1">
+                enjoy studio
+            </h1>
+        </div>
+        <div class="w-48 h-1 bg-[#333] rounded-full overflow-hidden mb-6">
+            <div id="boot-progress" class="h-full bg-white rounded-full"></div>
+        </div>
+        <p id="touch-hint" class="text-white/50 text-xs opacity-0 transition-opacity duration-500 font-medium tracking-widest animate-pulse">
+            화면을 터치하면 시작됩니다
+        </p>
+    </div>
+
+    <!-- ==================== 팝업 (모달) ==================== -->
+    <div id="popup-modal" class="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm hidden flex items-center justify-center px-6">
+        <div class="bg-[#1E1E1E] rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl border border-white/10 scale-in">
+            <div class="w-12 h-12 bg-sky-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-sky-400">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Coming Soon</h3>
+            <p class="text-white/60 text-sm mb-6">이 곡은 곧 공개될 예정입니다.<br>조금만 기다려주세요!</p>
+            <button id="popup-close" class="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors">
+                닫기
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== 1. 홈 화면 ==================== -->
+    <div id="home-screen" class="relative z-10 h-full flex flex-col opacity-0 transition-opacity duration-1000">
+        
+        <!-- 상단 네비게이션 -->
+        <div class="px-6 pt-8 pb-4 flex justify-between items-center">
+            <div class="flex items-center gap-2"> 
+                <div class="text-sky-400 flex items-center justify-center">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 10v4"></path>
+                        <path d="M9 7v10"></path>
+                        <path d="M13 4v16"></path>
+                        <path d="M17 8v8"></path>
+                        <path d="M21 11v2"></path>
+                    </svg>
+                </div>
+                <h1 class="font-logo tracking-tight text-white text-2xl lowercase pt-1">
+                    enjoy studio
+                </h1>
+            </div>
+            <div class="w-6"></div>
+        </div>
+
+        <!-- 메인 스크롤 영역 -->
+        <div class="flex-1 overflow-y-auto scrollbar-hide pb-32">
+            
+            <!-- (1) New Album -->
+            <div class="mb-8 pl-6">
+                <p class="text-sm text-sky-400 font-bold mb-4">New Album</p>
+                <div class="flex gap-4 overflow-x-auto scrollbar-hide pr-6">
+                    <!-- 곡 1: 빛 -->
+                    <div class="flex-shrink-0 w-40 group cursor-pointer" id="main-album-card">
+                        <div class="w-40 h-40 rounded-2xl overflow-hidden bg-gray-800 mb-3 shadow-lg relative">
+                            <img src="./cover.jpg" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.style.display='none'">
+                            <div class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <h3 class="text-base font-bold text-white truncate">빛</h3>
+                        <p class="text-xs text-gray-400 truncate font-medium">엔쪽이 OST Part.2</p>
+                        <div class="mt-3 inline-flex items-center gap-2 bg-sky-500 text-white px-3 py-1.5 rounded-full font-bold text-xs hover:bg-sky-400 transition-colors shadow-lg shadow-sky-500/20">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            Play Now
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- (2) 실시간 차트 -->
+            <div class="px-6 mb-10">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold">실시간 차트 TOP 100</h3>
+                </div>
+                <div id="chart-list" class="space-y-1"></div>
+            </div>
+
+            <!-- (3) Coming Soon -->
+            <div class="pl-6 mb-8">
+                <p class="text-sm text-sky-400 font-bold mb-4">Coming Soon</p>
+                <div class="flex gap-4 overflow-x-auto scrollbar-hide pr-6" id="coming-soon-list"></div>
+            </div>
+        </div>
+
+        <!-- 🔥 미니 플레이어 -->
+        <div id="mini-player" class="absolute bottom-0 left-0 right-0 bg-[#1E1E1E]/95 backdrop-blur-xl border-t border-white/5 px-4 pt-3 pb-safe cursor-pointer translate-y-full transition-transform duration-300 z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.3)]">
+            <div class="flex items-center justify-between mb-1 pointer-events-none"> 
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-lg overflow-hidden bg-gray-800 relative shadow-inner">
+                        <img id="mini-cover" src="./cover.jpg" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex flex-col justify-center">
+                        <h4 id="mini-title" class="text-sm font-bold text-white truncate max-w-[150px]">빛</h4>
+                        <p id="mini-artist" class="text-xs text-gray-400 truncate">엔쪽이 OST Part.2</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 pr-2 pointer-events-auto"> 
+                    <button id="mini-play-btn" class="w-9 h-9 flex items-center justify-center bg-white text-black rounded-full shadow-md active:scale-90 transition-transform">
+                        <svg id="mini-icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        <svg id="mini-icon-pause" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="absolute top-0 left-0 right-0 h-[2px] bg-white/5">
+                <div id="mini-progress" class="h-full bg-sky-400 w-0 transition-all duration-300"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==================== 2. 전체 플레이어 화면 ==================== -->
+    <div id="player-screen" class="fixed inset-0 z-50 bg-[#0a0a0a] transform translate-y-full transition-transform duration-500 flex flex-col h-[100dvh]">
+        <!-- 플레이어용 배경 -->
+        <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+             <img id="player-bg-image" src="./cover.jpg" class="w-full h-full object-cover blur-3xl scale-150 brightness-50">
+             <div class="bg-noise"></div>
+        </div>
+
+        <!-- 상단바 -->
+        <div class="relative z-10 flex justify-between items-center p-6 pt-10">
+            <button id="btn-minimize" class="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <span class="text-[10px] font-bold tracking-[0.2em] text-white/50">NOW PLAYING</span>
+            <button class="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+            </button>
+        </div>
+
+        <!-- 플레이어 메인 -->
+        <div class="relative z-10 flex-1 flex flex-col items-center justify-center px-8 pb-8">
+             <div id="error-box" class="hidden bg-red-500/90 text-white text-xs p-3 rounded-xl mb-8 text-center animate-pulse w-full max-w-xs">
+                <p>파일을 찾을 수 없습니다.</p>
+                <p class="mt-1 opacity-75 text-[10px]">music.mp3 와 cover.jpg 확인 필요</p>
+            </div>
+
+            <div class="relative w-full max-w-[320px] aspect-square mb-auto mt-4 group">
+                
+                <!-- 💿 톤암 (Tone Arm) -->
+                <div id="tone-arm" class="absolute -top-8 -right-4 w-24 h-48 z-20 origin-[70%_15%] transition-transform duration-700 ease-in-out" style="transform: rotate(-25deg);">
+                    <svg viewBox="0 0 100 200" class="w-full h-full drop-shadow-2xl">
+                        <circle cx="70" cy="30" r="12" fill="#444" stroke="#222" stroke-width="2" />
+                        <circle cx="70" cy="30" r="5" fill="#111" />
+                        <path d="M70 30 L60 160" stroke="#888" stroke-width="6" stroke-linecap="round" />
+                        <rect x="50" y="155" width="20" height="30" rx="4" fill="#333" transform="rotate(10 60 170)" />
+                        <path d="M58 180 L56 190" stroke="#aaa" stroke-width="2" />
+                    </svg>
+                </div>
+
+                <!-- 💿 LP 디스크 (질감 추가됨) -->
+                <div id="lp-disk" class="w-full h-full rounded-full shadow-[0_30px_60px_-12px_rgba(0,0,0,0.8)] border-[4px] border-[#1a1a1a] relative bg-[#111] overflow-hidden ring-1 ring-white/10 lp-animation lp-texture">
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] rounded-full overflow-hidden border-4 border-[#222] z-10 bg-gray-800">
+                        <img id="cover-image" src="./cover.jpg" class="w-full h-full object-cover opacity-90">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none rounded-full"></div>
+                </div>
+            </div>
+
+            <div class="w-full mb-8 flex items-end justify-between">
+                <div class="flex-1 min-w-0 mr-4">
+                    <h2 id="song-title" class="text-2xl font-bold text-white mb-1 truncate scroll-m-0 tracking-tight">빛</h2>
+                    <p id="song-artist" class="text-white/60 text-base font-medium truncate">엔쪽이 OST Part.2</p>
+                </div>
+                <!-- ❤️ 좋아요 버튼 -->
+                <button id="btn-like" class="text-white/40 hover:text-sky-400 transition-all transform active:scale-90 p-2">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                </button>
+            </div>
+
+            <!-- 진행 바 -->
+            <div class="w-full mb-4 relative h-10 flex items-center justify-center" id="progress-container">
+                <div class="absolute left-0 right-0 h-1 bg-white/10 rounded-full overflow-hidden pointer-events-none">
+                    <div id="progress-fill" class="absolute top-0 left-0 h-full bg-white rounded-full smooth-transition group-hover:bg-sky-400" style="width: 0%"></div>
+                </div>
+                <div id="progress-handle" class="absolute h-3 w-3 bg-white rounded-full opacity-0 group-hover:opacity-100 smooth-transition pointer-events-none left-0 -ml-[6px]"></div>
+                <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" style="touch-action: none;">
+            </div>
+            
+            <div class="w-full flex justify-between text-[10px] text-white/40 font-mono font-medium tracking-wider -mt-4">
+                <span id="current-time">00:00</span>
+                <span id="duration">00:00</span>
+            </div>
+
+            <!-- 컨트롤러 (아이콘 수정됨) -->
+            <div class="mt-auto w-full flex justify-between items-center px-4 pb-safe pt-2">
+                <!-- 셔플 (장식) -->
+                <button class="text-white/30 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+                </button>
+
+                <div class="flex items-center gap-6">
+                    <!-- 이전 (아이콘 수정됨) -->
+                    <button id="btn-prev" class="text-white hover:text-sky-400 active:scale-90 transition-all p-2">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
+                    </button>
+                    
+                    <!-- 재생 -->
+                    <button id="btn-play" class="w-16 h-16 flex items-center justify-center bg-white text-black rounded-full shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:scale-105 hover:bg-sky-400 hover:text-white hover:shadow-[0_0_40px_rgba(56,189,248,0.5)] active:scale-95 transition-all duration-300">
+                        <svg id="icon-play" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        <svg id="icon-pause" class="hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                    </button>
+                    
+                    <!-- 다음 (아이콘 수정됨) -->
+                    <button id="btn-next" class="text-white hover:text-sky-400 active:scale-90 transition-all p-2">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+                    </button>
+                </div>
+
+                <!-- 반복 버튼 (기능 추가됨) -->
+                <button id="btn-repeat" class="text-white/30 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 부팅 효과음 -->
+    <audio id="boot-sound" src="./boot.mp3" preload="auto"></audio>
+    <!-- 메인 오디오 -->
+    <audio id="audio" playsinline webkit-playsinline></audio>
+
+    <script>
+        // ==================== 안전한 실행 보장 ====================
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // 데이터
+            const songs = [
+                { id: 1, title: "빛", artist: "엔쪽이 OST Part.2", src: "./music.mp3", cover: "./cover.jpg" }
+            ];
+            const comingSoonSongs = [
+                { id: 2, title: "힘내라", artist: "엔쪽이 OST Part.1", cover: "./cover.jpg" },
+                { id: 3, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", cover: "./cover3.jpg" }
+            ];
+
+            let currentIdx = 0;
+            let isPlaying = false;
+            let isDragging = false; 
+            let isLiked = false; 
+            let isRepeat = false; // 반복 재생 상태
+
+            // DOM 요소
+            const audio = document.getElementById('audio');
+            const bootSound = document.getElementById('boot-sound');
+            const chartList = document.getElementById('chart-list');
+            const comingSoonList = document.getElementById('coming-soon-list');
+            const playerScreen = document.getElementById('player-screen');
+            const miniPlayer = document.getElementById('mini-player');
+            const miniPlayBtn = document.getElementById('mini-play-btn');
+            const errorBox = document.getElementById('error-box');
+            const bootScreen = document.getElementById('boot-screen');
+            const bootProgress = document.getElementById('boot-progress');
+            const homeScreen = document.getElementById('home-screen');
+            const touchHint = document.getElementById('touch-hint');
+            const popupModal = document.getElementById('popup-modal');
+            const popupClose = document.getElementById('popup-close');
+            const btnLike = document.getElementById('btn-like'); 
+            const toneArm = document.getElementById('tone-arm');
+            const btnRepeat = document.getElementById('btn-repeat'); // 반복 버튼
+            
+            const miniCover = document.getElementById('mini-cover');
+            const miniTitle = document.getElementById('mini-title');
+            const miniArtist = document.getElementById('mini-artist');
+            const miniIconPlay = document.getElementById('mini-icon-play');
+            const miniIconPause = document.getElementById('mini-icon-pause');
+            const miniProgress = document.getElementById('mini-progress');
+            const lpDisk = document.getElementById('lp-disk');
+            const btnPlay = document.getElementById('btn-play');
+            const iconPlay = document.getElementById('icon-play');
+            const iconPause = document.getElementById('icon-pause');
+            const progressFill = document.getElementById('progress-fill');
+            const progressHandle = document.getElementById('progress-handle');
+            const seekSlider = document.getElementById('seek-slider');
+            const timeCurr = document.getElementById('current-time');
+            const timeDur = document.getElementById('duration');
+            const playerBgImage = document.getElementById('player-bg-image');
+            const mainAlbumCard = document.getElementById('main-album-card');
+
+            // 1. 부팅 애니메이션 시작
+            setTimeout(() => {
+                bootProgress.classList.add('progress-full');
+            }, 100);
+
+            // 2. 부팅 완료 및 홈 진입
+            const enterHome = () => {
+                bootScreen.classList.add('fade-out');
+                homeScreen.classList.remove('opacity-0');
+            };
+
+            const tryEnterHome = () => {
+                const playPromise = bootSound.play();
+                if (playPromise !== undefined) {
+                    playPromise
+                        .then(() => enterHome())
+                        .catch(e => {
+                            touchHint.classList.remove('opacity-0');
+                            bootScreen.addEventListener('click', () => {
+                                bootSound.play().catch(() => {}); 
+                                enterHome();
+                            }, { once: true });
+                        });
+                } else {
+                    enterHome();
+                }
+            };
+
+            setTimeout(tryEnterHome, 3000);
+            setTimeout(() => { if (!bootScreen.classList.contains('fade-out')) enterHome(); }, 4500);
+
+
+            // 팝업 로직
+            const showPopup = () => popupModal.classList.remove('hidden');
+            popupClose.onclick = () => popupModal.classList.add('hidden');
+            popupModal.onclick = (e) => { if (e.target === popupModal) popupModal.classList.add('hidden'); };
+
+            // 좋아요 버튼 로직
+            btnLike.onclick = () => {
+                isLiked = !isLiked;
+                const svg = btnLike.querySelector('svg');
+                if (isLiked) {
+                    svg.setAttribute('fill', 'currentColor');
+                    btnLike.classList.remove('text-white/40');
+                    btnLike.classList.add('text-sky-400');
+                    btnLike.classList.add('scale-125');
+                    setTimeout(() => btnLike.classList.remove('scale-125'), 200);
+                } else {
+                    svg.setAttribute('fill', 'none');
+                    btnLike.classList.add('text-white/40');
+                    btnLike.classList.remove('text-sky-400');
+                }
+            };
+
+            // 반복 재생 버튼 로직
+            btnRepeat.onclick = () => {
+                isRepeat = !isRepeat;
+                if (isRepeat) {
+                    btnRepeat.classList.remove('text-white/30');
+                    btnRepeat.classList.add('text-sky-400');
+                } else {
+                    btnRepeat.classList.add('text-white/30');
+                    btnRepeat.classList.remove('text-sky-400');
+                }
+            };
+
+            // 렌더링 로직
+            const renderChartList = () => {
+                chartList.innerHTML = '';
+                const song = songs[0]; 
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 active:scale-98 transition-all cursor-pointer group";
+                div.innerHTML = `
+                    <div class="w-6 text-center text-sky-400 text-lg font-bold font-logo">1</div>
+                    <div class="w-12 h-12 rounded-lg bg-gray-800 overflow-hidden relative flex-shrink-0">
+                        <img src="${song.cover}" class="w-full h-full object-cover" onerror="this.style.opacity='0.5'">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-base font-medium text-white truncate">${song.title}</h3>
+                        <p class="text-xs text-gray-400 truncate">${song.artist}</p>
+                    </div>
+                    <button class="text-gray-600 hover:text-white">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                    </button>
+                `;
+                div.addEventListener('click', () => openPlayer(0));
+                chartList.appendChild(div);
+            };
+
+            const renderComingSoonList = () => {
+                comingSoonList.innerHTML = '';
+                comingSoonSongs.forEach((song) => {
+                    const div = document.createElement('div');
+                    div.className = "flex-shrink-0 w-32 group cursor-pointer";
+                    div.innerHTML = `
+                        <div class="w-32 h-32 rounded-xl overflow-hidden bg-gray-800 mb-2 shadow-lg relative">
+                            <img src="${song.cover}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.style.display='none'">
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <h3 class="text-sm font-bold text-white truncate">${song.title}</h3>
+                        <p class="text-[10px] text-gray-400 truncate font-medium">${song.artist}</p>
+                    `;
+                    div.addEventListener('click', showPopup);
+                    comingSoonList.appendChild(div);
+                });
+            };
+
+            // 플레이어 로직
+            const loadSongData = (index) => {
+                const song = songs[index];
+                audio.src = song.src;
+                document.getElementById('song-title').innerText = song.title;
+                document.getElementById('song-artist').innerText = song.artist;
+                document.getElementById('cover-image').src = song.cover;
+                playerBgImage.src = song.cover;
+                miniTitle.innerText = song.title;
+                miniArtist.innerText = song.artist;
+                miniCover.src = song.cover;
+                errorBox.classList.add('hidden');
+            };
+
+            const openPlayer = (index) => {
+                if (currentIdx === index) {
+                    playerScreen.classList.remove('translate-y-full');
+                    return;
+                }
+                currentIdx = index;
+                loadSongData(index);
+                playerScreen.classList.remove('translate-y-full');
+                miniPlayer.classList.remove('translate-y-full');
+                setTimeout(() => togglePlay(true), 300);
+            };
+
+            mainAlbumCard.addEventListener('click', () => openPlayer(0));
+            miniPlayer.addEventListener('click', () => {
+                playerScreen.classList.remove('translate-y-full');
+            });
+
+            document.getElementById('btn-minimize').onclick = () => {
+                playerScreen.classList.add('translate-y-full');
+                miniPlayer.classList.remove('translate-y-full');
+            };
+
+            const togglePlay = (forcePlay = null) => {
+                if (forcePlay === true || audio.paused) {
+                    audio.play().then(() => updateUI(true)).catch(e => {
+                        console.error(e);
+                        errorBox.classList.remove('hidden');
+                        updateUI(false);
+                    });
+                } else {
+                    audio.pause();
+                    updateUI(false);
+                }
+            };
+
+            const updateUI = (playing) => {
+                isPlaying = playing;
+                if (playing) {
+                    iconPlay.classList.add('hidden'); iconPause.classList.remove('hidden');
+                    miniIconPlay.classList.add('hidden'); miniIconPause.classList.remove('hidden');
+                    lpDisk.classList.add('running');
+                    toneArm.style.transform = "rotate(10deg)";
+                } else {
+                    iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden');
+                    miniIconPlay.classList.remove('hidden'); miniIconPause.classList.add('hidden');
+                    lpDisk.classList.remove('running');
+                    toneArm.style.transform = "rotate(-25deg)";
+                }
+            };
+
+            // 이벤트 리스너
+            btnPlay.addEventListener('click', () => togglePlay());
+            miniPlayBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                togglePlay();
+            });
+            
+            document.getElementById('btn-next').addEventListener('click', () => {
+                audio.currentTime = 0; togglePlay(true);
+            });
+            document.getElementById('btn-prev').addEventListener('click', () => {
+                audio.currentTime = 0; togglePlay(true);
+            });
+            
+            // 노래 끝났을 때 처리 (반복 재생 여부 확인)
+            audio.addEventListener('ended', () => {
+                if (isRepeat) {
+                    audio.currentTime = 0;
+                    audio.play();
+                } else {
+                    // 반복 아니면 정지 (UI 업데이트)
+                    togglePlay(false);
+                    audio.currentTime = 0; // 처음으로 되감기
+                }
+            });
+
+            // 재생바 터치 로직
+            function getClientX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
+            
+            function updateProgressVisuals(percent) {
+                progressFill.style.width = `${percent}%`;
+                progressHandle.style.left = `${percent}%`;
+                if (audio.duration) timeCurr.innerText = formatTime((percent / 100) * audio.duration);
+            }
+
+            function onScrub(e) {
+                const rect = document.getElementById('progress-container').getBoundingClientRect();
+                const clientX = getClientX(e);
+                let percent = ((clientX - rect.left) / rect.width) * 100;
+                return Math.max(0, Math.min(100, percent));
+            }
+
+            const startScrub = (e) => {
+                isDragging = true;
+                const percent = onScrub(e);
+                updateProgressVisuals(percent);
+                progressFill.classList.remove('smooth-transition'); 
+                progressFill.classList.add('no-transition');
+            };
+
+            const moveScrub = (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                updateProgressVisuals(onScrub(e));
+            };
+
+            const endScrub = (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                const percentStr = progressFill.style.width; 
+                const percent = parseFloat(percentStr) || 0;
+                if(audio.duration) audio.currentTime = (percent / 100) * audio.duration;
+                progressFill.classList.remove('no-transition');
+                progressFill.classList.add('smooth-transition');
+            };
+
+            const pContainer = document.getElementById('progress-container');
+            pContainer.addEventListener('mousedown', startScrub);
+            pContainer.addEventListener('touchstart', startScrub, {passive: false});
+            document.addEventListener('mousemove', moveScrub);
+            document.addEventListener('touchmove', moveScrub, {passive: false});
+            document.addEventListener('mouseup', endScrub);
+            document.addEventListener('touchend', endScrub);
+
+            audio.addEventListener('timeupdate', () => {
+                if (!isDragging && !isNaN(audio.duration)) {
+                    const percent = (audio.currentTime / audio.duration) * 100;
+                    progressFill.style.width = `${percent}%`;
+                    progressHandle.style.left = `${percent}%`;
+                    document.getElementById('mini-progress').style.width = `${percent}%`; 
+                    seekSlider.value = percent;
+                    timeCurr.innerText = formatTime(audio.currentTime);
+                    timeDur.innerText = formatTime(audio.duration);
+                }
+            });
+
+            function formatTime(s) {
+                if(isNaN(s)) return "00:00";
+                const min = Math.floor(s / 60);
+                const sec = Math.floor(s % 60);
+                return `${min}:${sec < 10 ? '0'+sec : sec}`;
+            }
+
+            // 초기 실행
+            renderChartList();
+            renderComingSoonList();
+            loadSongData(0);
+        });
+    </script>
+</body>
+</html>
