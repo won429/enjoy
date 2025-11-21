@@ -6,20 +6,29 @@
     <title>Play enjoy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 폰트 추가: 학교안심 둥근미소 -->
+    <!-- 폰트 추가: 학교안심 둥근미소 (로고용) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fonts-archive/HakgyoansimDunggeunmiso/HakgyoansimDunggeunmiso.css" type="text/css"/>
     
     <style>
-        /* 기본 폰트 */
+        /* 폰트 추가: G마켓 산스 (본문용) */
+        @font-face {
+            font-family: 'GmarketSansMedium';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* 기본 폰트 설정 */
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
         
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, "Noto Sans KR", sans-serif;
+            /* G마켓 산스를 최우선으로 적용 */
+            font-family: 'GmarketSansMedium', -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, "Noto Sans KR", sans-serif;
             -webkit-tap-highlight-color: transparent;
             background-color: #030712;
         }
         
-        /* 로고 전용 폰트 */
+        /* 로고 전용 폰트 (기존 유지) */
         .font-logo {
             font-family: 'Hakgyoansim Dunggeunmiso', sans-serif;
             font-weight: 700; 
@@ -220,9 +229,7 @@
                     </button>
                 </div>
             </div>
-            <div class="absolute top-0 left-0 right-0 h-[2px] bg-white/5">
-                <div id="mini-progress" class="h-full bg-[#005ED2] w-0 transition-all duration-300"></div>
-            </div>
+            <div class="absolute top-0 left-0 right-0 h-[2px] bg-[#005ED2] w-0 transition-all duration-300"></div>
         </div>
     </div>
 
@@ -337,8 +344,6 @@
         </div>
     </div>
 
-    <!-- 부팅 효과음 -->
-    <audio id="boot-sound" src="./boot.mp3" preload="auto"></audio>
     <!-- 메인 오디오 -->
     <audio id="audio" playsinline webkit-playsinline></audio>
 
@@ -367,7 +372,6 @@
 
             // DOM 요소
             const audio = document.getElementById('audio');
-            const bootSound = document.getElementById('boot-sound');
             const chartList = document.getElementById('chart-list');
             const newAlbumList = document.getElementById('new-album-list');
             const comingSoonList = document.getElementById('coming-soon-list');
@@ -405,16 +409,8 @@
                 homeScreen.classList.remove('opacity-0');
             };
 
-            const tryEnterHome = () => {
-                // 부팅 사운드 재생 (선택사항)
-                const playPromise = bootSound.play();
-                
-                // 5초 뒤에 무조건 홈으로 진입
-                setTimeout(enterHome, 5000);
-            };
-
-            // 시작
-            tryEnterHome();
+            // 5초 뒤에 무조건 홈으로 진입
+            setTimeout(enterHome, 5000);
 
 
             // 팝업 로직
