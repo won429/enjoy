@@ -446,15 +446,13 @@
             btnMoreChart.onclick = () => { fullChartView.classList.remove('translate-x-full'); };
             btnCloseChart.onclick = () => { fullChartView.classList.add('translate-x-full'); };
 
-            // ▶ 모두 재생 버튼 로직 (수정됨: 강제 재생 처리)
+            // ▶ 모두 재생 버튼 로직
             btnPlayAll.onclick = () => {
                 if (currentIdx === 0) {
-                    // 이미 첫 번째 곡이 선택되어 있으면 바로 재생
                     playerScreen.classList.remove('translate-y-full');
                     miniPlayer.classList.remove('translate-y-full');
                     togglePlay(true); 
                 } else {
-                    // 아니면 첫 번째 곡으로 이동 (openPlayer 내부에서 재생됨)
                     openPlayer(0);
                 }
             };
@@ -727,8 +725,7 @@
                 } else {
                     // 다음 곡으로 자동 이동
                     if (currentIdx < songs.length - 1) {
-                        currentIdx++;
-                        openPlayer(currentIdx);
+                        openPlayer(currentIdx + 1); // Pass next index directly
                     } else {
                         togglePlay(false); 
                         audio.currentTime = 0; 
