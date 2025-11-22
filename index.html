@@ -22,7 +22,6 @@
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
         
         body { 
-            /* G마켓 산스를 최우선으로 적용 */
             font-family: 'GmarketSansMedium', -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, "Noto Sans KR", sans-serif;
             -webkit-tap-highlight-color: transparent;
             background-color: #ffffff; /* 배경 흰색 */
@@ -73,7 +72,6 @@
             transition: opacity 0.8s ease-out, visibility 0.8s;
         }
         
-        /* 배경 노이즈 (흰색 배경이므로 제거) */
         /* LP 질감 */
         .lp-texture {
             background: repeating-radial-gradient(
@@ -93,22 +91,20 @@
         @keyframes returnHeart {
             0% { transform: translate(-50%, -50%) translateY(-60px) scale(1.5); opacity: 0; }
             50% { opacity: 1; }
-            100% { transform: translate(-50%, -50%) translateY(0) scale(1); opacity: 0; } /* 마지막에 사라짐 */
+            100% { transform: translate(-50%, -50%) translateY(0) scale(1); opacity: 0; } 
         }
         
         .heart-effect {
             position: fixed;
             z-index: 9999;
             pointer-events: none;
-            color: #005ED2; /* 요청하신 색상 적용 */
+            color: #005ED2; 
         }
         .anim-fly-up { animation: flyUpHeart 0.8s ease-out forwards; }
         .anim-return { animation: returnHeart 0.6s ease-in forwards; }
     </style>
 </head>
 <body class="text-black overflow-hidden select-none h-[100dvh] w-screen fixed bg-white">
-
-    <!-- 배경 이미지 (제거됨: 흰색 배경 사용) -->
 
     <!-- ==================== 0. 인트로 화면 (이미지 버전) ==================== -->
     <div id="boot-screen" class="fixed inset-0 z-[100] bg-white flex items-center justify-center cursor-pointer transition-opacity duration-1000">
@@ -127,7 +123,7 @@
                 </svg>
              </div>
              <h1 class="font-logo tracking-tight text-black text-4xl lowercase">Play enjoy</h1>
-             <p class="text-white/50 text-xs">intro.jpg 파일을 업로드해주세요</p>
+             <p class="text-gray-400 text-xs">화면을 터치하세요</p>
         </div>
     </div>
 
@@ -212,7 +208,7 @@
             </div>
         </div>
 
-        <!-- 🔥 미니 플레이어 (다크 테마 유지 - 포인트) -->
+        <!-- 🔥 미니 플레이어 (다크 테마 유지) -->
         <div id="mini-player" class="absolute bottom-0 left-0 right-0 bg-[#1E1E1E] border-t border-white/5 px-4 pt-3 pb-safe cursor-pointer translate-y-full transition-transform duration-300 z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
             <div class="flex items-center justify-between mb-1 pointer-events-none"> 
                 <div class="flex items-center gap-3">
@@ -273,7 +269,7 @@
                         <circle cx="70" cy="30" r="12" fill="#444" stroke="#222" stroke-width="2" />
                         <circle cx="70" cy="30" r="5" fill="#111" />
                         <path d="M70 30 L60 160" stroke="#888" stroke-width="6" stroke-linecap="round" />
-                        <rect x="50" y="155" width="20" height="30" rx="4" fill="#333" transform="rotate(1060 170)" />
+                        <rect x="50" y="155" width="20" height="30" rx="4" fill="#333" transform="rotate(10 60 170)" />
                         <path d="M58 180 L56 190" stroke="#aaa" stroke-width="2" />
                     </svg>
                 </div>
@@ -368,8 +364,9 @@
                 { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", rankStatus: 'down' } // 6위 (하락)
             ];
             
-            // 🔜 Coming Soon 목록 (순서 변경됨: 신규 3곡이 앞으로)
+            // 🔜 Coming Soon 목록
             const comingSoonSongs = [
+                { id: 12, title: "너의 모든 순간", artist: "현식", cover: "./cover11.jpg" }, 
                 { id: 9, title: "소주한잔", artist: "이상훈&류래완", cover: "./cover8.jpg" },
                 { id: 10, title: "노래방에서", artist: "홍준호", cover: "./cover9.jpg" },
                 { id: 11, title: "나팔바지", artist: "이상훈, 이진호, 류래완", cover: "./cover10.jpg" },
@@ -420,12 +417,22 @@
             const timeDur = document.getElementById('duration');
             const playerBgImage = document.getElementById('player-bg-image');
 
-            // 1. 부팅 애니메이션 (5초 후 자동 진입)
+            // 1. 인트로 처리 (수정됨: 클릭 스킵 기능 추가)
+            let hasEntered = false;
+            
             const enterHome = () => {
+                if (hasEntered) return;
+                hasEntered = true;
                 bootScreen.classList.add('fade-out');
                 homeScreen.classList.remove('opacity-0');
             };
-            setTimeout(enterHome, 5000);
+
+            // 3초 후 자동 진입 (시간 단축)
+            setTimeout(enterHome, 3000);
+            
+            // 터치/클릭 시 즉시 진입 (스킵 기능)
+            bootScreen.addEventListener('click', enterHome);
+
 
             // 팝업 로직
             const showPopup = () => popupModal.classList.remove('hidden');
@@ -497,11 +504,10 @@
             // 렌더링: New Album (ID 역순 - 최신순)
             const renderNewAlbumList = () => {
                 newAlbumList.innerHTML = '';
-                // 차트 순위와 상관없이 ID(등록순서)가 높은게 최신
                 const sortedByNewest = [...songs].sort((a, b) => b.id - a.id);
                 
                 sortedByNewest.forEach((song) => {
-                    const originalIndex = songs.indexOf(song); // 재생은 원본 리스트(차트순) 기준
+                    const originalIndex = songs.indexOf(song); 
                     const div = document.createElement('div');
                     div.className = "flex-shrink-0 w-40 group cursor-pointer";
                     div.innerHTML = `
@@ -533,14 +539,12 @@
                 for (let i = 0; i < songs.length; i += chunkSize) {
                     const chunk = songs.slice(i, i + chunkSize);
                     
-                    // 슬라이드 컨테이너 (한 화면)
                     const slide = document.createElement('div');
                     slide.className = "min-w-full snap-center flex flex-col gap-1"; 
                     
                     chunk.forEach((song, idx) => {
                         const realIndex = i + idx;
                         const rank = realIndex + 1;
-                        // 1~3위는 파란색, 4위부터는 흰색 배경에 잘 보이도록 검은색
                         const rankColorClass = rank <= 3 ? "text-[#005ED2]" : "text-gray-800";
 
                         const item = document.createElement('div');
