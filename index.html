@@ -273,7 +273,7 @@
                         <circle cx="70" cy="30" r="12" fill="#444" stroke="#222" stroke-width="2" />
                         <circle cx="70" cy="30" r="5" fill="#111" />
                         <path d="M70 30 L60 160" stroke="#888" stroke-width="6" stroke-linecap="round" />
-                        <rect x="50" y="155" width="20" height="30" rx="4" fill="#333" transform="rotate(10 60 170)" />
+                        <rect x="50" y="155" width="20" height="30" rx="4" fill="#333" transform="rotate(1060 170)" />
                         <path d="M58 180 L56 190" stroke="#aaa" stroke-width="2" />
                     </svg>
                 </div>
@@ -368,8 +368,11 @@
                 { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", rankStatus: 'down' } // 6위 (하락)
             ];
             
-            // 🔜 Coming Soon 목록 (업데이트됨)
+            // 🔜 Coming Soon 목록 (순서 변경됨: 신규 3곡이 앞으로)
             const comingSoonSongs = [
+                { id: 9, title: "소주한잔", artist: "이상훈&류래완", cover: "./cover8.jpg" },
+                { id: 10, title: "노래방에서", artist: "홍준호", cover: "./cover9.jpg" },
+                { id: 11, title: "나팔바지", artist: "이상훈, 이진호, 류래완", cover: "./cover10.jpg" },
                 { id: 7, title: "미정", artist: "엔조이 숙려 캠프 OST", cover: "./cover6.jpg" },
                 { id: 8, title: "미정", artist: "출장엔조이 OST", cover: "./cover7.jpg" }
             ];
@@ -494,10 +497,11 @@
             // 렌더링: New Album (ID 역순 - 최신순)
             const renderNewAlbumList = () => {
                 newAlbumList.innerHTML = '';
+                // 차트 순위와 상관없이 ID(등록순서)가 높은게 최신
                 const sortedByNewest = [...songs].sort((a, b) => b.id - a.id);
                 
                 sortedByNewest.forEach((song) => {
-                    const originalIndex = songs.indexOf(song); 
+                    const originalIndex = songs.indexOf(song); // 재생은 원본 리스트(차트순) 기준
                     const div = document.createElement('div');
                     div.className = "flex-shrink-0 w-40 group cursor-pointer";
                     div.innerHTML = `
@@ -529,12 +533,14 @@
                 for (let i = 0; i < songs.length; i += chunkSize) {
                     const chunk = songs.slice(i, i + chunkSize);
                     
+                    // 슬라이드 컨테이너 (한 화면)
                     const slide = document.createElement('div');
                     slide.className = "min-w-full snap-center flex flex-col gap-1"; 
                     
                     chunk.forEach((song, idx) => {
                         const realIndex = i + idx;
                         const rank = realIndex + 1;
+                        // 1~3위는 파란색, 4위부터는 흰색 배경에 잘 보이도록 검은색
                         const rankColorClass = rank <= 3 ? "text-[#005ED2]" : "text-gray-800";
 
                         const item = document.createElement('div');
