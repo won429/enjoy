@@ -22,6 +22,7 @@
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
         
         body { 
+            /* G마켓 산스를 최우선으로 적용 */
             font-family: 'GmarketSansMedium', -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, "Noto Sans KR", sans-serif;
             -webkit-tap-highlight-color: transparent;
             background-color: #ffffff; /* 배경 흰색 */
@@ -187,10 +188,17 @@
                 </div>
             </div>
 
-            <!-- (2) 실시간 차트 (수정됨: 슬라이드 방식) -->
+            <!-- (2) 실시간 차트 (수정됨: 모두 재생 버튼 위치 이동) -->
             <div class="mb-10">
                 <div class="flex justify-between items-center mb-4 px-6">
-                    <h3 class="text-lg font-bold text-black">실시간 차트</h3>
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-lg font-bold text-black">실시간 차트</h3>
+                        <!-- 모두 재생 버튼 -->
+                        <button id="btn-play-all" class="text-[11px] text-[#005ED2] hover:text-white hover:bg-[#005ED2] border border-[#005ED2]/30 font-bold flex items-center gap-1 transition-colors px-2 py-1 rounded-full bg-[#005ED2]/5">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            모두 재생
+                        </button>
+                    </div>
                     <button id="btn-more-chart" class="text-xs text-gray-400 hover:text-black font-medium flex items-center gap-1">
                         더보기 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
                     </button>
@@ -269,7 +277,7 @@
                         <circle cx="70" cy="30" r="12" fill="#444" stroke="#222" stroke-width="2" />
                         <circle cx="70" cy="30" r="5" fill="#111" />
                         <path d="M70 30 L60 160" stroke="#888" stroke-width="6" stroke-linecap="round" />
-                        <rect x="50" y="155" width="20" height="30" rx="4" fill="#333" transform="rotate(10 60 170)" />
+                        <rect x="50" y="155" width="20" height="30" rx="4" fill="#333" transform="rotate(1060 170)" />
                         <path d="M58 180 L56 190" stroke="#aaa" stroke-width="2" />
                     </svg>
                 </div>
@@ -387,6 +395,7 @@
             const fullChartList = document.getElementById('full-chart-list');
             const btnMoreChart = document.getElementById('btn-more-chart');
             const btnCloseChart = document.getElementById('btn-close-chart');
+            const btnPlayAll = document.getElementById('btn-play-all'); // 모두 재생 버튼
             const newAlbumList = document.getElementById('new-album-list');
             const comingSoonList = document.getElementById('coming-soon-list');
             const playerScreen = document.getElementById('player-screen');
@@ -417,22 +426,16 @@
             const timeDur = document.getElementById('duration');
             const playerBgImage = document.getElementById('player-bg-image');
 
-            // 1. 인트로 처리 (수정됨: 클릭 스킵 기능 추가)
+            // 1. 인트로 처리
             let hasEntered = false;
-            
             const enterHome = () => {
                 if (hasEntered) return;
                 hasEntered = true;
                 bootScreen.classList.add('fade-out');
                 homeScreen.classList.remove('opacity-0');
             };
-
-            // 3초 후 자동 진입 (시간 단축)
             setTimeout(enterHome, 3000);
-            
-            // 터치/클릭 시 즉시 진입 (스킵 기능)
             bootScreen.addEventListener('click', enterHome);
-
 
             // 팝업 로직
             const showPopup = () => popupModal.classList.remove('hidden');
@@ -440,11 +443,13 @@
             popupModal.onclick = (e) => { if (e.target === popupModal) popupModal.classList.add('hidden'); };
 
             // 차트 더보기 화면 로직
-            btnMoreChart.onclick = () => {
-                fullChartView.classList.remove('translate-x-full');
-            };
-            btnCloseChart.onclick = () => {
-                fullChartView.classList.add('translate-x-full');
+            btnMoreChart.onclick = () => { fullChartView.classList.remove('translate-x-full'); };
+            btnCloseChart.onclick = () => { fullChartView.classList.add('translate-x-full'); };
+
+            // ▶ 모두 재생 버튼 로직
+            btnPlayAll.onclick = () => {
+                currentIdx = 0; // 1위부터 재생
+                openPlayer(currentIdx);
             };
 
             // 좋아요
