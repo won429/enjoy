@@ -188,7 +188,7 @@
                 </div>
             </div>
 
-            <!-- (2) 실시간 차트 (수정됨: 모두 재생 버튼 위치 이동) -->
+            <!-- (2) 실시간 차트 (모두 재생 버튼 수정됨) -->
             <div class="mb-10">
                 <div class="flex justify-between items-center mb-4 px-6">
                     <div class="flex items-center gap-3">
@@ -446,10 +446,17 @@
             btnMoreChart.onclick = () => { fullChartView.classList.remove('translate-x-full'); };
             btnCloseChart.onclick = () => { fullChartView.classList.add('translate-x-full'); };
 
-            // ▶ 모두 재생 버튼 로직
+            // ▶ 모두 재생 버튼 로직 (수정됨: 강제 재생 처리)
             btnPlayAll.onclick = () => {
-                currentIdx = 0; // 1위부터 재생
-                openPlayer(currentIdx);
+                if (currentIdx === 0) {
+                    // 이미 첫 번째 곡이 선택되어 있으면 바로 재생
+                    playerScreen.classList.remove('translate-y-full');
+                    miniPlayer.classList.remove('translate-y-full');
+                    togglePlay(true); 
+                } else {
+                    // 아니면 첫 번째 곡으로 이동 (openPlayer 내부에서 재생됨)
+                    openPlayer(0);
+                }
             };
 
             // 좋아요
@@ -712,7 +719,22 @@
                 if (prevIdx < 0) prevIdx = songs.length - 1;
                 openPlayer(prevIdx);
             });
-            audio.addEventListener('ended', () => { togglePlay(false); audio.currentTime = 0; });
+            
+            // 노래 종료 시 자동 다음 곡 재생 (수정됨)
+            audio.addEventListener('ended', () => { 
+                if (isRepeat) {
+                    // 반복 재생은 audio.loop가 처리하지만 UI 업데이트를 위해 놔둠
+                } else {
+                    // 다음 곡으로 자동 이동
+                    if (currentIdx < songs.length - 1) {
+                        currentIdx++;
+                        openPlayer(currentIdx);
+                    } else {
+                        togglePlay(false); 
+                        audio.currentTime = 0; 
+                    }
+                }
+            });
 
             // 재생바 터치
             function getClientX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
