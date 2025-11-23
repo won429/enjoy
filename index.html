@@ -1,8 +1,5 @@
 <!DOCTYPE html>
 <html lang="ko">
-<!-- Firebase SDK (compat 버전) -->
-<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -143,7 +140,7 @@
             </div>
             <h3 class="text-lg font-bold text-black mb-2">업데이트 안내</h3>
             <p class="text-gray-600 text-sm mb-6 break-keep leading-relaxed">
-                실시간 차트가 <span class="text-[#005ED2] font-bold">실제로 작동하는 것</span>으로<br>변경되었습니다! 🎉
+                실시간 차트가 <span class="text-[#005ED2] font-bold">실제로 작동하는 것</span>으로<br>변경되었습니다! 🎉<br><span class="text-xs text-gray-400">(노래를 재생하면 순위가 올라갑니다)</span>
             </p>
             <button id="notice-close" class="w-full bg-[#005ED2] text-white font-bold py-3 rounded-xl hover:bg-[#004bb5] transition-colors shadow-lg shadow-[#005ED2]/30">
                 확인
@@ -197,7 +194,7 @@
                     Play enjoy
                 </h1>
             </div>
-            <!-- 뒤로가기 버튼 추가 -->
+            <!-- 뒤로가기 버튼 -->
             <a href="https://won429.github.io/enjoysite/" class="p-2 rounded-full text-gray-400 hover:text-[#005ED2] hover:bg-gray-100 transition-colors">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
             </a>
@@ -229,7 +226,7 @@
                         더보기 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
                     </button>
                 </div>
-                <!-- 가로 스크롤 컨테이너 (스냅 적용) -->
+                <!-- 가로 스크롤 컨테이너 -->
                 <div id="chart-slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide px-6 gap-4">
                     <!-- 여기에 3개씩 묶인 슬라이드가 생성됩니다 -->
                 </div>
@@ -382,53 +379,78 @@
 
     <!-- 메인 오디오 -->
     <audio id="audio" playsinline webkit-playsinline></audio>
-<script>
-    // ==================== Firebase 초기화 ====================
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_AUTH_DOMAIN",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_STORAGE_BUCKET",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID"
-    };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // ==================== 메인 스크립트 ====================
-    document.addEventListener('DOMContentLoaded', () => {
+        // [중요] 사용자가 제공한 Firebase 설정 적용
+        const yourFirebaseConfig = {
+            apiKey: "AIzaSyC-ufNqntX7Yf3gbu11FNUgSRwWN2bfvWc",
+            authDomain: "play-enjoy-music.firebaseapp.com",
+            projectId: "play-enjoy-music",
+            storageBucket: "play-enjoy-music.firebasestorage.app",
+            messagingSenderId: "678631946072",
+            appId: "1:678631946072:web:ee72c229360599aa00172d"
+        };
 
-        // 🎵 노래 데이터
+        let firebaseConfig;
+        let appId;
+
+        try {
+            // 이 프리뷰 환경에서 자동으로 설정값을 가져오는 코드
+            if (typeof __firebase_config !== 'undefined') {
+                // 따옴표가 있는 문자열로 들어올 경우를 대비해 파싱하거나 그대로 사용
+                firebaseConfig = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
+            } else {
+                // GitHub 등 외부 환경에서는 직접 입력한 설정 사용
+                firebaseConfig = yourFirebaseConfig;
+            }
+            
+            if (typeof __app_id !== 'undefined') {
+                appId = __app_id;
+            } else {
+                appId = 'play-enjoy-music-app'; // 기본 앱 ID (임의 설정)
+            }
+        } catch (e) {
+            console.log("Config parsing failed, falling back to manual config.");
+            firebaseConfig = yourFirebaseConfig;
+            appId = 'play-enjoy-music-app';
+        }
+
+        // Firebase 초기화
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // 🎵 노래 데이터 (기본값)
         let songs = [
-            { id: 1, title: "빛", artist: "엔쪽이 OST Part.2", src: "./music.mp3", cover: "./cover.jpg", rankStatus: '-', playCount: 0 }, 
-            { id: 2, title: "힘내라", artist: "엔쪽이 OST Part.1", src: "./music2.mp3", cover: "./cover.jpg", rankStatus: '-', playCount: 0 }, 
-            { id: 4, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", src: "./music4.mp3", cover: "./cover3.jpg", rankStatus: 'up',   playCount: 0 }, 
-            { id: 5, title: "행복을 꿈꾸며 울다", artist: "엔조이", src: "./music5.mp3", cover: "./cover4.jpg", rankStatus: '-', playCount: 0 }, 
-            { id: 6, title: "털어", artist: "엔조이", src: "./music6.mp3", cover: "./cover5.jpg", rankStatus: '-', playCount: 0 }, 
-            { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", rankStatus: 'down', playCount: 0 } 
+            { id: 1, title: "빛", artist: "엔쪽이 OST Part.2", src: "./music.mp3", cover: "./cover.jpg", playCount: 0, rankStatus: '-' }, 
+            { id: 2, title: "힘내라", artist: "엔쪽이 OST Part.1", src: "./music2.mp3", cover: "./cover.jpg", playCount: 0, rankStatus: '-' }, 
+            { id: 4, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", src: "./music4.mp3", cover: "./cover3.jpg", playCount: 0, rankStatus: '-' }, 
+            { id: 5, title: "행복을 꿈꾸며 울다", artist: "엔조이", src: "./music5.mp3", cover: "./cover4.jpg", playCount: 0, rankStatus: '-' }, 
+            { id: 6, title: "털어", artist: "엔조이", src: "./music6.mp3", cover: "./cover5.jpg", playCount: 0, rankStatus: '-' }, 
+            { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", playCount: 0, rankStatus: '-' } 
         ];
 
-        // Coming Soon
-        const comingSoonSongs = [
-            { id: 12, title: "너의 모든 순간", artist: "현식", cover: "./cover11.jpg" }, 
-            { id: 9, title: "소주한잔", artist: "이상훈&류래완", cover: "./cover8.jpg" },
-            { id: 10, title: "노래방에서", artist: "홍준호", cover: "./cover9.jpg" },
-            { id: 11, title: "나팔바지", artist: "이상훈, 이진호, 류래완", cover: "./cover10.jpg" },
-            { id: 7, title: "미정", artist: "엔조이 숙려 캠프 OST", cover: "./cover6.jpg" },
-            { id: 8, title: "미정", artist: "출장엔조이 OST", cover: "./cover7.jpg" }
-        ];
+        // 이전 순위 저장 (로컬 스토리지)
+        let lastRanking = [];
+        try {
+            const saved = localStorage.getItem('last_ranking_ids');
+            if (saved) lastRanking = JSON.parse(saved);
+        } catch(e) {}
 
-        // 재생 상태 관련 변수
+        // 전역 변수
         let currentIdx = 0;
-        let currentSongId = songs[0].id;       // 현재 곡 id 기억
-        let lastOrderGlobal = songs.map(s => s.id); // 등락 계산용
         let isPlaying = false;
         let isDragging = false; 
         let isLiked = false; 
         let isRepeat = false;
+        let songStats = {};
 
-        // DOM 요소
+        // DOM 요소 가져오기
         const audio = document.getElementById('audio');
         const chartSlider = document.getElementById('chart-slider');
         const fullChartView = document.getElementById('full-chart-view');
@@ -467,19 +489,25 @@
         const timeCurr = document.getElementById('current-time');
         const timeDur = document.getElementById('duration');
         const playerBgImage = document.getElementById('player-bg-image');
-        const pContainer = document.getElementById('progress-container');
-        const miniProgress = document.getElementById('mini-progress');
 
-        // 1. 인트로 & 공지사항
+        // 🔜 Coming Soon 목록
+        const comingSoonSongs = [
+            { id: 12, title: "너의 모든 순간", artist: "현식", cover: "./cover11.jpg" }, 
+            { id: 9, title: "소주한잔", artist: "이상훈&류래완", cover: "./cover8.jpg" },
+            { id: 10, title: "노래방에서", artist: "홍준호", cover: "./cover9.jpg" },
+            { id: 11, title: "나팔바지", artist: "이상훈, 이진호, 류래완", cover: "./cover10.jpg" },
+            { id: 7, title: "미정", artist: "엔조이 숙려 캠프 OST", cover: "./cover6.jpg" },
+            { id: 8, title: "미정", artist: "출장엔조이 OST", cover: "./cover7.jpg" }
+        ];
+
+        // 1. 인트로 처리 & 공지사항
         let hasEntered = false;
         const enterHome = () => {
             if (hasEntered) return;
             hasEntered = true;
             bootScreen.classList.add('fade-out');
             homeScreen.classList.remove('opacity-0');
-            setTimeout(() => {
-                noticeModal.classList.remove('hidden');
-            }, 500);
+            setTimeout(() => noticeModal.classList.remove('hidden'), 500);
         };
         setTimeout(enterHome, 3000);
         bootScreen.addEventListener('click', enterHome);
@@ -487,86 +515,107 @@
         noticeClose.onclick = () => noticeModal.classList.add('hidden');
         noticeModal.onclick = (e) => { if (e.target === noticeModal) noticeModal.classList.add('hidden'); };
 
-        const showPopup = () => popupModal.classList.remove('hidden');
-        popupClose.onclick = () => popupModal.classList.add('hidden');
-        popupModal.onclick = (e) => { if (e.target === popupModal) popupModal.classList.add('hidden'); };
-
-        // 차트 더보기 화면
-        btnMoreChart.onclick = () => { fullChartView.classList.remove('translate-x-full'); };
-        btnCloseChart.onclick = () => { fullChartView.classList.add('translate-x-full'); };
-
-        // ▶ 모두 재생
-        btnPlayAll.onclick = () => {
-            if (currentIdx === 0) {
-                playerScreen.classList.remove('translate-y-full');
-                miniPlayer.classList.remove('translate-y-full');
-                togglePlay(true); 
-            } else {
-                openPlayer(0);
+        // 2. Firebase 초기화 및 데이터 리스닝
+        async function initFirebase() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                     await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                     await signInAnonymously(auth);
+                }
+                setupRealtimeListener();
+            } catch (e) {
+                console.error("Auth failed", e);
+                // 인증 실패 시에도 화면은 나오도록 렌더링 호출
+                renderAll();
             }
-        };
+        }
 
-        // 좋아요 버튼
-        const createFloatingHeart = (type) => {
-            const heart = document.createElement('div');
-            const rect = btnLike.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            heart.className = 'heart-effect';
-            heart.innerHTML = `<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
-            heart.style.left = `${centerX}px`;
-            heart.style.top = `${centerY}px`;
-            heart.classList.add(type === 'up' ? 'anim-fly-up' : 'anim-return');
-            document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 1000);
-        };
+        function setupRealtimeListener() {
+            // Firestore 경로 설정 (appId가 없을 경우 대비)
+            const safeAppId = appId || 'default-app-id';
+            const statsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'song_stats');
+            
+            onSnapshot(statsRef, (snapshot) => {
+                songStats = {};
+                snapshot.forEach(doc => {
+                    songStats[doc.id] = doc.data().count || 0;
+                });
+                updateRankings();
+            }, (error) => {
+                console.error("Snapshot error:", error);
+                // 에러 발생 시에도 화면 렌더링은 진행
+                renderAll();
+            });
+        }
 
-        btnLike.onclick = () => {
-            isLiked = !isLiked;
-            const svg = btnLike.querySelector('svg');
-            if (isLiked) {
-                svg.setAttribute('fill', 'currentColor');
-                btnLike.classList.remove('text-white/40');
-                btnLike.classList.add('text-[#005ED2]');
-                createFloatingHeart('up');
-            } else {
-                svg.setAttribute('fill', 'none');
-                btnLike.classList.add('text-white/40');
-                btnLike.classList.remove('text-[#005ED2]');
-                createFloatingHeart('down');
+        function updateRankings() {
+            songs.forEach(song => {
+                song.playCount = songStats[song.id] || 0;
+            });
+
+            songs.sort((a, b) => {
+                if (b.playCount !== a.playCount) return b.playCount - a.playCount;
+                return a.id - b.id;
+            });
+
+            if (lastRanking.length > 0) {
+                songs.forEach((song, newIndex) => {
+                    const oldIndex = lastRanking.indexOf(song.id);
+                    if (oldIndex === -1) song.rankStatus = 'new';
+                    else if (newIndex < oldIndex) song.rankStatus = 'up';
+                    else if (newIndex > oldIndex) song.rankStatus = 'down';
+                    else song.rankStatus = '-';
+                });
             }
-            btnLike.classList.add('scale-125');
-            setTimeout(() => btnLike.classList.remove('scale-125'), 200);
-        };
 
-        // 반복 재생
-        btnRepeat.onclick = () => {
-            isRepeat = !isRepeat;
-            audio.loop = isRepeat;
-            if (isRepeat) {
-                btnRepeat.classList.remove('text-white/30');
-                btnRepeat.classList.add('text-[#005ED2]');
-            } else {
-                btnRepeat.classList.add('text-white/30');
-                btnRepeat.classList.remove('text-[#005ED2]');
+            lastRanking = songs.map(s => s.id);
+            localStorage.setItem('last_ranking_ids', JSON.stringify(lastRanking));
+
+            renderAll();
+            
+            if (isPlaying || !audio.paused) {
+                const currentSongId = parseInt(audio.dataset.songId);
+                if (!isNaN(currentSongId)) {
+                    const newIdx = songs.findIndex(s => s.id === currentSongId);
+                    if (newIdx !== -1) currentIdx = newIdx;
+                }
             }
-        };
+        }
 
-        // 헬퍼: 순위 변동 표시
-        const getRankHTML = (status) => {
+        async function incrementPlayCount(songId) {
+            if (!auth.currentUser) return;
+            // Firestore 경로 설정 (appId가 없을 경우 대비)
+            const safeAppId = appId || 'default-app-id';
+            const docRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'song_stats', String(songId));
+            try {
+                await setDoc(docRef, { count: increment(1) }, { merge: true });
+            } catch (e) {
+                console.error("Inc failed", e);
+            }
+        }
+
+        // 3. 렌더링 함수들
+        function getRankHTML(status) {
             if (status === 'up') return `<span class="text-red-500 text-[10px] font-bold flex items-center justify-center">▲</span>`;
             if (status === 'down') return `<span class="text-blue-500 text-[10px] font-bold flex items-center justify-center">▼</span>`;
             if (status === 'new') return `<span class="text-yellow-500 text-[8px] font-bold tracking-tighter">NEW</span>`;
             return `<span class="text-gray-400 text-[10px] flex items-center justify-center">-</span>`;
-        };
+        }
 
-        // New Album 렌더링 (id 역순)
+        function renderAll() {
+            renderNewAlbumList();
+            renderChartList();
+            renderFullChartList();
+            renderComingSoonList();
+        }
+
         const renderNewAlbumList = () => {
             newAlbumList.innerHTML = '';
             const sortedByNewest = [...songs].sort((a, b) => b.id - a.id);
             
             sortedByNewest.forEach((song) => {
-                const originalIndex = songs.indexOf(song); 
+                const originalIndex = songs.findIndex(s => s.id === song.id); 
                 const div = document.createElement('div');
                 div.className = "flex-shrink-0 w-40 group cursor-pointer";
                 div.innerHTML = `
@@ -590,22 +639,17 @@
             });
         };
 
-        // 실시간 차트 (3개씩 슬라이드)
         const renderChartList = () => {
             chartSlider.innerHTML = '';
             const chunkSize = 3;
-            
             for (let i = 0; i < songs.length; i += chunkSize) {
                 const chunk = songs.slice(i, i + chunkSize);
-                
                 const slide = document.createElement('div');
                 slide.className = "min-w-full snap-center flex flex-col gap-1"; 
-                
                 chunk.forEach((song, idx) => {
                     const realIndex = i + idx;
                     const rank = realIndex + 1;
                     const rankColorClass = rank <= 3 ? "text-[#005ED2]" : "text-gray-800";
-
                     const item = document.createElement('div');
                     item.className = "flex items-center gap-4 p-3 rounded-xl hover:bg-gray-100 active:scale-98 transition-all cursor-pointer group";
                     item.innerHTML = `
@@ -619,6 +663,7 @@
                         <div class="flex-1 min-w-0">
                             <h3 class="text-base font-medium text-black truncate">${song.title}</h3>
                             <p class="text-xs text-gray-500 truncate">${song.artist}</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">재생 ${song.playCount}회</p>
                         </div>
                         <button class="text-gray-400 hover:text-black">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
@@ -631,13 +676,11 @@
             }
         };
 
-        // 전체 차트 (더보기)
         const renderFullChartList = () => {
             fullChartList.innerHTML = '';
             songs.forEach((song, index) => {
                 const rank = index + 1;
                 const rankColorClass = rank <= 3 ? "text-[#005ED2]" : "text-gray-800";
-
                 const div = document.createElement('div');
                 div.className = "flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 active:scale-98 transition-all cursor-pointer border-b border-gray-100 last:border-0";
                 div.innerHTML = `
@@ -651,6 +694,7 @@
                     <div class="flex-1 min-w-0 flex flex-col justify-center">
                         <h3 class="text-sm font-bold text-black leading-snug break-keep">${song.title}</h3>
                         <p class="text-xs text-gray-500 mt-0.5 break-keep">${song.artist}</p>
+                        <p class="text-[10px] text-[#005ED2] mt-0.5 font-medium">${song.playCount}회 재생됨</p>
                     </div>
                     <button class="p-2 text-gray-400 hover:text-black flex-shrink-0">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
@@ -664,7 +708,6 @@
             });
         };
 
-        // Coming Soon
         const renderComingSoonList = () => {
             comingSoonList.innerHTML = '';
             comingSoonSongs.forEach((song) => {
@@ -682,15 +725,19 @@
                     <h3 class="text-sm font-bold text-black truncate">${song.title}</h3>
                     <p class="text-[10px] text-gray-500 truncate font-medium">${song.artist}</p>
                 `;
-                div.addEventListener('click', showPopup);
+                div.addEventListener('click', () => popupModal.classList.remove('hidden'));
                 comingSoonList.appendChild(div);
             });
         };
 
-        // 플레이어 로딩
+        // 4. 플레이어 로직
         const loadSongData = (index) => {
             const song = songs[index];
+            if (!song) return;
+
             audio.src = song.src;
+            audio.dataset.songId = song.id; 
+            
             document.getElementById('song-title').innerText = song.title;
             document.getElementById('song-artist').innerText = song.artist;
             document.getElementById('cover-image').src = song.cover;
@@ -699,27 +746,25 @@
             miniArtist.innerText = song.artist;
             miniCover.src = song.cover;
             errorBox.classList.add('hidden');
-            
             timeCurr.innerText = "00:00";
             timeDur.innerText = "00:00";
         };
 
         const openPlayer = (index) => {
+            if (currentIdx === index && !audio.paused) {
+                playerScreen.classList.remove('translate-y-full');
+                miniPlayer.classList.remove('translate-y-full');
+                return;
+            }
+            
+            const songToPlay = songs[index];
+            incrementPlayCount(songToPlay.id);
+
             currentIdx = index;
-            currentSongId = songs[index].id;
             loadSongData(index);
             playerScreen.classList.remove('translate-y-full');
             miniPlayer.classList.remove('translate-y-full');
             setTimeout(() => togglePlay(true), 300);
-        };
-
-        miniPlayer.addEventListener('click', () => {
-            playerScreen.classList.remove('translate-y-full');
-        });
-
-        document.getElementById('btn-minimize').onclick = () => {
-            playerScreen.classList.add('translate-y-full');
-            miniPlayer.classList.remove('translate-y-full');
         };
 
         const togglePlay = (forcePlay = null) => {
@@ -751,9 +796,12 @@
             }
         };
 
-        // 버튼 이벤트
+        miniPlayer.addEventListener('click', () => playerScreen.classList.remove('translate-y-full'));
+        document.getElementById('btn-minimize').onclick = () => playerScreen.classList.add('translate-y-full');
+        
         btnPlay.addEventListener('click', () => togglePlay());
         miniPlayBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
+        
         document.getElementById('btn-next').addEventListener('click', () => {
             let nextIdx = currentIdx + 1;
             if (nextIdx >= songs.length) nextIdx = 0;
@@ -765,79 +813,9 @@
             openPlayer(prevIdx);
         });
 
-        // ✅ 재생횟수 기반 차트 정렬 + 등락 계산
-        function updateChartRanking() {
-            const prevOrder = lastOrderGlobal;
-
-            songs.sort((a, b) => {
-                const diff = (b.playCount || 0) - (a.playCount || 0);
-                if (diff !== 0) return diff;
-                return a.id - b.id;
-            });
-
-            const currentOrderIds = songs.map(s => s.id);
-
-            songs.forEach((song, newIndex) => {
-                const oldIndex = prevOrder.indexOf(song.id);
-                if (oldIndex === -1) {
-                    song.rankStatus = '-';
-                } else if (newIndex < oldIndex) {
-                    song.rankStatus = 'up';
-                } else if (newIndex > oldIndex) {
-                    song.rankStatus = 'down';
-                } else {
-                    song.rankStatus = '-';
-                }
-            });
-
-            lastOrderGlobal = currentOrderIds;
-
-            // 재정렬 후에도 현재 재생 곡 index 유지
-            if (currentSongId != null) {
-                const idx = songs.findIndex(s => s.id === currentSongId);
-                if (idx !== -1) currentIdx = idx;
-            }
-        }
-
-        // ✅ Firestore 실시간 리스너: playCounts 컬렉션
-        db.collection('playCounts').onSnapshot((snapshot) => {
-            const counts = {};
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                counts[doc.id] = data.count || 0;
-            });
-
-            songs.forEach(song => {
-                const key = String(song.id);
-                if (counts[key] != null) {
-                    song.playCount = counts[key];
-                }
-            });
-
-            updateChartRanking();
-            renderChartList();
-            renderFullChartList();
-        });
-
-        // 곡 끝났을 때 → Firestore에 count +1
         audio.addEventListener('ended', () => { 
-            const currentSong = songs[currentIdx];
-            currentSongId = currentSong.id;
-
-            const docRef = db.collection('playCounts').doc(String(currentSong.id));
-            docRef.set(
-                { count: firebase.firestore.FieldValue.increment(1) },
-                { merge: true }
-            ).catch(console.error);
-
-            // snapshot 오기 전에 UI만 먼저 반영 (느낌 상 실시간)
-            currentSong.playCount = (currentSong.playCount || 0) + 1;
-            updateChartRanking();
-            renderChartList();
-            renderFullChartList();
-
             if (isRepeat) {
-                togglePlay(true);
+                audio.currentTime = 0; audio.play();
             } else {
                 if (currentIdx < songs.length - 1) {
                     openPlayer(currentIdx + 1);
@@ -848,10 +826,48 @@
             }
         });
 
-        // 재생바 드래그
+        // UI 이벤트들
+        btnMoreChart.onclick = () => fullChartView.classList.remove('translate-x-full');
+        btnCloseChart.onclick = () => fullChartView.classList.add('translate-x-full');
+        btnPlayAll.onclick = () => {
+            if (currentIdx === 0) {
+                playerScreen.classList.remove('translate-y-full');
+                miniPlayer.classList.remove('translate-y-full');
+                togglePlay(true); 
+            } else {
+                openPlayer(0);
+            }
+        };
+
+        btnLike.onclick = () => {
+            isLiked = !isLiked;
+            const svg = btnLike.querySelector('svg');
+            if (isLiked) {
+                svg.setAttribute('fill', 'currentColor');
+                btnLike.classList.remove('text-white/40');
+                btnLike.classList.add('text-[#005ED2]');
+            } else {
+                svg.setAttribute('fill', 'none');
+                btnLike.classList.add('text-white/40');
+                btnLike.classList.remove('text-[#005ED2]');
+            }
+        };
+
+        btnRepeat.onclick = () => {
+            isRepeat = !isRepeat;
+            if (isRepeat) {
+                btnRepeat.classList.remove('text-white/30');
+                btnRepeat.classList.add('text-[#005ED2]');
+            } else {
+                btnRepeat.classList.add('text-white/30');
+                btnRepeat.classList.remove('text-[#005ED2]');
+            }
+        };
+
+        // 재생바 및 시간 처리
         function getClientX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
         function onScrub(e) {
-            const rect = pContainer.getBoundingClientRect();
+            const rect = document.getElementById('progress-container').getBoundingClientRect();
             return Math.max(0, Math.min(100, ((getClientX(e) - rect.left) / rect.width) * 100));
         }
         const startScrub = (e) => {
@@ -872,6 +888,7 @@
                 progressFill.classList.remove('no-transition');
             }
         };
+        const pContainer = document.getElementById('progress-container');
         pContainer.addEventListener('mousedown', startScrub);
         pContainer.addEventListener('touchstart', startScrub, {passive: false});
         document.addEventListener('mousemove', moveScrub);
@@ -879,14 +896,13 @@
         document.addEventListener('mouseup', endScrub);
         document.addEventListener('touchend', endScrub);
 
-        // 시간/진행바 업데이트
         audio.addEventListener('timeupdate', () => {
             timeCurr.innerText = formatTime(audio.currentTime);
             if (!isDragging && !isNaN(audio.duration) && isFinite(audio.duration)) {
                 const percent = (audio.currentTime / audio.duration) * 100;
                 progressFill.style.width = `${percent}%`;
                 progressHandle.style.left = `${percent}%`;
-                miniProgress.style.width = `${percent}%`; 
+                document.getElementById('mini-progress').style.width = `${percent}%`; 
                 seekSlider.value = percent;
                 timeDur.innerText = formatTime(audio.duration);
             }
@@ -900,13 +916,9 @@
             return `${min}:${sec < 10 ? '0'+sec : sec}`;
         }
 
-        // 초기 렌더
-        renderNewAlbumList();
-        renderChartList();
-        renderFullChartList();
-        renderComingSoonList();
-        loadSongData(currentIdx);
-    });
-</script>
- </body>
+        // 앱 시작
+        initFirebase();
+
+    </script>
+</body>
 </html>
