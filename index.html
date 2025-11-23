@@ -111,9 +111,12 @@
 </head>
 <body class="text-black overflow-hidden select-none h-[100dvh] w-screen fixed bg-white">
 
-    <!-- ==================== 0. 인트로 화면 ==================== -->
+    <!-- ==================== 0. 인트로 화면 (이미지 버전) ==================== -->
     <div id="boot-screen" class="fixed inset-0 z-[100] bg-white flex items-center justify-center cursor-pointer transition-opacity duration-1000">
+        <!-- intro.jpg 이미지가 화면에 꽉 차게 표시됩니다 -->
         <img src="./intro.jpg" class="w-full h-full object-cover animate-pulse" onerror="this.style.display='none'; document.getElementById('intro-fallback').classList.remove('hidden');">
+        
+        <!-- 이미지가 없을 경우 보여줄 대체 화면 -->
         <div id="intro-fallback" class="hidden flex flex-col items-center gap-4">
              <div class="text-[#005ED2] flex items-center justify-center scale-150 mb-2">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -165,8 +168,8 @@
             <label class="text-xs text-gray-500 block mb-1">제목</label>
             <input type="text" id="edit-notice-title" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-3 text-sm focus:outline-none focus:border-[#005ED2]">
             
-            <label class="text-xs text-gray-500 block mb-1">내용 (HTML 가능)</label>
-            <textarea id="edit-notice-content" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4 h-32 text-xs resize-none focus:outline-none focus:border-[#005ED2] font-mono leading-relaxed"></textarea>
+            <label class="text-xs text-gray-500 block mb-1">내용</label>
+            <textarea id="edit-notice-content" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4 h-32 text-xs resize-none focus:outline-none focus:border-[#005ED2] font-mono leading-relaxed" placeholder="내용을 입력하세요. (줄바꿈은 자동으로 처리됩니다)"></textarea>
             
             <div class="flex gap-2">
                 <button id="admin-edit-cancel" class="flex-1 bg-gray-200 text-gray-600 font-bold py-3 rounded-xl">취소</button>
@@ -379,7 +382,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase 설정 (GitHub 업로드 시 본인의 설정 사용)
+        // Firebase 설정
         const yourFirebaseConfig = {
             apiKey: "AIzaSyC-ufNqntX7Yf3gbu11FNUgSRwWN2bfvWc",
             authDomain: "play-enjoy-music.firebaseapp.com",
@@ -434,19 +437,10 @@
             { id: 8, title: "미정", artist: "출장엔조이 OST", cover: "./cover7.jpg" }
         ];
 
-        // 기본 공지사항 (DB 없을 시 Fallback)
+        // 기본 공지사항 (메모장 스타일: 줄바꿈을 <br>로 변환)
         const DEFAULT_NOTICE = {
             title: "업데이트 & 신곡 안내",
-            content: `<div>
-                    <p class="mb-1">📊 <span class="text-[#005ED2] font-bold">실시간 차트</span> 집계 시작!</p>
-                    <p class="text-xs text-gray-400">(노래를 재생하면 순위가 올라갑니다)</p>
-                </div>
-                <div class="w-full h-[1px] bg-gray-100 my-4"></div>
-                <div>
-                    <p class="mb-1">🔥 <strong>신곡 2곡 발매</strong> 🔥</p>
-                    <p class="text-black font-medium">'똥을 싸고 손을 씻자', '미친 밤'</p>
-                    <p class="mt-1">많은 감상 부탁드립니다! 🎧</p>
-                </div>`
+            content: "📊 실시간 차트 집계 시작!\n(노래를 재생하면 순위가 올라갑니다)\n\n🔥 신곡 2곡 발매 🔥\n'똥을 싸고 손을 씻자', '미친 밤'\n많은 감상 부탁드립니다! 🎧".replace(/\n/g, "<br>")
         };
 
         // 전역 변수
@@ -531,7 +525,6 @@
 
         // --- 관리자 기능 ---
         
-        // 로그인 모달 열기
         btnAdminLogin.onclick = () => {
             adminPwInput.value = "";
             adminLoginModal.classList.remove('hidden');
@@ -539,19 +532,16 @@
         adminLoginCancel.onclick = () => adminLoginModal.classList.add('hidden');
         adminLoginModal.onclick = (e) => { if (e.target === adminLoginModal) adminLoginModal.classList.add('hidden'); };
 
-        // 로그인 체크
         adminLoginSubmit.onclick = () => {
             if (adminPwInput.value === '0920') {
                 adminLoginModal.classList.add('hidden');
-                openAdminEdit(); // 성공 시 편집창 오픈
+                openAdminEdit(); 
             } else {
                 alert('비밀번호가 틀렸습니다.');
             }
         };
 
-        // 편집창 열기 (현재 공지 내용 불러오기)
         const openAdminEdit = async () => {
-            // Firestore에서 현재 공지 가져오기
             let currentNotice = DEFAULT_NOTICE;
             if (auth && db) {
                 const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice');
@@ -564,16 +554,17 @@
             }
             
             editNoticeTitle.value = currentNotice.title;
-            editNoticeContent.value = currentNotice.content;
+            // 메모장 모드: DB의 <br>을 \n으로 바꿔서 보여줌
+            editNoticeContent.value = currentNotice.content.replace(/<br\s*\/?>/gi, "\n");
             adminEditModal.classList.remove('hidden');
         };
 
         adminEditCancel.onclick = () => adminEditModal.classList.add('hidden');
 
-        // 공지 저장
+        // 공지 저장 (메모장 모드: \n을 <br>로 바꿔서 저장)
         adminEditSave.onclick = async () => {
             const newTitle = editNoticeTitle.value;
-            const newContent = editNoticeContent.value;
+            const newContent = editNoticeContent.value.replace(/\n/g, "<br>"); // 줄바꿈 변환
             
             if (!auth || !db) {
                 alert("DB 연결 실패");
@@ -591,7 +582,6 @@
             }
         };
 
-        // 공지사항 리스너 (모든 사용자에게 실시간 반영)
         function setupNoticeListener() {
             if (!auth || !db) return;
             const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice');
@@ -599,9 +589,9 @@
                 if (doc.exists()) {
                     const data = doc.data();
                     document.getElementById('notice-title').innerText = data.title;
+                    // HTML(br태그 포함)로 렌더링
                     document.getElementById('notice-content').innerHTML = data.content;
                 } else {
-                    // 문서가 없으면 기본값 표시
                     document.getElementById('notice-title').innerText = DEFAULT_NOTICE.title;
                     document.getElementById('notice-content').innerHTML = DEFAULT_NOTICE.content;
                 }
@@ -988,7 +978,7 @@
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     setupRealtimeListener();
-                    setupNoticeListener(); // 공지사항 실시간 리스너 시작
+                    setupNoticeListener(); 
                 } else {
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                         signInWithCustomToken(auth, __initial_auth_token);
