@@ -343,7 +343,7 @@
                 <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" style="touch-action: none;">
             </div>
             
-            <!-- 시간 표시 (ID 변경 및 가독성 개선) -->
+            <!-- 시간 표시 (수정됨: 가독성 및 업데이트 보장) -->
             <div class="w-full flex justify-between text-[10px] text-white/60 font-mono font-medium tracking-wider">
                 <span id="player-time-current">00:00</span>
                 <span id="player-time-duration">00:00</span>
@@ -430,7 +430,6 @@
             db = getFirestore(app);
         } catch (e) {
             console.error("Firebase config failed:", e);
-            // 에러 발생 시 기본값으로 폴백하거나 중단하지 않고 UI만 실행되도록 함
         }
 
         // 4. 노래 데이터
@@ -506,7 +505,7 @@
         const progressHandle = document.getElementById('progress-handle');
         const seekSlider = document.getElementById('seek-slider');
         
-        // 시간 표시 요소 (ID 변경됨)
+        // 시간 표시 요소
         const timeCurr = document.getElementById('player-time-current');
         const timeDur = document.getElementById('player-time-duration');
         
@@ -530,7 +529,7 @@
         popupClose.onclick = () => popupModal.classList.add('hidden');
         popupModal.onclick = (e) => { if (e.target === popupModal) popupModal.classList.add('hidden'); };
 
-        // Firebase 로직 함수
+        // Firebase 로직
         function setupRealtimeListener() {
             if (unsubscribeSnapshot) unsubscribeSnapshot();
             const safeAppId = appId || 'default-app-id';
@@ -544,7 +543,7 @@
                 updateRankings();
             }, (error) => {
                 console.warn("Snapshot error (offline?):", error);
-                renderAll(); // 에러 시 기본 렌더링
+                renderAll(); 
             });
         }
 
@@ -552,12 +551,10 @@
             songs.forEach(song => {
                 song.playCount = songStats[song.id] || 0;
             });
-            // 조회수 내림차순
             songs.sort((a, b) => {
                 if (b.playCount !== a.playCount) return b.playCount - a.playCount;
-                return a.id - b.id; // 같으면 오래된(ID작은) 순
+                return a.id - b.id; 
             });
-            // 순위 변동 계산
             if (lastRanking.length > 0) {
                 songs.forEach((song, newIndex) => {
                     const oldIndex = lastRanking.indexOf(song.id);
@@ -572,7 +569,6 @@
             
             renderAll();
             
-            // 재생 중이면 인덱스 보정
             if (isPlaying || !audio.paused) {
                 const currentSongId = parseInt(audio.dataset.songId);
                 if (!isNaN(currentSongId)) {
@@ -608,7 +604,7 @@
 
         const renderNewAlbumList = () => {
             newAlbumList.innerHTML = '';
-            const sortedByNewest = [...songs].sort((a, b) => b.id - a.id); // ID 큰게 최신
+            const sortedByNewest = [...songs].sort((a, b) => b.id - a.id); 
             sortedByNewest.forEach((song) => {
                 const originalIndex = songs.findIndex(s => s.id === song.id);
                 const div = document.createElement('div');
@@ -891,34 +887,35 @@
         document.addEventListener('mouseup', endScrub);
         document.addEventListener('touchend', endScrub);
 
-        audio.addEventListener('timeupdate', () => {
-            // 1. 현재 시간 업데이트 (재생 중이면 항상)
-            if (audio.currentTime) {
-                 timeCurr.innerText = formatTime(audio.currentTime);
-            }
-            
-            // 2. 전체 시간 업데이트 (가끔 초기 로드 안될 때 대비)
-            if (!isNaN(audio.duration) && isFinite(audio.duration)) {
-                 timeDur.innerText = formatTime(audio.duration);
-            }
+        // 시간 및 포맷 함수
+        function formatTime(s) {
+            if (typeof s !== 'number' || isNaN(s) || !isFinite(s)) return "00:00";
+            const min = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${min}:${sec < 10 ? '0'+sec : sec}`;
+        }
 
-            // 3. 프로그레스 바 업데이트 (드래그 중이 아닐 때만)
-            if (!isDragging && !isNaN(audio.duration) && isFinite(audio.duration)) {
+        const updateTimeDisplay = () => {
+            // 현재 시간 표시 업데이트
+            if (timeCurr) timeCurr.innerText = formatTime(audio.currentTime);
+            
+            // 전체 시간 표시 업데이트
+            if (timeDur && audio.duration) timeDur.innerText = formatTime(audio.duration);
+            
+            // 프로그레스 바 업데이트
+            if (!isDragging && audio.duration) {
                 const percent = (audio.currentTime / audio.duration) * 100;
-                progressFill.style.width = `${percent}%`;
-                progressHandle.style.left = `${percent}%`;
+                if(progressFill) progressFill.style.width = `${percent}%`;
+                if(progressHandle) progressHandle.style.left = `${percent}%`;
+                if(seekSlider) seekSlider.value = percent;
                 const miniProg = document.getElementById('mini-progress');
                 if(miniProg) miniProg.style.width = `${percent}%`;
-                if(seekSlider) seekSlider.value = percent;
             }
-        });
-        
-        // 메타데이터 로드 시에도 전체 시간 설정
-        audio.addEventListener('loadedmetadata', () => { 
-            if (!isNaN(audio.duration) && isFinite(audio.duration)) {
-                timeDur.innerText = formatTime(audio.duration);
-            }
-        });
+        };
+
+        audio.addEventListener('timeupdate', updateTimeDisplay);
+        audio.addEventListener('loadedmetadata', updateTimeDisplay);
+        audio.addEventListener('durationchange', updateTimeDisplay);
 
         // 초기화 실행 (인증 먼저)
         if (auth) {
