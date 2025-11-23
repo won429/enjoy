@@ -188,7 +188,7 @@
                 </div>
             </div>
 
-            <!-- (2) 실시간 차트 (모두 재생 버튼 수정됨) -->
+            <!-- (2) 실시간 차트 -->
             <div class="mb-10">
                 <div class="flex justify-between items-center mb-4 px-6">
                     <div class="flex items-center gap-3">
@@ -361,16 +361,50 @@
         // ==================== 안전한 실행 보장 ====================
         document.addEventListener('DOMContentLoaded', () => {
 
-            // 🎵 차트 순위 및 변동 상태 (rankStatus)
-            // status: 'up' (상승), 'down' (하락), 'new' (신규), '-' (유지)
-            const songs = [
-                { id: 1, title: "빛", artist: "엔쪽이 OST Part.2", src: "./music.mp3", cover: "./cover.jpg", rankStatus: '-' }, // 1위 (유지)
-                { id: 2, title: "힘내라", artist: "엔쪽이 OST Part.1", src: "./music2.mp3", cover: "./cover.jpg", rankStatus: '-' }, // 2위 (유지)
-                { id: 4, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", src: "./music4.mp3", cover: "./cover3.jpg", rankStatus: 'up' }, // 3위 (상승)
-                { id: 5, title: "행복을 꿈꾸며 울다", artist: "엔조이", src: "./music5.mp3", cover: "./cover4.jpg", rankStatus: 'new' }, // 4위 (신규)
-                { id: 6, title: "털어", artist: "엔조이", src: "./music6.mp3", cover: "./cover5.jpg", rankStatus: 'new' }, // 5위 (신규)
-                { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", rankStatus: 'down' } // 6위 (하락)
+            // 🎵 노래 데이터 (rankStatus: 'new' 제거됨)
+            let songs = [
+                { id: 1, title: "빛", artist: "엔쪽이 OST Part.2", src: "./music.mp3", cover: "./cover.jpg", rankStatus: '-' }, 
+                { id: 2, title: "힘내라", artist: "엔쪽이 OST Part.1", src: "./music2.mp3", cover: "./cover.jpg", rankStatus: '-' }, 
+                { id: 4, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", src: "./music4.mp3", cover: "./cover3.jpg", rankStatus: 'up' }, 
+                { id: 5, title: "행복을 꿈꾸며 울다", artist: "엔조이", src: "./music5.mp3", cover: "./cover4.jpg", rankStatus: '-' }, 
+                { id: 6, title: "털어", artist: "엔조이", src: "./music6.mp3", cover: "./cover5.jpg", rankStatus: '-' }, 
+                { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", rankStatus: 'down' } 
             ];
+
+            // 1. localStorage에서 지난 순위 가져오기
+            const lastOrderJson = localStorage.getItem('chart_order');
+            let lastOrder = [];
+            if (lastOrderJson) {
+                try { lastOrder = JSON.parse(lastOrderJson); } catch (e) {}
+            }
+
+            // 2. 현재 목록 셔플 (랜덤 순위 생성)
+            for (let i = songs.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [songs[i], songs[j]] = [songs[j], songs[i]];
+            }
+
+            // 3. 지난 순위와 비교하여 실제 등락 계산
+            const currentOrderIds = songs.map(s => s.id);
+            songs.forEach((song, newIndex) => {
+                const oldIndex = lastOrder.indexOf(song.id);
+                
+                if (oldIndex === -1) {
+                    // 지난 기록에 없으면(신곡 등) 유지(-)
+                    song.rankStatus = '-';
+                } else {
+                    if (newIndex < oldIndex) {
+                        song.rankStatus = 'up';   // 순위 상승 (숫자가 작아짐)
+                    } else if (newIndex > oldIndex) {
+                        song.rankStatus = 'down'; // 순위 하락 (숫자가 커짐)
+                    } else {
+                        song.rankStatus = '-';    // 순위 유지
+                    }
+                }
+            });
+
+            // 4. 현재 순위 저장 (다음 방문 시 비교용)
+            localStorage.setItem('chart_order', JSON.stringify(currentOrderIds));
             
             // 🔜 Coming Soon 목록
             const comingSoonSongs = [
@@ -395,7 +429,7 @@
             const fullChartList = document.getElementById('full-chart-list');
             const btnMoreChart = document.getElementById('btn-more-chart');
             const btnCloseChart = document.getElementById('btn-close-chart');
-            const btnPlayAll = document.getElementById('btn-play-all'); // 모두 재생 버튼
+            const btnPlayAll = document.getElementById('btn-play-all'); 
             const newAlbumList = document.getElementById('new-album-list');
             const comingSoonList = document.getElementById('coming-soon-list');
             const playerScreen = document.getElementById('player-screen');
@@ -446,7 +480,7 @@
             btnMoreChart.onclick = () => { fullChartView.classList.remove('translate-x-full'); };
             btnCloseChart.onclick = () => { fullChartView.classList.add('translate-x-full'); };
 
-            // ▶ 모두 재생 버튼 로직
+            // ▶ 모두 재생 버튼 로직 (수정됨: 강제 재생 처리)
             btnPlayAll.onclick = () => {
                 if (currentIdx === 0) {
                     playerScreen.classList.remove('translate-y-full');
