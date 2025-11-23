@@ -383,7 +383,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // [중요] 사용자가 제공한 Firebase 설정 적용
@@ -449,6 +449,7 @@
         let isLiked = false; 
         let isRepeat = false;
         let songStats = {};
+        let unsubscribeSnapshot = null; // 리스너 추적 변수
 
         // DOM 요소 가져오기
         const audio = document.getElementById('audio');
@@ -515,28 +516,35 @@
         noticeClose.onclick = () => noticeModal.classList.add('hidden');
         noticeModal.onclick = (e) => { if (e.target === noticeModal) noticeModal.classList.add('hidden'); };
 
-        // 2. Firebase 초기화 및 데이터 리스닝
-        async function initFirebase() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                     await signInWithCustomToken(auth, __initial_auth_token);
+        // 2. Firebase 초기화 (안정화된 패턴 적용)
+        function initFirebase() {
+            // 인증 상태 변화를 감지하여 처리
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // 로그인 성공 시 리스너 연결
+                    setupRealtimeListener();
                 } else {
-                     await signInAnonymously(auth);
+                    // 로그아웃 상태라면 익명 로그인 시도
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        signInWithCustomToken(auth, __initial_auth_token).catch(e => console.error("Token Sign-in failed", e));
+                    } else {
+                        signInAnonymously(auth).catch(e => console.error("Anon Sign-in failed", e));
+                    }
                 }
-                setupRealtimeListener();
-            } catch (e) {
-                console.error("Auth failed", e);
-                // 인증 실패 시에도 화면은 나오도록 렌더링 호출
-                renderAll();
-            }
+            });
         }
 
         function setupRealtimeListener() {
-            // Firestore 경로 설정 (appId가 없을 경우 대비)
+            // 기존 리스너 해제 (중복 방지)
+            if (unsubscribeSnapshot) {
+                unsubscribeSnapshot();
+            }
+
+            // Firestore 경로 설정
             const safeAppId = appId || 'default-app-id';
             const statsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'song_stats');
             
-            onSnapshot(statsRef, (snapshot) => {
+            unsubscribeSnapshot = onSnapshot(statsRef, (snapshot) => {
                 songStats = {};
                 snapshot.forEach(doc => {
                     songStats[doc.id] = doc.data().count || 0;
@@ -544,7 +552,7 @@
                 updateRankings();
             }, (error) => {
                 console.error("Snapshot error:", error);
-                // 에러 발생 시에도 화면 렌더링은 진행
+                // 에러 발생 시에도 화면은 나오도록
                 renderAll();
             });
         }
@@ -585,7 +593,6 @@
 
         async function incrementPlayCount(songId) {
             if (!auth.currentUser) return;
-            // Firestore 경로 설정 (appId가 없을 경우 대비)
             const safeAppId = appId || 'default-app-id';
             const docRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'song_stats', String(songId));
             try {
