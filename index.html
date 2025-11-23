@@ -132,16 +132,25 @@
         </div>
     </div>
 
-    <!-- ==================== 공지사항 팝업 (업데이트 안내) ==================== -->
+    <!-- ==================== 공지사항 팝업 (업데이트 & 신곡 안내) ==================== -->
     <div id="notice-modal" class="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center px-6">
         <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl border border-gray-100 scale-in relative">
             <div class="w-12 h-12 bg-[#005ED2]/10 rounded-full flex items-center justify-center mx-auto mb-4 text-[#005ED2]">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             </div>
-            <h3 class="text-lg font-bold text-black mb-2">업데이트 안내</h3>
-            <p class="text-gray-600 text-sm mb-6 break-keep leading-relaxed">
-                실시간 차트가 <span class="text-[#005ED2] font-bold">실제로 작동하는 것</span>으로<br>변경되었습니다! 🎉<br><span class="text-xs text-gray-400">(노래를 재생하면 순위가 올라갑니다)</span>
-            </p>
+            <h3 class="text-lg font-bold text-black mb-4">업데이트 & 신곡 안내</h3>
+            <div class="text-gray-600 text-sm mb-6 break-keep leading-relaxed space-y-4">
+                <div>
+                    <p class="mb-1">📊 <span class="text-[#005ED2] font-bold">실시간 차트</span> 집계 시작!</p>
+                    <p class="text-xs text-gray-400">(노래를 재생하면 순위가 올라갑니다)</p>
+                </div>
+                <div class="w-full h-[1px] bg-gray-100"></div>
+                <div>
+                    <p class="mb-1">🔥 <strong>신곡 2곡 발매</strong> 🔥</p>
+                    <p class="text-black font-medium">'똥을 싸고 손을 씻자', '미친 밤'</p>
+                    <p class="mt-1">많은 감상 부탁드립니다! 🎧</p>
+                </div>
+            </div>
             <button id="notice-close" class="w-full bg-[#005ED2] text-white font-bold py-3 rounded-xl hover:bg-[#004bb5] transition-colors shadow-lg shadow-[#005ED2]/30">
                 확인
             </button>
@@ -380,13 +389,14 @@
     <!-- 메인 오디오 -->
     <audio id="audio" playsinline webkit-playsinline></audio>
 
-    <!-- Firebase SDK -->
+    <!-- 통합된 메인 스크립트 (Firebase + UI) -->
     <script type="module">
+        // 1. Firebase SDK Import
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // [중요] 사용자가 제공한 Firebase 설정 적용
+        // 2. Firebase 설정 (사용자가 제공한 정보 적용)
         const yourFirebaseConfig = {
             apiKey: "AIzaSyC-ufNqntX7Yf3gbu11FNUgSRwWN2bfvWc",
             authDomain: "play-enjoy-music.firebaseapp.com",
@@ -396,51 +406,60 @@
             appId: "1:678631946072:web:ee72c229360599aa00172d"
         };
 
+        // 3. Firebase 초기화 변수 선언
         let firebaseConfig;
         let appId;
+        let app, auth, db;
 
         try {
-            // 이 프리뷰 환경에서 자동으로 설정값을 가져오는 코드
             if (typeof __firebase_config !== 'undefined') {
-                // 따옴표가 있는 문자열로 들어올 경우를 대비해 파싱하거나 그대로 사용
                 firebaseConfig = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
             } else {
-                // GitHub 등 외부 환경에서는 직접 입력한 설정 사용
                 firebaseConfig = yourFirebaseConfig;
             }
             
             if (typeof __app_id !== 'undefined') {
                 appId = __app_id;
             } else {
-                appId = 'play-enjoy-music-app'; // 기본 앱 ID (임의 설정)
+                appId = 'play-enjoy-music-app'; 
             }
+
+            // 앱 초기화
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
         } catch (e) {
-            console.log("Config parsing failed, falling back to manual config.");
-            firebaseConfig = yourFirebaseConfig;
-            appId = 'play-enjoy-music-app';
+            console.error("Firebase config failed:", e);
+            // 에러 발생 시 기본값으로 폴백하거나 중단하지 않고 UI만 실행되도록 함
         }
 
-        // Firebase 초기화
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        
-        // 🎵 노래 데이터 (기본값)
+        // 4. 노래 데이터
         let songs = [
             { id: 1, title: "빛", artist: "엔쪽이 OST Part.2", src: "./music.mp3", cover: "./cover.jpg", playCount: 0, rankStatus: '-' }, 
             { id: 2, title: "힘내라", artist: "엔쪽이 OST Part.1", src: "./music2.mp3", cover: "./cover.jpg", playCount: 0, rankStatus: '-' }, 
-            { id: 4, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", src: "./music4.mp3", cover: "./cover3.jpg", playCount: 0, rankStatus: '-' }, 
+            { id: 4, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", src: "./music4.mp3", cover: "./cover3.jpg", playCount: 0, rankStatus: 'up' }, 
             { id: 5, title: "행복을 꿈꾸며 울다", artist: "엔조이", src: "./music5.mp3", cover: "./cover4.jpg", playCount: 0, rankStatus: '-' }, 
             { id: 6, title: "털어", artist: "엔조이", src: "./music6.mp3", cover: "./cover5.jpg", playCount: 0, rankStatus: '-' }, 
-            { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", playCount: 0, rankStatus: '-' } 
+            { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", playCount: 0, rankStatus: 'down' },
+            { id: 13, title: "똥을 싸고 손을 씻자", artist: "엔조이", src: "./music7.mp3", cover: "./cover12.jpg", playCount: 0, rankStatus: 'new' },
+            { id: 14, title: "미친 밤", artist: "엔조이", src: "./music8.mp3", cover: "./cover13.jpg", playCount: 0, rankStatus: 'new' }
         ];
 
-        // 이전 순위 저장 (로컬 스토리지)
         let lastRanking = [];
         try {
             const saved = localStorage.getItem('last_ranking_ids');
             if (saved) lastRanking = JSON.parse(saved);
         } catch(e) {}
+
+        // Coming Soon
+        const comingSoonSongs = [
+            { id: 12, title: "너의 모든 순간", artist: "현식", cover: "./cover11.jpg" }, 
+            { id: 9, title: "소주한잔", artist: "이상훈&류래완", cover: "./cover8.jpg" },
+            { id: 10, title: "노래방에서", artist: "홍준호", cover: "./cover9.jpg" },
+            { id: 11, title: "나팔바지", artist: "이상훈, 이진호, 류래완", cover: "./cover10.jpg" },
+            { id: 7, title: "미정", artist: "엔조이 숙려 캠프 OST", cover: "./cover6.jpg" },
+            { id: 8, title: "미정", artist: "출장엔조이 OST", cover: "./cover7.jpg" }
+        ];
 
         // 전역 변수
         let currentIdx = 0;
@@ -449,9 +468,9 @@
         let isLiked = false; 
         let isRepeat = false;
         let songStats = {};
-        let unsubscribeSnapshot = null; // 리스너 추적 변수
+        let unsubscribeSnapshot = null;
 
-        // DOM 요소 가져오기
+        // DOM Elements
         const audio = document.getElementById('audio');
         const chartSlider = document.getElementById('chart-slider');
         const fullChartView = document.getElementById('full-chart-view');
@@ -474,7 +493,6 @@
         const btnLike = document.getElementById('btn-like'); 
         const toneArm = document.getElementById('tone-arm');
         const btnRepeat = document.getElementById('btn-repeat'); 
-        
         const miniCover = document.getElementById('mini-cover');
         const miniTitle = document.getElementById('mini-title');
         const miniArtist = document.getElementById('mini-artist');
@@ -491,17 +509,7 @@
         const timeDur = document.getElementById('duration');
         const playerBgImage = document.getElementById('player-bg-image');
 
-        // 🔜 Coming Soon 목록
-        const comingSoonSongs = [
-            { id: 12, title: "너의 모든 순간", artist: "현식", cover: "./cover11.jpg" }, 
-            { id: 9, title: "소주한잔", artist: "이상훈&류래완", cover: "./cover8.jpg" },
-            { id: 10, title: "노래방에서", artist: "홍준호", cover: "./cover9.jpg" },
-            { id: 11, title: "나팔바지", artist: "이상훈, 이진호, 류래완", cover: "./cover10.jpg" },
-            { id: 7, title: "미정", artist: "엔조이 숙려 캠프 OST", cover: "./cover6.jpg" },
-            { id: 8, title: "미정", artist: "출장엔조이 OST", cover: "./cover7.jpg" }
-        ];
-
-        // 1. 인트로 처리 & 공지사항
+        // 인트로 처리
         let hasEntered = false;
         const enterHome = () => {
             if (hasEntered) return;
@@ -513,34 +521,15 @@
         setTimeout(enterHome, 3000);
         bootScreen.addEventListener('click', enterHome);
 
+        // 모달 관련
         noticeClose.onclick = () => noticeModal.classList.add('hidden');
         noticeModal.onclick = (e) => { if (e.target === noticeModal) noticeModal.classList.add('hidden'); };
+        popupClose.onclick = () => popupModal.classList.add('hidden');
+        popupModal.onclick = (e) => { if (e.target === popupModal) popupModal.classList.add('hidden'); };
 
-        // 2. Firebase 초기화 (안정화된 패턴 적용)
-        function initFirebase() {
-            // 인증 상태 변화를 감지하여 처리
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    // 로그인 성공 시 리스너 연결
-                    setupRealtimeListener();
-                } else {
-                    // 로그아웃 상태라면 익명 로그인 시도
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        signInWithCustomToken(auth, __initial_auth_token).catch(e => console.error("Token Sign-in failed", e));
-                    } else {
-                        signInAnonymously(auth).catch(e => console.error("Anon Sign-in failed", e));
-                    }
-                }
-            });
-        }
-
+        // Firebase 로직 함수
         function setupRealtimeListener() {
-            // 기존 리스너 해제 (중복 방지)
-            if (unsubscribeSnapshot) {
-                unsubscribeSnapshot();
-            }
-
-            // Firestore 경로 설정
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
             const safeAppId = appId || 'default-app-id';
             const statsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'song_stats');
             
@@ -551,9 +540,8 @@
                 });
                 updateRankings();
             }, (error) => {
-                console.error("Snapshot error:", error);
-                // 에러 발생 시에도 화면은 나오도록
-                renderAll();
+                console.warn("Snapshot error (offline?):", error);
+                renderAll(); // 에러 시 기본 렌더링
             });
         }
 
@@ -561,12 +549,12 @@
             songs.forEach(song => {
                 song.playCount = songStats[song.id] || 0;
             });
-
+            // 조회수 내림차순
             songs.sort((a, b) => {
                 if (b.playCount !== a.playCount) return b.playCount - a.playCount;
-                return a.id - b.id;
+                return a.id - b.id; // 같으면 오래된(ID작은) 순
             });
-
+            // 순위 변동 계산
             if (lastRanking.length > 0) {
                 songs.forEach((song, newIndex) => {
                     const oldIndex = lastRanking.indexOf(song.id);
@@ -576,12 +564,12 @@
                     else song.rankStatus = '-';
                 });
             }
-
             lastRanking = songs.map(s => s.id);
             localStorage.setItem('last_ranking_ids', JSON.stringify(lastRanking));
-
+            
             renderAll();
             
+            // 재생 중이면 인덱스 보정
             if (isPlaying || !audio.paused) {
                 const currentSongId = parseInt(audio.dataset.songId);
                 if (!isNaN(currentSongId)) {
@@ -592,17 +580,14 @@
         }
 
         async function incrementPlayCount(songId) {
-            if (!auth.currentUser) return;
+            if (!auth || !auth.currentUser) return;
             const safeAppId = appId || 'default-app-id';
             const docRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'song_stats', String(songId));
             try {
                 await setDoc(docRef, { count: increment(1) }, { merge: true });
-            } catch (e) {
-                console.error("Inc failed", e);
-            }
+            } catch (e) { console.error("Inc failed", e); }
         }
 
-        // 3. 렌더링 함수들
         function getRankHTML(status) {
             if (status === 'up') return `<span class="text-red-500 text-[10px] font-bold flex items-center justify-center">▲</span>`;
             if (status === 'down') return `<span class="text-blue-500 text-[10px] font-bold flex items-center justify-center">▼</span>`;
@@ -610,6 +595,7 @@
             return `<span class="text-gray-400 text-[10px] flex items-center justify-center">-</span>`;
         }
 
+        // 렌더링 함수들
         function renderAll() {
             renderNewAlbumList();
             renderChartList();
@@ -619,10 +605,9 @@
 
         const renderNewAlbumList = () => {
             newAlbumList.innerHTML = '';
-            const sortedByNewest = [...songs].sort((a, b) => b.id - a.id);
-            
+            const sortedByNewest = [...songs].sort((a, b) => b.id - a.id); // ID 큰게 최신
             sortedByNewest.forEach((song) => {
-                const originalIndex = songs.findIndex(s => s.id === song.id); 
+                const originalIndex = songs.findIndex(s => s.id === song.id);
                 const div = document.createElement('div');
                 div.className = "flex-shrink-0 w-40 group cursor-pointer";
                 div.innerHTML = `
@@ -833,7 +818,7 @@
             }
         });
 
-        // UI 이벤트들
+        // UI Events
         btnMoreChart.onclick = () => fullChartView.classList.remove('translate-x-full');
         btnCloseChart.onclick = () => fullChartView.classList.add('translate-x-full');
         btnPlayAll.onclick = () => {
@@ -871,7 +856,7 @@
             }
         };
 
-        // 재생바 및 시간 처리
+        // 재생바 로직
         function getClientX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
         function onScrub(e) {
             const rect = document.getElementById('progress-container').getBoundingClientRect();
@@ -916,15 +901,25 @@
         });
         audio.addEventListener('loadedmetadata', () => { timeDur.innerText = formatTime(audio.duration); });
 
-        function formatTime(s) {
-            if(isNaN(s) || !isFinite(s)) return "00:00";
-            const min = Math.floor(s / 60);
-            const sec = Math.floor(s % 60);
-            return `${min}:${sec < 10 ? '0'+sec : sec}`;
+        // 초기화 실행 (인증 먼저)
+        if (auth) {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    setupRealtimeListener();
+                } else {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        signInAnonymously(auth);
+                    }
+                }
+            });
+        } else {
+            renderAll(); // 인증 객체가 없어도 화면은 렌더링
         }
 
-        // 앱 시작
-        initFirebase();
+        // 초기 로딩 시 첫 곡 데이터 세팅
+        loadSongData(0);
 
     </script>
 </body>
