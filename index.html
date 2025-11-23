@@ -103,6 +103,10 @@
         }
         .anim-fly-up { animation: flyUpHeart 0.8s ease-out forwards; }
         .anim-return { animation: returnHeart 0.6s ease-in forwards; }
+
+        /* 모달 애니메이션 */
+        .scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body class="text-black overflow-hidden select-none h-[100dvh] w-screen fixed bg-white">
@@ -125,6 +129,22 @@
              </div>
              <h1 class="font-logo tracking-tight text-black text-4xl lowercase">Play enjoy</h1>
              <p class="text-gray-400 text-xs">화면을 터치하세요</p>
+        </div>
+    </div>
+
+    <!-- ==================== 공지사항 팝업 (업데이트 안내) ==================== -->
+    <div id="notice-modal" class="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center px-6">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl border border-gray-100 scale-in relative">
+            <div class="w-12 h-12 bg-[#005ED2]/10 rounded-full flex items-center justify-center mx-auto mb-4 text-[#005ED2]">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            </div>
+            <h3 class="text-lg font-bold text-black mb-2">업데이트 안내</h3>
+            <p class="text-gray-600 text-sm mb-6 break-keep leading-relaxed">
+                실시간 차트가 <span class="text-[#005ED2] font-bold">실제로 작동하는 것</span>으로<br>변경되었습니다! 🎉
+            </p>
+            <button id="notice-close" class="w-full bg-[#005ED2] text-white font-bold py-3 rounded-xl hover:bg-[#004bb5] transition-colors shadow-lg shadow-[#005ED2]/30">
+                확인
+            </button>
         </div>
     </div>
 
@@ -440,6 +460,8 @@
             const homeScreen = document.getElementById('home-screen');
             const popupModal = document.getElementById('popup-modal');
             const popupClose = document.getElementById('popup-close');
+            const noticeModal = document.getElementById('notice-modal');
+            const noticeClose = document.getElementById('notice-close');
             const btnLike = document.getElementById('btn-like'); 
             const toneArm = document.getElementById('tone-arm');
             const btnRepeat = document.getElementById('btn-repeat'); 
@@ -460,18 +482,26 @@
             const timeDur = document.getElementById('duration');
             const playerBgImage = document.getElementById('player-bg-image');
 
-            // 1. 인트로 처리
+            // 1. 인트로 처리 & 공지사항 팝업
             let hasEntered = false;
             const enterHome = () => {
                 if (hasEntered) return;
                 hasEntered = true;
                 bootScreen.classList.add('fade-out');
                 homeScreen.classList.remove('opacity-0');
+                
+                // 공지사항 팝업 띄우기 (0.5초 후)
+                setTimeout(() => {
+                    noticeModal.classList.remove('hidden');
+                }, 500);
             };
             setTimeout(enterHome, 3000);
             bootScreen.addEventListener('click', enterHome);
 
-            // 팝업 로직
+            // 팝업 닫기 로직
+            noticeClose.onclick = () => noticeModal.classList.add('hidden');
+            noticeModal.onclick = (e) => { if (e.target === noticeModal) noticeModal.classList.add('hidden'); };
+
             const showPopup = () => popupModal.classList.remove('hidden');
             popupClose.onclick = () => popupModal.classList.add('hidden');
             popupModal.onclick = (e) => { if (e.target === popupModal) popupModal.classList.add('hidden'); };
@@ -480,7 +510,7 @@
             btnMoreChart.onclick = () => { fullChartView.classList.remove('translate-x-full'); };
             btnCloseChart.onclick = () => { fullChartView.classList.add('translate-x-full'); };
 
-            // ▶ 모두 재생 버튼 로직 (수정됨: 강제 재생 처리)
+            // ▶ 모두 재생 버튼 로직
             btnPlayAll.onclick = () => {
                 if (currentIdx === 0) {
                     playerScreen.classList.remove('translate-y-full');
