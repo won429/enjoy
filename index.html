@@ -132,7 +132,7 @@
         </div>
     </div>
 
-    <!-- ==================== 공지사항 팝업 (업데이트 & 신곡 안내) ==================== -->
+    <!-- ==================== 공지사항 팝업 (업데이트 안내) ==================== -->
     <div id="notice-modal" class="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center px-6">
         <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl border border-gray-100 scale-in relative">
             <div class="w-12 h-12 bg-[#005ED2]/10 rounded-full flex items-center justify-center mx-auto mb-4 text-[#005ED2]">
@@ -343,10 +343,10 @@
                 <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" style="touch-action: none;">
             </div>
             
-            <!-- 시간 표시 -->
-            <div class="w-full flex justify-between text-[10px] text-white/40 font-mono font-medium tracking-wider">
-                <span id="current-time">00:00</span>
-                <span id="duration">00:00</span>
+            <!-- 시간 표시 (ID 변경 및 가독성 개선) -->
+            <div class="w-full flex justify-between text-[10px] text-white/60 font-mono font-medium tracking-wider">
+                <span id="player-time-current">00:00</span>
+                <span id="player-time-duration">00:00</span>
             </div>
 
             <!-- 컨트롤러 -->
@@ -505,8 +505,11 @@
         const progressFill = document.getElementById('progress-fill');
         const progressHandle = document.getElementById('progress-handle');
         const seekSlider = document.getElementById('seek-slider');
-        const timeCurr = document.getElementById('current-time');
-        const timeDur = document.getElementById('duration');
+        
+        // 시간 표시 요소 (ID 변경됨)
+        const timeCurr = document.getElementById('player-time-current');
+        const timeDur = document.getElementById('player-time-duration');
+        
         const playerBgImage = document.getElementById('player-bg-image');
 
         // 인트로 처리
@@ -889,17 +892,33 @@
         document.addEventListener('touchend', endScrub);
 
         audio.addEventListener('timeupdate', () => {
-            timeCurr.innerText = formatTime(audio.currentTime);
+            // 1. 현재 시간 업데이트 (재생 중이면 항상)
+            if (audio.currentTime) {
+                 timeCurr.innerText = formatTime(audio.currentTime);
+            }
+            
+            // 2. 전체 시간 업데이트 (가끔 초기 로드 안될 때 대비)
+            if (!isNaN(audio.duration) && isFinite(audio.duration)) {
+                 timeDur.innerText = formatTime(audio.duration);
+            }
+
+            // 3. 프로그레스 바 업데이트 (드래그 중이 아닐 때만)
             if (!isDragging && !isNaN(audio.duration) && isFinite(audio.duration)) {
                 const percent = (audio.currentTime / audio.duration) * 100;
                 progressFill.style.width = `${percent}%`;
                 progressHandle.style.left = `${percent}%`;
-                document.getElementById('mini-progress').style.width = `${percent}%`; 
-                seekSlider.value = percent;
+                const miniProg = document.getElementById('mini-progress');
+                if(miniProg) miniProg.style.width = `${percent}%`;
+                if(seekSlider) seekSlider.value = percent;
+            }
+        });
+        
+        // 메타데이터 로드 시에도 전체 시간 설정
+        audio.addEventListener('loadedmetadata', () => { 
+            if (!isNaN(audio.duration) && isFinite(audio.duration)) {
                 timeDur.innerText = formatTime(audio.duration);
             }
         });
-        audio.addEventListener('loadedmetadata', () => { timeDur.innerText = formatTime(audio.duration); });
 
         // 초기화 실행 (인증 먼저)
         if (auth) {
