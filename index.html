@@ -132,18 +132,34 @@
         </div>
     </div>
 
-    <!-- ==================== 🔔 공지사항 팝업 (Firebase 연동됨) ==================== -->
+    <!-- ==================== 공지사항 팝업 (업데이트 안내) ==================== -->
     <div id="notice-modal" class="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center px-6">
         <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl border border-gray-100 scale-in relative">
             <div class="w-12 h-12 bg-[#005ED2]/10 rounded-full flex items-center justify-center mx-auto mb-4 text-[#005ED2]">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             </div>
-            <!-- 공지 제목 및 내용이 여기에 로드됩니다 -->
-            <h3 id="notice-title" class="text-lg font-bold text-black mb-4">로딩중...</h3>
-            <div id="notice-content" class="text-gray-600 text-sm mb-6 break-keep leading-relaxed space-y-4"></div>
-            
+            <!-- ID 복구됨: notice-title, notice-content -->
+            <h3 id="notice-title" class="text-lg font-bold text-black mb-4">업데이트 & 신곡 안내</h3>
+            <div id="notice-content" class="text-gray-600 text-sm mb-6 break-keep leading-relaxed space-y-4">
+                <!-- 초기 로딩 시 보여질 내용 (JS가 로드되면 덮어씌워짐) -->
+                📊 실시간 차트 집계 시작!<br>(노래를 재생하면 순위가 올라갑니다)<br><br>🔥 신곡 2곡 발매 🔥<br>'똥을 싸고 손을 씻자', '미친 밤'<br>많은 감상 부탁드립니다! 🎧
+            </div>
             <button id="notice-close" class="w-full bg-[#005ED2] text-white font-bold py-3 rounded-xl hover:bg-[#004bb5] transition-colors shadow-lg shadow-[#005ED2]/30">
                 확인
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== 팝업 (모달) ==================== -->
+    <div id="popup-modal" class="fixed inset-0 z-[60] bg-black/30 backdrop-blur-sm hidden flex items-center justify-center px-6">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl border border-gray-100 scale-in">
+            <div class="w-12 h-12 bg-[#005ED2]/10 rounded-full flex items-center justify-center mx-auto mb-4 text-[#005ED2]">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+            <h3 class="text-lg font-bold text-black mb-2">Coming Soon</h3>
+            <p class="text-gray-500 text-sm mb-6">이 곡은 곧 공개될 예정입니다.<br>조금만 기다려주세요!</p>
+            <button id="popup-close" class="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 transition-colors">
+                닫기
             </button>
         </div>
     </div>
@@ -178,21 +194,7 @@
         </div>
     </div>
 
-    <!-- ==================== Coming Soon 팝업 ==================== -->
-    <div id="popup-modal" class="fixed inset-0 z-[60] bg-black/30 backdrop-blur-sm hidden flex items-center justify-center px-6">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl border border-gray-100 scale-in">
-            <div class="w-12 h-12 bg-[#005ED2]/10 rounded-full flex items-center justify-center mx-auto mb-4 text-[#005ED2]">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-            </div>
-            <h3 class="text-lg font-bold text-black mb-2">Coming Soon</h3>
-            <p class="text-gray-500 text-sm mb-6">이 곡은 곧 공개될 예정입니다.<br>조금만 기다려주세요!</p>
-            <button id="popup-close" class="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 transition-colors">
-                닫기
-            </button>
-        </div>
-    </div>
-
-    <!-- ==================== 전체 차트 뷰 (더보기) ==================== -->
+    <!-- ==================== 전체 차트 뷰 (더보기 - 흰색 테마) ==================== -->
     <div id="full-chart-view" class="fixed inset-0 z-[80] bg-white transform translate-x-full transition-transform duration-300 flex flex-col h-[100dvh] pb-32">
         <div class="px-6 pt-8 pb-4 flex items-center gap-4 bg-white/95 backdrop-blur-md sticky top-0 z-10 border-b border-gray-100">
             <button id="btn-close-chart" class="p-2 -ml-2 rounded-full text-black hover:bg-gray-100 transition-colors">
@@ -200,7 +202,9 @@
             </button>
             <h2 class="text-xl font-bold text-black">실시간 차트 TOP 100</h2>
         </div>
-        <div id="full-chart-list" class="flex-1 overflow-y-auto px-6 space-y-1"></div>
+        <div id="full-chart-list" class="flex-1 overflow-y-auto px-6 space-y-1 pb-20">
+            <!-- 전체 리스트가 여기에 생성됩니다 -->
+        </div>
     </div>
 
     <!-- ==================== 1. 홈 화면 ==================== -->
@@ -249,6 +253,7 @@
                 <div class="flex justify-between items-center mb-4 px-6">
                     <div class="flex items-center gap-3">
                         <h3 class="text-lg font-bold text-black">실시간 차트</h3>
+                        <!-- 모두 재생 버튼 -->
                         <button id="btn-play-all" class="text-[11px] text-[#005ED2] hover:text-white hover:bg-[#005ED2] border border-[#005ED2]/30 font-bold flex items-center gap-1 transition-colors px-2 py-1 rounded-full bg-[#005ED2]/5">
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                             모두 재생
@@ -366,7 +371,7 @@
                          <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
                     </button>
                 </div>
-                <button id="btn-repeat" class="text-white/30 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
+                <button id="btn-repeat" class.text-white/30 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
                 </button>
             </div>
@@ -437,13 +442,11 @@
             { id: 8, title: "미정", artist: "출장엔조이 OST", cover: "./cover7.jpg" }
         ];
 
-        // 기본 공지사항 (메모장 스타일: 줄바꿈을 <br>로 변환)
         const DEFAULT_NOTICE = {
             title: "업데이트 & 신곡 안내",
             content: "📊 실시간 차트 집계 시작!\n(노래를 재생하면 순위가 올라갑니다)\n\n🔥 신곡 2곡 발매 🔥\n'똥을 싸고 손을 씻자', '미친 밤'\n많은 감상 부탁드립니다! 🎧".replace(/\n/g, "<br>")
         };
 
-        // 전역 변수
         let currentIdx = 0;
         let isPlaying = false;
         let isDragging = false; 
@@ -487,11 +490,13 @@
         const progressFill = document.getElementById('progress-fill');
         const progressHandle = document.getElementById('progress-handle');
         const seekSlider = document.getElementById('seek-slider');
+        
+        // 시간 표시 요소
         const timeCurr = document.getElementById('player-time-current');
         const timeDur = document.getElementById('player-time-duration');
+        
         const playerBgImage = document.getElementById('player-bg-image');
 
-        // Admin DOM
         const btnAdminLogin = document.getElementById('btn-admin-login');
         const adminLoginModal = document.getElementById('admin-login-modal');
         const adminPwInput = document.getElementById('admin-pw-input');
@@ -503,9 +508,6 @@
         const adminEditCancel = document.getElementById('admin-edit-cancel');
         const adminEditSave = document.getElementById('admin-edit-save');
 
-        // --- 로직 시작 ---
-
-        // 1. 인트로
         let hasEntered = false;
         const enterHome = () => {
             if (hasEntered) return;
@@ -517,14 +519,12 @@
         setTimeout(enterHome, 3000);
         bootScreen.addEventListener('click', enterHome);
 
-        // 모달 닫기들
+        // 모달 관련
         noticeClose.onclick = () => noticeModal.classList.add('hidden');
         noticeModal.onclick = (e) => { if (e.target === noticeModal) noticeModal.classList.add('hidden'); };
         popupClose.onclick = () => popupModal.classList.add('hidden');
         popupModal.onclick = (e) => { if (e.target === popupModal) popupModal.classList.add('hidden'); };
 
-        // --- 관리자 기능 ---
-        
         btnAdminLogin.onclick = () => {
             adminPwInput.value = "";
             adminLoginModal.classList.remove('hidden');
@@ -541,36 +541,27 @@
             }
         };
 
-        const openAdminEdit = async () => {
+        // [수정] 함수 표현식 대신 함수 선언문 사용 (호이스팅 및 스코프 문제 방지)
+        async function openAdminEdit() {
             let currentNotice = DEFAULT_NOTICE;
             if (auth && db) {
                 const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice');
                 try {
                     const snap = await getDoc(noticeRef);
-                    if (snap.exists()) {
-                        currentNotice = snap.data();
-                    }
+                    if (snap.exists()) currentNotice = snap.data();
                 } catch (e) { console.error("Load notice fail:", e); }
             }
-            
             editNoticeTitle.value = currentNotice.title;
-            // 메모장 모드: DB의 <br>을 \n으로 바꿔서 보여줌
             editNoticeContent.value = currentNotice.content.replace(/<br\s*\/?>/gi, "\n");
             adminEditModal.classList.remove('hidden');
-        };
+        }
 
         adminEditCancel.onclick = () => adminEditModal.classList.add('hidden');
-
-        // 공지 저장 (메모장 모드: \n을 <br>로 바꿔서 저장)
+        
         adminEditSave.onclick = async () => {
             const newTitle = editNoticeTitle.value;
-            const newContent = editNoticeContent.value.replace(/\n/g, "<br>"); // 줄바꿈 변환
-            
-            if (!auth || !db) {
-                alert("DB 연결 실패");
-                return;
-            }
-
+            const newContent = editNoticeContent.value.replace(/\n/g, "<br>"); 
+            if (!auth || !db) { alert("DB 연결 실패"); return; }
             const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice');
             try {
                 await setDoc(noticeRef, { title: newTitle, content: newContent }, { merge: true });
@@ -589,7 +580,6 @@
                 if (doc.exists()) {
                     const data = doc.data();
                     document.getElementById('notice-title').innerText = data.title;
-                    // HTML(br태그 포함)로 렌더링
                     document.getElementById('notice-content').innerHTML = data.content;
                 } else {
                     document.getElementById('notice-title').innerText = DEFAULT_NOTICE.title;
@@ -598,19 +588,14 @@
             });
         }
 
-
-        // --- 기존 차트/플레이어 로직 ---
-
+        // Firebase 로직
         function setupRealtimeListener() {
             if (unsubscribeSnapshot) unsubscribeSnapshot();
             const safeAppId = appId || 'default-app-id';
             const statsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'song_stats');
-            
             unsubscribeSnapshot = onSnapshot(statsRef, (snapshot) => {
                 songStats = {};
-                snapshot.forEach(doc => {
-                    songStats[doc.id] = doc.data().count || 0;
-                });
+                snapshot.forEach(doc => { songStats[doc.id] = doc.data().count || 0; });
                 updateRankings();
             }, (error) => {
                 console.warn("Snapshot error:", error);
@@ -622,10 +607,12 @@
             songs.forEach(song => {
                 song.playCount = songStats[song.id] || 0;
             });
+            // 조회수 내림차순 (같으면 ID순)
             songs.sort((a, b) => {
                 if (b.playCount !== a.playCount) return b.playCount - a.playCount;
-                return a.id - b.id; 
+                return a.id - b.id;
             });
+            // 순위 변동 계산
             if (lastRanking.length > 0) {
                 songs.forEach((song, newIndex) => {
                     const oldIndex = lastRanking.indexOf(song.id);
@@ -653,9 +640,7 @@
             if (!auth || !auth.currentUser) return;
             const safeAppId = appId || 'default-app-id';
             const docRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'song_stats', String(songId));
-            try {
-                await setDoc(docRef, { count: increment(1) }, { merge: true });
-            } catch (e) { console.error("Inc failed", e); }
+            try { await setDoc(docRef, { count: increment(1) }, { merge: true }); } catch (e) { console.error("Inc failed", e); }
         }
 
         function getRankHTML(status) {
@@ -665,6 +650,7 @@
             return `<span class="text-gray-400 text-[10px] flex items-center justify-center">-</span>`;
         }
 
+        // 렌더링 함수들 (function 선언으로 변경하여 호이스팅 보장)
         function renderAll() {
             renderNewAlbumList();
             renderChartList();
@@ -672,7 +658,7 @@
             renderComingSoonList();
         }
 
-        const renderNewAlbumList = () => {
+        function renderNewAlbumList() {
             newAlbumList.innerHTML = '';
             const sortedByNewest = [...songs].sort((a, b) => b.id - a.id); 
             sortedByNewest.forEach((song) => {
@@ -698,9 +684,9 @@
                 div.addEventListener('click', () => openPlayer(originalIndex));
                 newAlbumList.appendChild(div);
             });
-        };
+        }
 
-        const renderChartList = () => {
+        function renderChartList() {
             chartSlider.innerHTML = '';
             const chunkSize = 3;
             for (let i = 0; i < songs.length; i += chunkSize) {
@@ -735,30 +721,31 @@
                 });
                 chartSlider.appendChild(slide);
             }
-        };
+        }
 
-        const renderFullChartList = () => {
+        function renderFullChartList() {
             fullChartList.innerHTML = '';
             songs.forEach((song, index) => {
                 const rank = index + 1;
                 const rankColorClass = rank <= 3 ? "text-[#005ED2]" : "text-gray-800";
                 const div = document.createElement('div');
-                div.className = "flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 active:scale-98 transition-all cursor-pointer border-b border-gray-100 last:border-0";
+                // [수정] 더보기 목록 아이템 크기 및 간격 조정 (p-5, mb-3)
+                div.className = "flex items-center gap-4 p-5 mb-3 rounded-2xl hover:bg-gray-100 active:scale-98 transition-all cursor-pointer border border-gray-100 shadow-sm";
                 div.innerHTML = `
-                    <div class="flex flex-col items-center justify-center w-8 mr-1 flex-shrink-0">
-                        <span class="${rankColorClass} text-lg font-bold font-logo leading-none mb-1">${rank}</span>
+                    <div class="flex flex-col items-center justify-center w-10 mr-2 flex-shrink-0">
+                        <span class="${rankColorClass} text-2xl font-bold font-logo leading-none mb-1">${rank}</span>
                         ${getRankHTML(song.rankStatus)}
                     </div>
-                    <div class="w-12 h-12 rounded-lg bg-gray-800 overflow-hidden relative flex-shrink-0">
+                    <div class="w-16 h-16 rounded-xl bg-gray-800 overflow-hidden relative flex-shrink-0 shadow-md">
                         <img src="${song.cover}" class="w-full h-full object-cover">
                     </div>
                     <div class="flex-1 min-w-0 flex flex-col justify-center">
-                        <h3 class="text-sm font-bold text-black leading-snug break-keep">${song.title}</h3>
-                        <p class="text-xs text-gray-500 mt-0.5 break-keep">${song.artist}</p>
-                        <p class="text-[10px] text-[#005ED2] mt-0.5 font-medium">${song.playCount}회 재생됨</p>
+                        <h3 class="text-base font-bold text-black leading-snug break-keep mb-1">${song.title}</h3>
+                        <p class="text-xs text-gray-500 break-keep">${song.artist}</p>
+                        <p class="text-[10px] text-[#005ED2] mt-1 font-medium bg-[#005ED2]/5 inline-block px-2 py-0.5 rounded-full w-fit">${song.playCount}회 재생됨</p>
                     </div>
-                    <button class="p-2 text-gray-400 hover:text-black flex-shrink-0">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    <button class="p-3 text-gray-400 hover:text-black flex-shrink-0">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                     </button>
                 `;
                 div.addEventListener('click', () => {
@@ -767,9 +754,9 @@
                 });
                 fullChartList.appendChild(div);
             });
-        };
+        }
 
-        const renderComingSoonList = () => {
+        function renderComingSoonList() {
             comingSoonList.innerHTML = '';
             comingSoonSongs.forEach((song) => {
                 const div = document.createElement('div');
@@ -789,7 +776,7 @@
                 div.addEventListener('click', () => popupModal.classList.remove('hidden'));
                 comingSoonList.appendChild(div);
             });
-        };
+        }
 
         const loadSongData = (index) => {
             const song = songs[index];
@@ -873,9 +860,13 @@
             if (isRepeat) {
                 audio.currentTime = 0; audio.play();
             } else {
-                if (currentIdx < songs.length - 1) {
-                    openPlayer(currentIdx + 1);
+                // 다음 곡 인덱스 계산
+                let nextIdx = currentIdx + 1;
+                if (nextIdx < songs.length) {
+                     // 다음 곡이 있으면 재생
+                    openPlayer(nextIdx);
                 } else {
+                    // 마지막 곡이면 정지
                     togglePlay(false); 
                     audio.currentTime = 0; 
                 }
@@ -884,14 +875,9 @@
 
         btnMoreChart.onclick = () => fullChartView.classList.remove('translate-x-full');
         btnCloseChart.onclick = () => fullChartView.classList.add('translate-x-full');
+        
         btnPlayAll.onclick = () => {
-            if (currentIdx === 0) {
-                playerScreen.classList.remove('translate-y-full');
-                miniPlayer.classList.remove('translate-y-full');
-                togglePlay(true); 
-            } else {
-                openPlayer(0);
-            }
+             openPlayer(0);
         };
 
         btnLike.onclick = () => {
