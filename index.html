@@ -116,7 +116,7 @@
         </div>
     </div>
 
-    <!-- 전체 차트 뷰 (더보기 - 디자인 개선: 여백 줄이고 꽉 채우기) -->
+    <!-- 전체 차트 뷰 (더보기 - 디자인 수정됨: 좁은 간격으로 꽉 채우기) -->
     <div id="full-chart-view" class="fixed inset-0 z-[80] bg-white transform translate-x-full transition-transform duration-300 flex flex-col h-[100dvh]">
         <div class="px-6 pt-8 pb-4 flex items-center gap-4 bg-white/95 backdrop-blur-md sticky top-0 z-10 border-b border-gray-100">
             <button id="btn-close-chart" class="p-2 -ml-2 rounded-full text-black hover:bg-gray-100 transition-colors">
@@ -124,7 +124,8 @@
             </button>
             <h2 class="text-xl font-bold text-black">실시간 차트 TOP 100</h2>
         </div>
-        <div id="full-chart-list" class="flex-1 overflow-y-auto px-4 space-y-3 pb-40 pt-4">
+        <!-- 리스트 컨테이너: pb-32로 하단 여백 조정 -->
+        <div id="full-chart-list" class="flex-1 overflow-y-auto px-0 pb-32">
             <!-- 리스트 아이템이 여기에 추가됨 -->
         </div>
     </div>
@@ -268,7 +269,7 @@
                          <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
                     </button>
                 </div>
-                <button id="btn-repeat" class="text-white/30 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
+                <button id="btn-repeat" class.text-white/30 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
                 </button>
             </div>
@@ -277,6 +278,7 @@
 
     <audio id="audio" playsinline webkit-playsinline></audio>
 
+    <!-- Firebase SDK & Main Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -308,6 +310,7 @@
 
         const today = new Date().toISOString().split('T')[0];
         
+        // 🎵 노래 데이터 (신곡 추가: 15, 16)
         let songs = [
             { id: 13, title: "똥을 싸고 손을 씻자", artist: "엔조이", src: "./music7.mp3", cover: "./cover12.jpg", playCount: 0, rankStatus: 'new', releaseDate: today },
             { id: 14, title: "미친 밤", artist: "엔조이", src: "./music8.mp3", cover: "./cover13.jpg", playCount: 0, rankStatus: 'new', releaseDate: today },
@@ -469,7 +472,7 @@
                 adminEditModal.classList.add('hidden');
             } catch (e) { alert("저장 실패: " + e.message); }
         };
-
+        
         function setupNoticeListener() {
             if (!auth || !db) return;
             const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice');
@@ -649,22 +652,23 @@
                 const rank = index + 1;
                 const rankColorClass = rank <= 3 ? "text-[#005ED2]" : "text-gray-800";
                 const div = document.createElement('div');
-                div.className = "flex items-center gap-4 p-4 mb-2 bg-gray-50/50 rounded-2xl hover:bg-gray-100 active:scale-98 transition-all cursor-pointer border border-gray-100 shadow-sm";
+                // [디자인 복구] 컴팩트하고 꽉 찬 리스트 스타일
+                div.className = "flex items-center gap-3 p-3 border-b border-gray-100 hover:bg-gray-50 active:scale-[0.99] transition-all cursor-pointer";
                 div.innerHTML = `
-                    <div class="flex flex-col items-center justify-center w-10 mr-2 flex-shrink-0">
-                        <span class="${rankColorClass} text-2xl font-bold font-logo leading-none mb-1">${rank}</span>
-                        <div class="flex flex-col items-center gap-0.5">${getRankHTML(song)}</div>
+                    <div class="flex flex-col items-center justify-center w-8 mr-2 flex-shrink-0">
+                        <span class="${rankColorClass} text-lg font-bold font-logo leading-none mb-0.5">${rank}</span>
+                        <div class="flex flex-col items-center gap-0.5 scale-90">${getRankHTML(song)}</div>
                     </div>
-                    <div class="w-12 h-12 rounded-lg bg-gray-800 overflow-hidden relative flex-shrink-0 shadow-md">
+                    <div class="w-12 h-12 rounded-lg bg-gray-800 overflow-hidden relative flex-shrink-0 shadow-sm">
                         <img src="${song.cover}" class="w-full h-full object-cover">
                     </div>
                     <div class="flex-1 min-w-0 flex flex-col justify-center">
-                        <h3 class="text-base font-bold text-black leading-snug break-keep mb-1">${song.title}</h3>
+                        <h3 class="text-sm font-bold text-black leading-tight break-keep mb-0.5">${song.title}</h3>
                         <p class="text-xs text-gray-500 break-keep">${song.artist}</p>
-                        <p class="text-[10px] text-[#005ED2] mt-1 font-medium bg-[#005ED2]/5 inline-block px-2 py-0.5 rounded-full w-fit">${song.playCount}회 재생됨</p>
+                        <p class="text-[9px] text-[#005ED2] mt-0.5 font-medium bg-[#005ED2]/5 inline-block px-1.5 py-0.5 rounded-full w-fit">${song.playCount}회 재생</p>
                     </div>
-                    <button class="p-3 text-gray-400 hover:text-black flex-shrink-0">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    <button class="p-2 text-gray-400 hover:text-black flex-shrink-0">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                     </button>
                 `;
                 div.addEventListener('click', () => {
@@ -792,8 +796,8 @@
         btnMoreChart.onclick = () => fullChartView.classList.remove('translate-x-full');
         btnCloseChart.onclick = () => fullChartView.classList.add('translate-x-full');
         
+        // [수정] 모두 재생: 현재 정렬된 차트의 0번째 곡부터 시작
         btnPlayAll.onclick = () => {
-             // songs 배열이 이미 차트 순서대로 정렬되어 있으므로 0번부터 재생
              openPlayer(0);
         };
 
