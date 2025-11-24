@@ -22,26 +22,29 @@
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
         
         body { 
+            /* G마켓 산스를 최우선으로 적용 */
             font-family: 'GmarketSansMedium', -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, "Noto Sans KR", sans-serif;
             -webkit-tap-highlight-color: transparent;
-            background-color: #ffffff;
+            background-color: #ffffff; /* 배경 흰색 */
         }
         
+        /* 로고 전용 폰트 */
         .font-logo {
             font-family: 'Hakgyoansim Dunggeunmiso', sans-serif;
             font-weight: 700; 
         }
         
+        /* LP 회전 애니메이션 */
         @keyframes spin-lp {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
         .lp-animation {
             animation: spin-lp 10s linear infinite;
-            animation-play-state: paused;
+            animation-play-state: paused; /* 기본 멈춤 */
         }
         .lp-animation.running {
-            animation-play-state: running;
+            animation-play-state: running; /* 재생 시 회전 */
         }
         
         .scrollbar-hide::-webkit-scrollbar { display: none; }
@@ -52,21 +55,25 @@
 
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
         
+        /* 재생바 트랜지션 */
         .smooth-transition { transition: width 0.1s linear, left 0.1s linear; }
         .no-transition { transition: none !important; }
 
+        /* 슬라이더 기본 스타일 제거 */
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
             box-shadow: none;
             border: none;
         }
 
+        /* 인트로 페이드 아웃 */
         .fade-out {
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.8s ease-out, visibility 0.8s;
         }
         
+        /* LP 질감 */
         .lp-texture {
             background: repeating-radial-gradient(
                 #111 0, 
@@ -76,10 +83,16 @@
             );
         }
 
+        /* ❤️ 하트 날아가는 효과 애니메이션 */
         @keyframes flyUpHeart {
             0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
             50% { opacity: 1; }
             100% { transform: translate(-50%, -50%) translateY(-60px) scale(1.5); opacity: 0; }
+        }
+        @keyframes returnHeart {
+            0% { transform: translate(-50%, -50%) translateY(-60px) scale(1.5); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translate(-50%, -50%) translateY(0) scale(1); opacity: 0; } 
         }
         
         .heart-effect {
@@ -89,20 +102,29 @@
             color: #005ED2; 
         }
         .anim-fly-up { animation: flyUpHeart 0.8s ease-out forwards; }
+        .anim-return { animation: returnHeart 0.6s ease-in forwards; }
 
+        /* 모달 애니메이션 */
         .scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body class="text-black overflow-hidden select-none h-[100dvh] w-screen fixed bg-white">
 
-    <!-- 인트로 -->
+    <!-- ==================== 0. 인트로 화면 (이미지 버전) ==================== -->
     <div id="boot-screen" class="fixed inset-0 z-[100] bg-white flex items-center justify-center cursor-pointer transition-opacity duration-1000">
+        <!-- intro.jpg 이미지가 화면에 꽉 차게 표시됩니다 -->
         <img src="./intro.jpg" class="w-full h-full object-cover animate-pulse" onerror="this.style.display='none'; document.getElementById('intro-fallback').classList.remove('hidden');">
+        
+        <!-- 이미지가 없을 경우 보여줄 대체 화면 -->
         <div id="intro-fallback" class="hidden flex flex-col items-center gap-4">
              <div class="text-[#005ED2] flex items-center justify-center scale-150 mb-2">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M5 10v4"></path><path d="M9 7v10"></path><path d="M13 4v16"></path><path d="M17 8v8"></path><path d="M21 11v2"></path>
+                    <path d="M5 10v4"></path>
+                    <path d="M9 7v10"></path>
+                    <path d="M13 4v16"></path>
+                    <path d="M17 8v8"></path>
+                    <path d="M21 11v2"></path>
                 </svg>
              </div>
              <h1 class="font-logo tracking-tight text-black text-4xl lowercase">Play enjoy</h1>
@@ -110,14 +132,16 @@
         </div>
     </div>
 
-    <!-- 공지사항 팝업 -->
+    <!-- ==================== 공지사항 팝업 (업데이트 안내) ==================== -->
     <div id="notice-modal" class="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center px-6">
         <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl border border-gray-100 scale-in relative">
             <div class="w-12 h-12 bg-[#005ED2]/10 rounded-full flex items-center justify-center mx-auto mb-4 text-[#005ED2]">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             </div>
+            <!-- ID 복구됨: notice-title, notice-content -->
             <h3 id="notice-title" class="text-lg font-bold text-black mb-4">업데이트 & 신곡 안내</h3>
             <div id="notice-content" class="text-gray-600 text-sm mb-6 break-keep leading-relaxed space-y-4">
+                <!-- 초기 로딩 시 보여질 내용 (JS가 로드되면 덮어씌워짐) -->
                 📊 실시간 차트 집계 시작!<br>(노래를 재생하면 순위가 올라갑니다)<br><br>🔥 신곡 2곡 발매 🔥<br>'똥을 싸고 손을 씻자', '미친 밤'<br>많은 감상 부탁드립니다! 🎧
             </div>
             <button id="notice-close" class="w-full bg-[#005ED2] text-white font-bold py-3 rounded-xl hover:bg-[#004bb5] transition-colors shadow-lg shadow-[#005ED2]/30">
@@ -126,7 +150,7 @@
         </div>
     </div>
 
-    <!-- Coming Soon 팝업 -->
+    <!-- ==================== 팝업 (모달) ==================== -->
     <div id="popup-modal" class="fixed inset-0 z-[60] bg-black/30 backdrop-blur-sm hidden flex items-center justify-center px-6">
         <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl border border-gray-100 scale-in">
             <div class="w-12 h-12 bg-[#005ED2]/10 rounded-full flex items-center justify-center mx-auto mb-4 text-[#005ED2]">
@@ -140,7 +164,7 @@
         </div>
     </div>
 
-    <!-- 관리자 로그인 모달 -->
+    <!-- ==================== 🔐 관리자 로그인 모달 ==================== -->
     <div id="admin-login-modal" class="fixed inset-0 z-[90] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center px-6">
         <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl scale-in">
             <h3 class="text-lg font-bold text-black mb-4">관리자 로그인</h3>
@@ -152,14 +176,17 @@
         </div>
     </div>
 
-    <!-- 관리자 공지 수정 모달 -->
+    <!-- ==================== ✏️ 관리자 공지 수정 모달 ==================== -->
     <div id="admin-edit-modal" class="fixed inset-0 z-[95] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center px-6">
         <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl scale-in">
             <h3 class="text-lg font-bold text-black mb-4 text-center">공지사항 수정</h3>
+            
             <label class="text-xs text-gray-500 block mb-1">제목</label>
             <input type="text" id="edit-notice-title" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-3 text-sm focus:outline-none focus:border-[#005ED2]">
+            
             <label class="text-xs text-gray-500 block mb-1">내용</label>
-            <textarea id="edit-notice-content" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4 h-32 text-xs resize-none focus:outline-none focus:border-[#005ED2] font-mono leading-relaxed" placeholder="내용을 입력하세요."></textarea>
+            <textarea id="edit-notice-content" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4 h-32 text-xs resize-none focus:outline-none focus:border-[#005ED2] font-mono leading-relaxed" placeholder="내용을 입력하세요. (줄바꿈은 자동으로 처리됩니다)"></textarea>
+            
             <div class="flex gap-2">
                 <button id="admin-edit-cancel" class="flex-1 bg-gray-200 text-gray-600 font-bold py-3 rounded-xl">취소</button>
                 <button id="admin-edit-save" class="flex-1 bg-[#005ED2] text-white font-bold py-3 rounded-xl">등록하기</button>
@@ -167,7 +194,8 @@
         </div>
     </div>
 
-    <!-- 전체 차트 뷰 -->
+    <!-- ==================== 전체 차트 뷰 (더보기 - 수정됨) ==================== -->
+    <!-- pb-32 제거 (하단 여백 삭제) -->
     <div id="full-chart-view" class="fixed inset-0 z-[80] bg-white transform translate-x-full transition-transform duration-300 flex flex-col h-[100dvh]">
         <div class="px-6 pt-8 pb-4 flex items-center gap-4 bg-white/95 backdrop-blur-md sticky top-0 z-10 border-b border-gray-100">
             <button id="btn-close-chart" class="p-2 -ml-2 rounded-full text-black hover:bg-gray-100 transition-colors">
@@ -175,40 +203,62 @@
             </button>
             <h2 class="text-xl font-bold text-black">실시간 차트 TOP 100</h2>
         </div>
-        <div id="full-chart-list" class="flex-1 overflow-y-auto px-6 space-y-1 pb-40"></div>
+        <!-- 리스트 컨테이너: pb-40으로 충분한 하단 스크롤 여백 확보 -->
+        <div id="full-chart-list" class="flex-1 overflow-y-auto px-6 space-y-1 pb-40">
+            <!-- 전체 리스트가 여기에 생성됩니다 -->
+        </div>
     </div>
 
-    <!-- 1. 홈 화면 -->
+    <!-- ==================== 1. 홈 화면 ==================== -->
     <div id="home-screen" class="relative z-10 h-full flex flex-col opacity-0 transition-opacity duration-1000">
+        
+        <!-- 상단 네비게이션 -->
         <div class="px-6 pt-8 pb-4 flex justify-between items-center">
             <div class="flex items-center gap-2"> 
                 <div class="text-[#005ED2] flex items-center justify-center">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5 10v4"></path><path d="M9 7v10"></path><path d="M13 4v16"></path><path d="M17 8v8"></path><path d="M21 11v2"></path>
+                        <path d="M5 10v4"></path>
+                        <path d="M9 7v10"></path>
+                        <path d="M13 4v16"></path>
+                        <path d="M17 8v8"></path>
+                        <path d="M21 11v2"></path>
                     </svg>
                 </div>
-                <h1 class="font-logo tracking-tight text-black text-2xl lowercase pt-1">Play enjoy</h1>
+                <h1 class="font-logo tracking-tight text-black text-2xl lowercase pt-1">
+                    Play enjoy
+                </h1>
             </div>
+            
             <div class="flex items-center gap-2">
-                 <button id="btn-admin-login" class="p-2 rounded-full text-gray-400 hover:text-[#005ED2] hover:bg-gray-100 transition-colors">
+                 <!-- 👤 관리자 로그인 버튼 -->
+                <button id="btn-admin-login" class="p-2 rounded-full text-gray-400 hover:text-[#005ED2] hover:bg-gray-100 transition-colors">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 </button>
+                <!-- 뒤로가기 버튼 -->
                 <a href="https://won429.github.io/enjoysite/" class="p-2 rounded-full text-gray-400 hover:text-[#005ED2] hover:bg-gray-100 transition-colors">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                 </a>
             </div>
         </div>
 
+        <!-- 메인 스크롤 영역 -->
         <div class="flex-1 overflow-y-auto scrollbar-hide pb-32">
+            
+            <!-- (1) New Album -->
             <div class="mb-8 pl-6">
                 <p class="text-sm text-[#005ED2] font-bold mb-4">New Album</p>
                 <div class="flex gap-4 overflow-x-auto scrollbar-hide pr-6" id="new-album-list"></div>
             </div>
+
+            <!-- (2) 실시간 차트 -->
             <div class="mb-10">
                 <div class="flex justify-between items-center mb-4 px-6">
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
                         <h3 class="text-lg font-bold text-black">실시간 차트</h3>
-                        <button id="btn-play-all" class="text-[11px] text-[#005ED2] hover:text-white hover:bg-[#005ED2] border border-[#005ED2]/30 font-bold flex items-center gap-1 transition-colors px-2 py-1 rounded-full bg-[#005ED2]/5">
+                        <!-- 시간 표시 추가 -->
+                        <span id="chart-time" class="text-xs text-gray-400 font-medium pt-1"></span>
+                        <!-- 모두 재생 버튼 -->
+                        <button id="btn-play-all" class="text-[11px] text-[#005ED2] hover:text-white hover:bg-[#005ED2] border border-[#005ED2]/30 font-bold flex items-center gap-1 transition-colors px-2 py-1 rounded-full bg-[#005ED2]/5 ml-1">
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                             모두 재생
                         </button>
@@ -219,12 +269,15 @@
                 </div>
                 <div id="chart-slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide px-6 gap-4"></div>
             </div>
+
+            <!-- (3) Coming Soon -->
             <div class="pl-6 mb-8">
                 <p class="text-sm text-[#005ED2] font-bold mb-4">Coming Soon</p>
                 <div class="flex gap-4 overflow-x-auto scrollbar-hide pr-6" id="coming-soon-list"></div>
             </div>
         </div>
 
+        <!-- 🔥 미니 플레이어 -->
         <div id="mini-player" class="absolute bottom-0 left-0 right-0 bg-[#1E1E1E] border-t border-white/5 px-4 pt-3 pb-safe cursor-pointer translate-y-full transition-transform duration-300 z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
             <div class="flex items-center justify-between mb-1 pointer-events-none"> 
                 <div class="flex items-center gap-3">
@@ -249,7 +302,7 @@
         </div>
     </div>
 
-    <!-- 2. 전체 플레이어 화면 -->
+    <!-- ==================== 2. 전체 플레이어 화면 ==================== -->
     <div id="player-screen" class="fixed inset-0 z-50 bg-[#0a0a0a] transform translate-y-full transition-transform duration-500 flex flex-col h-[100dvh]">
         <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
              <img id="player-bg-image" src="./cover.jpg" class="w-full h-full object-cover blur-3xl scale-150 brightness-50">
@@ -358,9 +411,8 @@
 
         // 오늘 날짜 구하기 (YYYY-MM-DD)
         const today = new Date().toISOString().split('T')[0];
-        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-
-        // 🎵 노래 데이터 (releaseDate 추가)
+        
+        // 🎵 노래 데이터
         let songs = [
             // 신곡 (오늘, 어제) -> NEW 표시
             { id: 13, title: "똥을 싸고 손을 씻자", artist: "엔조이", src: "./music7.mp3", cover: "./cover12.jpg", playCount: 0, rankStatus: 'new', releaseDate: today },
@@ -377,14 +429,18 @@
             { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" } 
         ];
 
-        // 이전 순위 스냅샷 로드 (1시간 단위 갱신용)
+        let lastRanking = [];
+        try {
+            const saved = localStorage.getItem('last_ranking_ids');
+            if (saved) lastRanking = JSON.parse(saved);
+        } catch(e) {}
+
         let rankingSnapshot = { timestamp: 0, ranking: [] };
         try {
             const saved = localStorage.getItem('chart_snapshot_v1');
             if (saved) rankingSnapshot = JSON.parse(saved);
         } catch(e) {}
 
-        // Coming Soon
         const comingSoonSongs = [
             { id: 12, title: "너의 모든 순간", artist: "현식", cover: "./cover11.jpg" }, 
             { id: 9, title: "소주한잔", artist: "이상훈&류래완", cover: "./cover8.jpg" },
@@ -445,8 +501,8 @@
         const timeCurr = document.getElementById('player-time-current');
         const timeDur = document.getElementById('player-time-duration');
         const playerBgImage = document.getElementById('player-bg-image');
+        const chartTime = document.getElementById('chart-time');
 
-        // Admin
         const btnAdminLogin = document.getElementById('btn-admin-login');
         const adminLoginModal = document.getElementById('admin-login-modal');
         const adminPwInput = document.getElementById('admin-pw-input');
@@ -466,9 +522,18 @@
             bootScreen.classList.add('fade-out');
             homeScreen.classList.remove('opacity-0');
             setTimeout(() => noticeModal.classList.remove('hidden'), 500);
+            updateChartTime(); // 차트 시간 업데이트
         };
         setTimeout(enterHome, 3000);
         bootScreen.addEventListener('click', enterHome);
+
+        // Chart Time Logic
+        const updateChartTime = () => {
+            const now = new Date();
+            const hours = now.getHours();
+            const timeString = `${hours}시 기준`;
+            if (chartTime) chartTime.innerText = timeString;
+        };
 
         // Modal Control
         noticeClose.onclick = () => noticeModal.classList.add('hidden');
@@ -709,22 +774,23 @@
                 const rank = index + 1;
                 const rankColorClass = rank <= 3 ? "text-[#005ED2]" : "text-gray-800";
                 const div = document.createElement('div');
-                div.className = "flex items-center gap-4 p-3 rounded-xl hover:bg-gray-100 active:scale-98 transition-all cursor-pointer border-b border-gray-100 last:border-0";
+                // [수정] 더보기 목록 아이템 크기 및 간격 조정 (p-5, mb-3)
+                div.className = "flex items-center gap-4 p-5 mb-3 rounded-2xl hover:bg-gray-100 active:scale-98 transition-all cursor-pointer border border-gray-100 shadow-sm";
                 div.innerHTML = `
-                    <div class="flex flex-col items-center justify-center w-8 mr-2 flex-shrink-0">
-                        <span class="${rankColorClass} text-lg font-bold font-logo leading-none mb-1">${rank}</span>
+                    <div class="flex flex-col items-center justify-center w-10 mr-2 flex-shrink-0">
+                        <span class="${rankColorClass} text-2xl font-bold font-logo leading-none mb-1">${rank}</span>
                         <div class="flex flex-col items-center gap-0.5">${getRankHTML(song)}</div>
                     </div>
-                    <div class="w-12 h-12 rounded-lg bg-gray-800 overflow-hidden relative flex-shrink-0 shadow-md">
+                    <div class="w-16 h-16 rounded-xl bg-gray-800 overflow-hidden relative flex-shrink-0 shadow-md">
                         <img src="${song.cover}" class="w-full h-full object-cover">
                     </div>
                     <div class="flex-1 min-w-0 flex flex-col justify-center">
-                        <h3 class="text-sm font-bold text-black leading-snug break-keep">${song.title}</h3>
+                        <h3 class="text-base font-bold text-black leading-snug break-keep mb-1">${song.title}</h3>
                         <p class="text-xs text-gray-500 break-keep">${song.artist}</p>
-                        <p class="text-[10px] text-[#005ED2] mt-0.5 font-medium">${song.playCount}회 재생됨</p>
+                        <p class="text-[10px] text-[#005ED2] mt-1 font-medium bg-[#005ED2]/5 inline-block px-2 py-0.5 rounded-full w-fit">${song.playCount}회 재생됨</p>
                     </div>
-                    <button class="p-2 text-gray-400 hover:text-black flex-shrink-0">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    <button class="p-3 text-gray-400 hover:text-black flex-shrink-0">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                     </button>
                 `;
                 div.addEventListener('click', () => {
@@ -839,10 +905,13 @@
             if (isRepeat) {
                 audio.currentTime = 0; audio.play();
             } else {
+                // 다음 곡 인덱스 계산
                 let nextIdx = currentIdx + 1;
                 if (nextIdx < songs.length) {
-                     openPlayer(nextIdx);
+                     // 다음 곡이 있으면 재생
+                    openPlayer(nextIdx);
                 } else {
+                    // 마지막 곡이면 정지
                     togglePlay(false); 
                     audio.currentTime = 0; 
                 }
@@ -851,6 +920,8 @@
 
         btnMoreChart.onclick = () => fullChartView.classList.remove('translate-x-full');
         btnCloseChart.onclick = () => fullChartView.classList.add('translate-x-full');
+        
+        // [수정] 모두 재생 버튼 - 차트 1위부터 재생 시작
         btnPlayAll.onclick = () => {
              openPlayer(0);
         };
