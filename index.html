@@ -55,42 +55,55 @@
         .scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* 가사 스타일 업그레이드 - GPU 가속 활용 (scale) */
+        /* 가사 스타일 업그레이드 */
         .lyric-line {
-            /* font-size 애니메이션 제거 -> scale 사용으로 부드러움 극대화 */
+            /* 색상 변화를 더욱 눈에 띄게 하기 위해 color transition 시간 조정 */
             transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), 
                         opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
                         filter 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-                        color 0.6s ease;
-            opacity: 0.3;
+                        color 1.2s ease-in-out; /* 1.2초 동안 부드럽게 색상 변경 */
+            
+            opacity: 0.4; /* 기본 투명도 */
             transform: scale(0.95) translateX(0);
-            transform-origin: left center; /* 왼쪽 기준 확대 */
+            transform-origin: left center;
             filter: blur(1px); 
-            font-size: 1.8rem; /* 기본 크기 고정 */
+            font-size: 1.8rem;
             font-weight: 700;
-            color: rgba(255, 255, 255, 0.6);
+            
+            /* 비활성 상태 색상을 좀 더 어둡게 하여 활성 상태(흰색)와 대비를 줌 */
+            color: rgba(255, 255, 255, 0.35); 
+            
             margin-bottom: 2.5rem;
-            line-height: 1.4;
+            line-height: 1.5;
             cursor: pointer;
-            will-change: transform, opacity, filter; /* 성능 최적화 힌트 */
-        }
-        .lyric-line:hover {
-            opacity: 0.6;
-        }
-        .lyric-line.active {
-            opacity: 1 !important;
-            transform: scale(1.15) translateX(10px); /* 1.15배 확대 */
-            filter: blur(0);
-            /* font-size 변경 없음 -> 끊김 제거 */
-            color: #ffffff !important;
-            text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            will-change: transform, opacity, filter, color;
+            
+            /* [수정됨] 가사 잘림 방지 및 줄바꿈 처리 */
+            white-space: pre-wrap;       /* 줄바꿈 문자는 유지하되, 너비 넘치면 자동 줄바꿈 */
+            word-break: keep-all;        /* 한글 단어 단위로 끊어 읽기 좋게 줄바꿈 */
+            overflow-wrap: break-word;   /* 긴 단어가 있어도 강제로 줄바꿈하여 화면 밖으로 나가지 않게 함 */
+            max-width: 100%;             /* 부모 컨테이너 너비를 넘지 않도록 설정 */
         }
 
-        /* 마스크 이미지 - 상단 페이드 영역 축소하여 윗공간 활용 */
+        .lyric-line:hover {
+            opacity: 0.6;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* 활성 상태 클래스 */
+        .lyric-line.active {
+            opacity: 1 !important;
+            transform: scale(1.1) translateX(5px); 
+            filter: blur(0);
+            color: #ffffff !important; /* 완전한 흰색 */
+            text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6); /* 텍스트 그림자로 가독성 강화 */
+        }
+
+        /* 마스크 이미지 */
         .lyrics-mask {
             mask-image: linear-gradient(to bottom, 
                 transparent 0%, 
-                black 5%,  /* 5%부터 완전 불투명 */
+                black 5%,
                 black 85%, 
                 transparent 100%
             );
@@ -108,7 +121,7 @@
         }
         .lyrics-closed {
             opacity: 0;
-            transform: scale(0.95); /* 살짝 작아지며 사라짐 */
+            transform: scale(0.95);
             pointer-events: none;
             visibility: hidden;
         }
