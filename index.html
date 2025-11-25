@@ -99,16 +99,33 @@
         .lyrics-mask {
             mask-image: linear-gradient(to bottom, 
                 transparent 0%, 
-                black 15%, 
-                black 85%, 
+                black 10%, 
+                black 90%, 
                 transparent 100%
             );
             -webkit-mask-image: linear-gradient(to bottom, 
                 transparent 0%, 
-                black 15%, 
-                black 85%, 
+                black 10%, 
+                black 90%, 
                 transparent 100%
             );
+        }
+
+        /* 가사 화면 트랜지션 클래스 */
+        #lyrics-overlay {
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .lyrics-closed {
+            opacity: 0;
+            transform: translateY(30px) scale(0.98);
+            pointer-events: none;
+            visibility: hidden;
+        }
+        .lyrics-open {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+            visibility: visible;
         }
     </style>
 </head>
@@ -277,7 +294,7 @@
             </div>
             
             <!-- 가사 오버레이 (풀 스크린 & 그라데이션 배경 적용) -->
-            <div id="lyrics-overlay" class="fixed inset-0 z-[60] hidden flex flex-col transition-opacity duration-500">
+            <div id="lyrics-overlay" class="fixed inset-0 z-[60] flex flex-col lyrics-closed">
                  <!-- 배경: 앨범 아트 기반 그라데이션 -->
                  <div class="absolute inset-0 z-0">
                      <img id="lyrics-bg-image" src="./cover.jpg" class="w-full h-full object-cover blur-3xl scale-150 brightness-[0.4]">
@@ -871,6 +888,30 @@
             return result;
         }
 
+        // 특정 가사 위치로 즉시 스크롤 (애니메이션 없이 - 초기 로딩용)
+        function scrollToActiveLyricImmediate() {
+            if (!isLyricsOpen || currentLyrics.length === 0) return;
+            const currentTime = audio.currentTime;
+            let activeIdx = -1;
+            for (let i = 0; i < currentLyrics.length; i++) {
+                if (currentTime >= currentLyrics[i].time) activeIdx = i;
+                else break;
+            }
+            if (activeIdx === -1) activeIdx = 0; // 처음 시작 시 첫 줄로
+
+            const lines = lyricsContent.getElementsByClassName('lyric-line');
+            if (lines[activeIdx]) {
+                // 상단 30% 지점에 위치하도록 계산
+                const offset = lines[activeIdx].offsetTop - lyricsContent.clientHeight * 0.3;
+                lyricsContent.scrollTo({ top: offset, behavior: 'auto' });
+                
+                for (let i = 0; i < lines.length; i++) {
+                    if (i === activeIdx) lines[i].classList.add('active');
+                    else lines[i].classList.remove('active');
+                }
+            }
+        }
+
         function syncLyrics() {
             if (!isLyricsOpen || currentLyrics.length === 0) return;
             const currentTime = audio.currentTime;
@@ -887,9 +928,11 @@
             const lines = lyricsContent.getElementsByClassName('lyric-line');
             for (let i = 0; i < lines.length; i++) {
                 if (i === activeIdx) {
-                    lines[i].classList.add('active');
-                    // 가사 화면 중앙에 오도록 자동 스크롤
-                    lines[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (!lines[i].classList.contains('active')) {
+                        lines[i].classList.add('active');
+                        // 활성화 시 부드럽게 중앙(혹은 상단)으로 스크롤
+                        lines[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                 } else {
                     lines[i].classList.remove('active');
                 }
@@ -898,15 +941,22 @@
         
         if(btnLyrics) {
             btnLyrics.addEventListener('click', () => {
-                isLyricsOpen = !isLyricsOpen;
-                if (isLyricsOpen) {
+                if (!isLyricsOpen) {
+                    // 열기 전 위치 미리 잡기 (깜빡임 방지)
+                    isLyricsOpen = true;
+                    lyricsOverlay.classList.remove('lyrics-closed');
+                    lyricsOverlay.classList.add('lyrics-open');
                     btnLyrics.classList.remove('text-white/40');
                     btnLyrics.classList.add('text-[#005ED2]');
-                    lyricsOverlay.classList.remove('hidden');
+                    
+                    // 즉시 위치 보정
+                    scrollToActiveLyricImmediate();
                 } else {
+                    isLyricsOpen = false;
+                    lyricsOverlay.classList.remove('lyrics-open');
+                    lyricsOverlay.classList.add('lyrics-closed');
                     btnLyrics.classList.add('text-white/40');
                     btnLyrics.classList.remove('text-[#005ED2]');
-                    lyricsOverlay.classList.add('hidden');
                 }
             });
         }
@@ -915,9 +965,10 @@
         if (btnCloseLyrics) {
             btnCloseLyrics.addEventListener('click', () => {
                 isLyricsOpen = false;
+                lyricsOverlay.classList.remove('lyrics-open');
+                lyricsOverlay.classList.add('lyrics-closed');
                 btnLyrics.classList.add('text-white/40');
                 btnLyrics.classList.remove('text-[#005ED2]');
-                lyricsOverlay.classList.add('hidden');
             });
         }
 
