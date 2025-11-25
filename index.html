@@ -57,15 +57,15 @@
 
         /* 가사 스타일 업그레이드 */
         .lyric-line {
-            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); /* 더 부드러운 전환 */
             opacity: 0.3;
             transform: scale(0.95);
-            transform-origin: left center; /* 왼쪽 기준 확대 */
-            filter: blur(0.5px);
-            font-size: 1.5rem; /* 기본 크기 */
+            transform-origin: left center;
+            filter: blur(0.8px); /* 블러 효과 강화 */
+            font-size: 1.6rem;
             font-weight: 600;
-            color: #e4e4e7; /* zinc-200 */
-            margin-bottom: 2rem; /* 간격 넓힘 */
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2.5rem;
             line-height: 1.4;
             cursor: pointer;
         }
@@ -74,14 +74,41 @@
         }
         .lyric-line.active {
             opacity: 1 !important;
-            transform: scale(1.1); /* 더 크게 확대 */
+            transform: scale(1.05);
             filter: blur(0);
-            font-size: 2rem; /* 강조 크기 */
+            font-size: 2.2rem;
             font-weight: 800;
             color: #ffffff !important;
             text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            margin-bottom: 2.5rem; /* 활성 가사 주변 여백 확보 */
-            margin-top: 0.5rem;
+            margin-bottom: 3rem;
+            margin-top: 1rem;
+        }
+
+        /* 가사 화면 배경 그라데이션 애니메이션 */
+        @keyframes gradient-move {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .animated-gradient-bg {
+            background-size: 200% 200%;
+            animation: gradient-move 15s ease infinite;
+        }
+        
+        /* 마스크 이미지로 자연스러운 페이드 처리 */
+        .lyrics-mask {
+            mask-image: linear-gradient(to bottom, 
+                transparent 0%, 
+                black 15%, 
+                black 85%, 
+                transparent 100%
+            );
+            -webkit-mask-image: linear-gradient(to bottom, 
+                transparent 0%, 
+                black 15%, 
+                black 85%, 
+                transparent 100%
+            );
         }
     </style>
 </head>
@@ -231,7 +258,7 @@
     <div id="player-screen" class="fixed inset-0 z-50 bg-[#0a0a0a] transform translate-y-full transition-transform duration-500 flex flex-col h-[100dvh]">
         <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
              <img id="player-bg-image" src="./cover.jpg" class="w-full h-full object-cover blur-3xl scale-150 brightness-50">
-             <div class="absolute inset-0 bg-black/30"></div> <!-- 배경 어둡게 처리 -->
+             <div class="absolute inset-0 bg-black/30"></div>
              <div class="bg-noise"></div>
         </div>
         <div class="relative z-10 flex justify-between items-center p-6 pt-10">
@@ -249,24 +276,29 @@
                 <p class="mt-1 opacity-75 text-[10px]">music.mp3 확인 필요</p>
             </div>
             
-            <!-- 가사 오버레이 (디자인 변경) -->
-            <div id="lyrics-overlay" class="hidden absolute inset-0 bg-black/40 backdrop-blur-md z-40 flex flex-col transition-opacity duration-500">
-                 <div class="flex justify-between items-center p-6 pt-10">
-                     <div class="w-10"></div> <!-- spacer -->
+            <!-- 가사 오버레이 (풀 스크린 & 그라데이션 배경 적용) -->
+            <div id="lyrics-overlay" class="fixed inset-0 z-[60] hidden flex flex-col transition-opacity duration-500">
+                 <!-- 배경: 앨범 아트 기반 그라데이션 -->
+                 <div class="absolute inset-0 z-0">
+                     <img id="lyrics-bg-image" src="./cover.jpg" class="w-full h-full object-cover blur-3xl scale-150 brightness-[0.4]">
+                     <div class="absolute inset-0 bg-black/30 backdrop-blur-xl"></div>
+                 </div>
+
+                 <!-- 가사 화면 상단 (닫기 버튼) -->
+                 <div class="relative z-10 flex justify-between items-center p-6 pt-10">
+                     <div class="w-10"></div> 
                      <span class="text-[10px] font-bold tracking-[0.2em] text-white/50">LYRICS</span>
-                     <button id="btn-close-lyrics" class="w-10 h-10 flex items-center justify-center text-white/60 hover:text-white bg-white/10 rounded-full transition-colors backdrop-blur-sm">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                     <!-- 가사 내리기 버튼 (음악 플레이어로 복귀) -->
+                     <button id="btn-close-lyrics" class="w-10 h-10 flex items-center justify-center text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-sm shadow-lg">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                      </button>
                  </div>
                  
-                 <div class="flex-1 overflow-hidden relative w-full">
-                     <!-- 가사 컨테이너: 왼쪽 정렬, 폰트 변경 -->
-                     <div id="lyrics-content" class="w-full h-full overflow-y-auto scrollbar-hide font-lyrics px-8 pb-32 text-left pt-[10vh]">
-                         <p class="text-white/50 text-sm">가사를 불러오는 중...</p>
+                 <div class="relative z-10 flex-1 overflow-hidden w-full">
+                     <!-- 가사 컨테이너: mask-image로 자연스러운 페이드 아웃 -->
+                     <div id="lyrics-content" class="w-full h-full overflow-y-auto scrollbar-hide font-lyrics px-8 pb-40 text-left pt-[15vh] lyrics-mask">
+                         <p class="text-white/50 text-sm font-medium animate-pulse">가사를 불러오는 중...</p>
                      </div>
-                     <!-- 상/하단 페이드 효과 -->
-                     <div class="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-black/20 to-transparent pointer-events-none"></div>
-                     <div class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
                  </div>
             </div>
 
@@ -289,8 +321,9 @@
                     <p id="song-artist" class="text-white/60 text-base font-medium truncate">엔쪽이 OST Part.2</p>
                 </div>
                 <!-- 가사 버튼 -->
-                <button id="btn-lyrics" class="text-white/40 hover:text-[#005ED2] transition-all transform active:scale-90 p-2 relative">
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button id="btn-lyrics" class="text-white/40 hover:text-[#005ED2] transition-all transform active:scale-90 p-2 relative group">
+                    <div class="absolute inset-0 bg-[#005ED2]/20 rounded-full scale-0 group-hover:scale-150 transition-transform duration-300"></div>
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="relative z-10">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
                         <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -461,6 +494,7 @@
         const playerBgImage = document.getElementById('player-bg-image');
         const chartTime = document.getElementById('chart-time');
         const lyricsOverlay = document.getElementById('lyrics-overlay');
+        const lyricsBgImage = document.getElementById('lyrics-bg-image');
         const lyricsContent = document.getElementById('lyrics-content');
 
         const btnAdminLogin = document.getElementById('btn-admin-login');
@@ -896,6 +930,10 @@
             document.getElementById('song-artist').innerText = song.artist;
             document.getElementById('cover-image').src = song.cover;
             playerBgImage.src = song.cover;
+            
+            // 가사 배경 이미지 업데이트
+            if(lyricsBgImage) lyricsBgImage.src = song.cover;
+
             miniTitle.innerText = song.title;
             miniArtist.innerText = song.artist;
             miniCover.src = song.cover;
@@ -906,7 +944,7 @@
             updateMediaSessionMetadata(song);
             
             currentLyrics = [];
-            lyricsContent.innerHTML = '<p class="text-white/50 text-sm mt-20">가사 로딩 중...</p>';
+            lyricsContent.innerHTML = '<p class="text-white/50 text-sm mt-20 font-medium animate-pulse">가사 로딩 중...</p>';
             
             if (song.lrc) {
                 const parsed = await fetchLrc(song.lrc);
