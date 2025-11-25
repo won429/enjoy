@@ -78,12 +78,10 @@
             cursor: pointer;
             will-change: transform, opacity, filter, color;
             
-            /* [핵심 수정] 가사 잘림 방지 */
             white-space: pre-wrap;       
             word-break: keep-all;        
             overflow-wrap: break-word;   
             width: fit-content;
-            /* 85%로 제한하여 확대(scale)되어도 화면 밖으로 나가지 않게 함 */
             max-width: 85%;             
         }
 
@@ -95,7 +93,7 @@
         /* 활성 상태 클래스 */
         .lyric-line.active {
             opacity: 1 !important;
-            transform: scale(1.08) translateX(5px); /* 확대 비율을 약간 줄여 안전하게 */
+            transform: scale(1.08) translateX(5px); 
             filter: blur(0);
             color: #ffffff !important; 
             text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6); 
@@ -117,23 +115,25 @@
             );
         }
 
-        /* 가사 화면 트랜지션 */
+        /* 가사 화면 트랜지션 - 스르륵 효과 강화 */
         #lyrics-overlay {
-            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-            overflow-x: hidden; /* 가로 스크롤 완전 차단 */
+            transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            overflow-x: hidden;
             width: 100%;
             height: 100%;
             overscroll-behavior: none;
         }
+        /* 닫힐 때: 살짝 아래로 내려가면서 작아지고 투명해짐 */
         .lyrics-closed {
             opacity: 0;
-            transform: scale(0.95);
+            transform: translateY(20px) scale(0.98);
             pointer-events: none;
             visibility: hidden;
         }
+        /* 열릴 때: 제자리로 돌아오며 선명해짐 */
         .lyrics-open {
             opacity: 1;
-            transform: scale(1);
+            transform: translateY(0) scale(1);
             pointer-events: auto;
             visibility: visible;
         }
@@ -316,7 +316,7 @@
                      <div class="w-10"></div> 
                      <span class="text-[10px] font-bold tracking-[0.2em] text-white/50">LYRICS</span>
                      <!-- 가사 내리기 버튼 (음악 플레이어로 복귀) -->
-                     <button id="btn-close-lyrics" class="w-10 h-10 flex items-center justify-center text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-sm shadow-lg">
+                     <button id="btn-close-lyrics" class="w-10 h-10 flex items-center justify-center text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-sm shadow-lg active:scale-95">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                      </button>
                  </div>
