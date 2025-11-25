@@ -73,7 +73,7 @@
             </div>
             <h3 id="notice-title" class="text-lg font-bold text-black mb-4">업데이트 & 신곡 안내</h3>
             <div id="notice-content" class="text-gray-600 text-sm mb-6 break-keep leading-relaxed space-y-4">
-                📊 엔조이 차트 집계 시작!<br>(노래를 재생하면 순위가 올라갑니다)<br><br>🔥 신곡 2곡 발매 🔥<br>'똥을 싸고 손을 씻자', '미친 밤'<br>많은 감상 부탁드립니다! 🎧
+                📊 실시간 차트 집계 시작!<br>(노래를 재생하면 순위가 올라갑니다)<br><br>🔥 신곡 2곡 발매 🔥<br>'똥을 싸고 손을 씻자', '미친 밤'<br>많은 감상 부탁드립니다! 🎧
             </div>
             <button id="notice-close" class="w-full bg-[#005ED2] text-white font-bold py-3 rounded-xl hover:bg-[#004bb5] transition-colors shadow-lg shadow-[#005ED2]/30">확인</button>
         </div>
@@ -124,10 +124,7 @@
             </button>
             <h2 class="text-xl font-bold text-black">엔조이 차트 TOP 100</h2>
         </div>
-        <!-- 리스트 컨테이너: pb-32로 하단 여백 조정 -->
-        <div id="full-chart-list" class="flex-1 overflow-y-auto px-0 pb-32">
-            <!-- 리스트 아이템이 여기에 추가됨 -->
-        </div>
+        <div id="full-chart-list" class="flex-1 overflow-y-auto px-0 pb-32"></div>
     </div>
 
     <!-- 1. 홈 화면 -->
@@ -265,7 +262,7 @@
                         <svg id="icon-play" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                         <svg id="icon-pause" class="hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                     </button>
-                    <button id="btn-next" class="text-white hover:text-[#005ED2] active:scale-90 transition-all p-2">
+                    <button id="btn-next" class.text-white hover:text-[#005ED2] active:scale-90 transition-all p-2">
                          <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
                     </button>
                 </div>
@@ -278,7 +275,6 @@
 
     <audio id="audio" playsinline webkit-playsinline></audio>
 
-    <!-- Firebase SDK & Main Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -310,7 +306,6 @@
 
         const today = new Date().toISOString().split('T')[0];
         
-        // 🎵 노래 데이터 (신곡 추가: 15, 16)
         let songs = [
             { id: 13, title: "똥을 싸고 손을 씻자", artist: "엔조이", src: "./music7.mp3", cover: "./cover12.jpg", playCount: 0, rankStatus: 'new', releaseDate: today },
             { id: 14, title: "미친 밤", artist: "엔조이", src: "./music8.mp3", cover: "./cover13.jpg", playCount: 0, rankStatus: 'new', releaseDate: today },
@@ -350,7 +345,7 @@
 
         const DEFAULT_NOTICE = {
             title: "업데이트 & 신곡 안내",
-            content: "📊 엔조이 차트 집계 시작!\n(노래를 재생하면 순위가 올라갑니다)\n\n🔥 신곡 4곡 발매 🔥\n'똥을 싸고 손을 씻자', '미친 밤', '우리는 엔조이', '너의 세상'\n많은 감상 부탁드립니다! 🎧".replace(/\n/g, "<br>")
+            content: "📊 실시간 차트 집계 시작!\n(노래를 재생하면 순위가 올라갑니다)\n\n🔥 신곡 2곡 발매 🔥\n'똥을 싸고 손을 씻자', '미친 밤'\n많은 감상 부탁드립니다! 🎧".replace(/\n/g, "<br>")
         };
 
         let currentIdx = 0;
@@ -472,7 +467,7 @@
                 adminEditModal.classList.add('hidden');
             } catch (e) { alert("저장 실패: " + e.message); }
         };
-        
+
         function setupNoticeListener() {
             if (!auth || !db) return;
             const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice');
@@ -487,6 +482,58 @@
                 }
             });
         }
+
+        // **Media Session API Update (수정됨)**
+        function updateMediaSessionMetadata(song) {
+            if ('mediaSession' in navigator) {
+                try {
+                    // 상대 경로를 절대 경로로 변환 (안전장치)
+                    const getAbsoluteUrl = (url) => {
+                        try { return new URL(url, document.baseURI).href; } catch(e) { return url; }
+                    };
+                    const artworkSrc = getAbsoluteUrl(song.cover);
+
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: song.title,
+                        artist: song.artist,
+                        album: "Play enjoy Album",
+                        artwork: [
+                            { src: artworkSrc, sizes: '96x96', type: 'image/jpeg' },
+                            { src: artworkSrc, sizes: '128x128', type: 'image/jpeg' },
+                            { src: artworkSrc, sizes: '192x192', type: 'image/jpeg' },
+                            { src: artworkSrc, sizes: '256x256', type: 'image/jpeg' },
+                            { src: artworkSrc, sizes: '384x384', type: 'image/jpeg' },
+                            { src: artworkSrc, sizes: '512x512', type: 'image/jpeg' },
+                        ]
+                    });
+                } catch (e) {
+                    console.warn("Media Session update failed:", e);
+                }
+            }
+        }
+
+        function setupMediaSessionActionHandlers() {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.setActionHandler('play', () => togglePlay(true));
+                navigator.mediaSession.setActionHandler('pause', () => togglePlay(false));
+                navigator.mediaSession.setActionHandler('previoustrack', () => {
+                     // Previous track logic
+                     let prevIdx = currentIdx - 1;
+                     if (prevIdx < 0) prevIdx = songs.length - 1;
+                     openPlayer(prevIdx);
+                });
+                navigator.mediaSession.setActionHandler('nexttrack', () => {
+                    // Next track logic
+                    let nextIdx = currentIdx + 1;
+                    if (nextIdx >= songs.length) nextIdx = 0;
+                    openPlayer(nextIdx);
+                });
+            }
+        }
+        
+        // Call this once on load
+        setupMediaSessionActionHandlers();
+
 
         function setupRealtimeListener() {
             if (unsubscribeSnapshot) unsubscribeSnapshot();
@@ -716,6 +763,9 @@
             errorBox.classList.add('hidden');
             timeCurr.innerText = "00:00";
             timeDur.innerText = "00:00";
+            
+            // Update Media Session Metadata
+            updateMediaSessionMetadata(song);
         };
 
         const openPlayer = (index) => {
@@ -754,11 +804,13 @@
                 miniIconPlay.classList.add('hidden'); miniIconPause.classList.remove('hidden');
                 lpDisk.classList.add('running');
                 toneArm.style.transform = "rotate(10deg)";
+                if('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
             } else {
                 iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden');
                 miniIconPlay.classList.remove('hidden'); miniIconPause.classList.add('hidden');
                 lpDisk.classList.remove('running');
                 toneArm.style.transform = "rotate(-25deg)";
+                if('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
             }
         };
 
@@ -783,6 +835,7 @@
             if (isRepeat) {
                 audio.currentTime = 0; audio.play();
             } else {
+                // [중요] 차트 순서대로 다음 곡 재생
                 let nextIdx = currentIdx + 1;
                 if (nextIdx < songs.length) {
                      openPlayer(nextIdx);
@@ -796,7 +849,7 @@
         btnMoreChart.onclick = () => fullChartView.classList.remove('translate-x-full');
         btnCloseChart.onclick = () => fullChartView.classList.add('translate-x-full');
         
-        // [수정] 모두 재생: 현재 정렬된 차트의 0번째 곡부터 시작
+        // [수정] 모두 재생 버튼 - 차트 1위부터 재생 시작
         btnPlayAll.onclick = () => {
              openPlayer(0);
         };
