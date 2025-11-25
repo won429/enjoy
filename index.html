@@ -93,14 +93,14 @@
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 85%, transparent 100%);
         }
 
-        /* 가사 화면 트랜지션 - 슬라이드 효과 */
+        /* 가사 화면 트랜지션 - 슬라이드 효과 (수정됨) */
         #lyrics-overlay {
             transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
             overflow-x: hidden;
             width: 100%;
             height: 100%;
             overscroll-behavior: none;
-            z-index: 60; /* 플레이어(50)보다 위 */
+            z-index: 60; 
         }
         
         /* 닫힐 때: 화면 아래로 완전히 내려감 */
@@ -394,7 +394,7 @@
                     </button>
                     <button id="btn-play" class="w-16 h-16 flex items-center justify-center bg-white text-black rounded-full shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:scale-105 hover:bg-[#005ED2] hover:text-white hover:shadow-[0_0_40px_rgba(0,94,210,0.5)] active:scale-95 transition-all duration-300">
                         <svg id="icon-play" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                        <svg id="icon-pause" class.hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                        <svg id="icon-pause" class.hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                     </button>
                     <button id="btn-next" class="text-white hover:text-[#005ED2] active:scale-90 transition-all p-2">
                          <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
@@ -615,8 +615,18 @@
                 artistModalIcon.classList.remove('hidden');
             }
 
-            // 해당 아티스트 이름이 포함된 노래 필터링
-            const artistSongs = songs.filter(s => s.artist.includes(artist.name));
+            // 해당 아티스트 이름이 포함된 노래 필터링 (includes 사용)
+            const artistSongs = songs.filter(s => {
+                // '엔조이' 검색 시 '끝없는 여름밤(그날, 엔조이 이야기 OST)' 등은 제외
+                // (실제 '엔조이'라는 가수가 부른 곡만 포함하고 싶다면 아래처럼 필터링)
+                if (artist.name === '엔조이') {
+                     // '엔조이'만 정확히 포함하거나, 다른 가수가 섞이지 않은 순수 엔조이 곡만
+                     // 여기서는 간단히 'OST'가 포함된 경우 제외하는 로직 예시
+                     // 또는 데이터에 artistId 등을 부여하여 관리하는 것이 가장 정확함
+                     if (s.artist.includes('OST')) return false;
+                }
+                return s.artist.includes(artist.name);
+            });
             
             if (artistSongs.length > 0) {
                 artistSongs.forEach(song => {
