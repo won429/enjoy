@@ -55,33 +55,38 @@
         .scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* 가사 스타일 업그레이드 */
+        /* 가사 스타일 업그레이드 - 부드러운 전환 강조 */
         .lyric-line {
-            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); /* 더 부드러운 전환 */
-            opacity: 0.3;
-            transform: scale(0.95);
+            /* transition 시간을 0.8s로 늘려 훨씬 부드럽게 변경 */
+            transition: transform 0.8s cubic-bezier(0.33, 1, 0.68, 1), 
+                        opacity 0.8s cubic-bezier(0.33, 1, 0.68, 1),
+                        filter 0.8s cubic-bezier(0.33, 1, 0.68, 1),
+                        color 0.8s ease;
+            opacity: 0.25;
+            transform: scale(0.92) translateX(0);
             transform-origin: left center;
-            filter: blur(0.8px); /* 블러 효과 강화 */
-            font-size: 1.6rem;
+            filter: blur(1.5px); /* 블러 효과 조금 더 강화하여 깊이감 조성 */
+            font-size: 1.7rem;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 2.5rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 2.8rem; /* 줄 간격 넉넉하게 */
             line-height: 1.4;
             cursor: pointer;
+            will-change: transform, opacity, filter; /* 성능 최적화 */
         }
         .lyric-line:hover {
-            opacity: 0.6;
+            opacity: 0.5;
         }
         .lyric-line.active {
             opacity: 1 !important;
-            transform: scale(1.05);
+            transform: scale(1) translateX(10px); /* 활성화 시 살짝 오른쪽으로 이동하며 커짐 */
             filter: blur(0);
-            font-size: 2.2rem;
+            font-size: 2.2rem; /* 활성 폰트 크기 */
             font-weight: 800;
             color: #ffffff !important;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            margin-bottom: 3rem;
-            margin-top: 1rem;
+            text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+            margin-bottom: 3.2rem; /* 활성 가사 아래 여백 추가 확보 */
+            margin-top: 0.5rem;
         }
 
         /* 가사 화면 배경 그라데이션 애니메이션 */
@@ -95,29 +100,29 @@
             animation: gradient-move 15s ease infinite;
         }
         
-        /* 마스크 이미지로 자연스러운 페이드 처리 */
+        /* 마스크 이미지 - 상단 페이드는 좁게, 하단은 넓게 */
         .lyrics-mask {
             mask-image: linear-gradient(to bottom, 
                 transparent 0%, 
-                black 10%, 
-                black 90%, 
+                black 5%,  /* 상단 5% 지점부터 보이기 시작 (더 윗공간 활용) */
+                black 80%, 
                 transparent 100%
             );
             -webkit-mask-image: linear-gradient(to bottom, 
                 transparent 0%, 
-                black 10%, 
-                black 90%, 
+                black 5%, 
+                black 80%, 
                 transparent 100%
             );
         }
 
         /* 가사 화면 트랜지션 클래스 */
         #lyrics-overlay {
-            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 0.6s cubic-bezier(0.33, 1, 0.68, 1), transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
         }
         .lyrics-closed {
             opacity: 0;
-            transform: translateY(30px) scale(0.98);
+            transform: translateY(40px) scale(0.96);
             pointer-events: none;
             visibility: hidden;
         }
@@ -312,8 +317,8 @@
                  </div>
                  
                  <div class="relative z-10 flex-1 overflow-hidden w-full">
-                     <!-- 가사 컨테이너: mask-image로 자연스러운 페이드 아웃 -->
-                     <div id="lyrics-content" class="w-full h-full overflow-y-auto scrollbar-hide font-lyrics px-8 pb-40 text-left pt-[15vh] lyrics-mask">
+                     <!-- 가사 컨테이너: pt-32 정도로 수정하여 윗공간 활용 -->
+                     <div id="lyrics-content" class="w-full h-full overflow-y-auto scrollbar-hide font-lyrics px-8 pb-40 text-left pt-32 lyrics-mask">
                          <p class="text-white/50 text-sm font-medium animate-pulse">가사를 불러오는 중...</p>
                      </div>
                  </div>
@@ -897,12 +902,12 @@
                 if (currentTime >= currentLyrics[i].time) activeIdx = i;
                 else break;
             }
-            if (activeIdx === -1) activeIdx = 0; // 처음 시작 시 첫 줄로
+            if (activeIdx === -1) activeIdx = 0; 
 
             const lines = lyricsContent.getElementsByClassName('lyric-line');
             if (lines[activeIdx]) {
-                // 상단 30% 지점에 위치하도록 계산
-                const offset = lines[activeIdx].offsetTop - lyricsContent.clientHeight * 0.3;
+                // 상단 15% 지점 (더 위쪽)에 위치하도록 계산
+                const offset = lines[activeIdx].offsetTop - (lyricsContent.clientHeight * 0.15);
                 lyricsContent.scrollTo({ top: offset, behavior: 'auto' });
                 
                 for (let i = 0; i < lines.length; i++) {
@@ -930,8 +935,9 @@
                 if (i === activeIdx) {
                     if (!lines[i].classList.contains('active')) {
                         lines[i].classList.add('active');
-                        // 활성화 시 부드럽게 중앙(혹은 상단)으로 스크롤
-                        lines[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // 활성화 시 상단 15% 지점에 오도록 부드럽게 스크롤
+                        const offset = lines[i].offsetTop - (lyricsContent.clientHeight * 0.15);
+                        lyricsContent.scrollTo({ top: offset, behavior: 'smooth' });
                     }
                 } else {
                     lines[i].classList.remove('active');
@@ -942,14 +948,12 @@
         if(btnLyrics) {
             btnLyrics.addEventListener('click', () => {
                 if (!isLyricsOpen) {
-                    // 열기 전 위치 미리 잡기 (깜빡임 방지)
                     isLyricsOpen = true;
                     lyricsOverlay.classList.remove('lyrics-closed');
                     lyricsOverlay.classList.add('lyrics-open');
                     btnLyrics.classList.remove('text-white/40');
                     btnLyrics.classList.add('text-[#005ED2]');
                     
-                    // 즉시 위치 보정
                     scrollToActiveLyricImmediate();
                 } else {
                     isLyricsOpen = false;
@@ -982,7 +986,6 @@
             document.getElementById('cover-image').src = song.cover;
             playerBgImage.src = song.cover;
             
-            // 가사 배경 이미지 업데이트
             if(lyricsBgImage) lyricsBgImage.src = song.cover;
 
             miniTitle.innerText = song.title;
