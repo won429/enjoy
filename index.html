@@ -25,6 +25,7 @@
             background-color: #ffffff;
         }
         .font-logo { font-family: 'Hakgyoansim Dunggeunmiso', sans-serif; font-weight: 700; }
+        .font-lyrics { font-family: 'Pretendard', sans-serif; }
         
         /* 애니메이션 */
         @keyframes spin-lp { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -54,20 +55,33 @@
         .scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* 가사 스타일 추가 */
+        /* 가사 스타일 업그레이드 */
         .lyric-line {
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            opacity: 0.4;
-            transform: scale(1);
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            opacity: 0.3;
+            transform: scale(0.95);
+            transform-origin: left center; /* 왼쪽 기준 확대 */
             filter: blur(0.5px);
+            font-size: 1.5rem; /* 기본 크기 */
+            font-weight: 600;
+            color: #e4e4e7; /* zinc-200 */
+            margin-bottom: 2rem; /* 간격 넓힘 */
+            line-height: 1.4;
+            cursor: pointer;
+        }
+        .lyric-line:hover {
+            opacity: 0.6;
         }
         .lyric-line.active {
-            color: #ffffff !important;
             opacity: 1 !important;
-            font-weight: 700;
-            transform: scale(1.1);
+            transform: scale(1.1); /* 더 크게 확대 */
             filter: blur(0);
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            font-size: 2rem; /* 강조 크기 */
+            font-weight: 800;
+            color: #ffffff !important;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            margin-bottom: 2.5rem; /* 활성 가사 주변 여백 확보 */
+            margin-top: 0.5rem;
         }
     </style>
 </head>
@@ -217,6 +231,7 @@
     <div id="player-screen" class="fixed inset-0 z-50 bg-[#0a0a0a] transform translate-y-full transition-transform duration-500 flex flex-col h-[100dvh]">
         <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
              <img id="player-bg-image" src="./cover.jpg" class="w-full h-full object-cover blur-3xl scale-150 brightness-50">
+             <div class="absolute inset-0 bg-black/30"></div> <!-- 배경 어둡게 처리 -->
              <div class="bg-noise"></div>
         </div>
         <div class="relative z-10 flex justify-between items-center p-6 pt-10">
@@ -233,14 +248,25 @@
                 <p>파일을 찾을 수 없습니다.</p>
                 <p class="mt-1 opacity-75 text-[10px]">music.mp3 확인 필요</p>
             </div>
-            <!-- 가사 오버레이 (닫기 버튼 추가) -->
-            <div id="lyrics-overlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-md z-40 flex flex-col items-center justify-start pt-12 pb-32 px-8 text-center transition-opacity duration-300">
-                 <button id="btn-close-lyrics" class="absolute top-6 right-6 text-white/60 hover:text-white p-2 bg-white/10 rounded-full transition-colors">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
-                 </button>
-                 <h3 class="text-white/80 text-sm font-bold mb-6 tracking-widest">LYRICS</h3>
-                 <div id="lyrics-content" class="w-full h-full overflow-y-auto scrollbar-hide text-lg font-medium text-gray-400 space-y-6 leading-relaxed">
-                     <p class="text-white/50 text-sm">가사를 불러오는 중...</p>
+            
+            <!-- 가사 오버레이 (디자인 변경) -->
+            <div id="lyrics-overlay" class="hidden absolute inset-0 bg-black/40 backdrop-blur-md z-40 flex flex-col transition-opacity duration-500">
+                 <div class="flex justify-between items-center p-6 pt-10">
+                     <div class="w-10"></div> <!-- spacer -->
+                     <span class="text-[10px] font-bold tracking-[0.2em] text-white/50">LYRICS</span>
+                     <button id="btn-close-lyrics" class="w-10 h-10 flex items-center justify-center text-white/60 hover:text-white bg-white/10 rounded-full transition-colors backdrop-blur-sm">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                     </button>
+                 </div>
+                 
+                 <div class="flex-1 overflow-hidden relative w-full">
+                     <!-- 가사 컨테이너: 왼쪽 정렬, 폰트 변경 -->
+                     <div id="lyrics-content" class="w-full h-full overflow-y-auto scrollbar-hide font-lyrics px-8 pb-32 text-left pt-[10vh]">
+                         <p class="text-white/50 text-sm">가사를 불러오는 중...</p>
+                     </div>
+                     <!-- 상/하단 페이드 효과 -->
+                     <div class="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-black/20 to-transparent pointer-events-none"></div>
+                     <div class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
                  </div>
             </div>
 
@@ -828,6 +854,7 @@
             for (let i = 0; i < lines.length; i++) {
                 if (i === activeIdx) {
                     lines[i].classList.add('active');
+                    // 가사 화면 중앙에 오도록 자동 스크롤
                     lines[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
                 } else {
                     lines[i].classList.remove('active');
