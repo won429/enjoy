@@ -55,80 +55,66 @@
         .scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* 가사 스타일 업그레이드 - 부드러운 전환 강조 */
+        /* 가사 스타일 업그레이드 - GPU 가속 활용 (scale) */
         .lyric-line {
-            /* transition 시간을 0.8s로 늘려 훨씬 부드럽게 변경 */
-            transition: transform 0.8s cubic-bezier(0.33, 1, 0.68, 1), 
-                        opacity 0.8s cubic-bezier(0.33, 1, 0.68, 1),
-                        filter 0.8s cubic-bezier(0.33, 1, 0.68, 1),
-                        color 1s ease; /* 색상 변화는 1초 동안 서서히 */
-            opacity: 0.25;
-            transform: scale(0.92) translateX(0);
-            transform-origin: left center;
-            filter: blur(1.5px); /* 블러 효과 조금 더 강화하여 깊이감 조성 */
-            font-size: 1.7rem;
-            font-weight: 600;
+            /* font-size 애니메이션 제거 -> scale 사용으로 부드러움 극대화 */
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), 
+                        opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                        filter 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                        color 0.6s ease;
+            opacity: 0.3;
+            transform: scale(0.95) translateX(0);
+            transform-origin: left center; /* 왼쪽 기준 확대 */
+            filter: blur(1px); 
+            font-size: 1.8rem; /* 기본 크기 고정 */
+            font-weight: 700;
             color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 2.8rem; /* 줄 간격 넉넉하게 */
+            margin-bottom: 2.5rem;
             line-height: 1.4;
             cursor: pointer;
-            will-change: transform, opacity, filter; /* 성능 최적화 */
+            will-change: transform, opacity, filter; /* 성능 최적화 힌트 */
         }
         .lyric-line:hover {
-            opacity: 0.5;
+            opacity: 0.6;
         }
         .lyric-line.active {
             opacity: 1 !important;
-            transform: scale(1) translateX(10px); /* 활성화 시 살짝 오른쪽으로 이동하며 커짐 */
+            transform: scale(1.15) translateX(10px); /* 1.15배 확대 */
             filter: blur(0);
-            font-size: 2.2rem; /* 활성 폰트 크기 */
-            font-weight: 800;
+            /* font-size 변경 없음 -> 끊김 제거 */
             color: #ffffff !important;
-            text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
-            margin-bottom: 3.2rem; /* 활성 가사 아래 여백 추가 확보 */
-            margin-top: 0.5rem;
+            text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
 
-        /* 가사 화면 배경 그라데이션 애니메이션 */
-        @keyframes gradient-move {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        .animated-gradient-bg {
-            background-size: 200% 200%;
-            animation: gradient-move 15s ease infinite;
-        }
-        
-        /* 마스크 이미지 - 상단 페이드는 좁게, 하단은 넓게 */
+        /* 마스크 이미지 - 상단 페이드 영역 축소하여 윗공간 활용 */
         .lyrics-mask {
             mask-image: linear-gradient(to bottom, 
                 transparent 0%, 
-                black 5%,  /* 상단 5% 지점부터 보이기 시작 (더 윗공간 활용) */
-                black 80%, 
+                black 5%,  /* 5%부터 완전 불투명 */
+                black 85%, 
                 transparent 100%
             );
             -webkit-mask-image: linear-gradient(to bottom, 
                 transparent 0%, 
                 black 5%, 
-                black 80%, 
+                black 85%, 
                 transparent 100%
             );
         }
 
-        /* 가사 화면 트랜지션 클래스 */
+        /* 가사 화면 트랜지션 */
         #lyrics-overlay {
-            transition: opacity 0.6s cubic-bezier(0.33, 1, 0.68, 1), transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
         }
         .lyrics-closed {
             opacity: 0;
-            transform: translateY(40px) scale(0.96);
+            transform: scale(0.95); /* 살짝 작아지며 사라짐 */
             pointer-events: none;
             visibility: hidden;
         }
         .lyrics-open {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: scale(1);
             pointer-events: auto;
             visibility: visible;
         }
@@ -317,8 +303,8 @@
                  </div>
                  
                  <div class="relative z-10 flex-1 overflow-hidden w-full">
-                     <!-- 가사 컨테이너: pt-32 정도로 수정하여 윗공간 활용 -->
-                     <div id="lyrics-content" class="w-full h-full overflow-y-auto scrollbar-hide font-lyrics px-8 pb-40 text-left pt-32 lyrics-mask">
+                     <!-- 가사 컨테이너: pt-24로 줄여서 윗공간 활용 -->
+                     <div id="lyrics-content" class="w-full h-full overflow-y-auto scrollbar-hide font-lyrics px-8 pb-40 text-left pt-24 lyrics-mask">
                          <p class="text-white/50 text-sm font-medium animate-pulse">가사를 불러오는 중...</p>
                      </div>
                  </div>
