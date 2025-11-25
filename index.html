@@ -53,10 +53,6 @@
         .anim-fly-up { animation: flyUpHeart 0.8s ease-out forwards; }
         .scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        /* 가사 활성화 스타일 */
-        .lyric-line { transition: all 0.3s ease; opacity: 0.5; transform: scale(0.95); transform-origin: left center; }
-        .lyric-line.active { opacity: 1; transform: scale(1); font-weight: bold; color: #005ED2; }
     </style>
 </head>
 <body class="text-black overflow-hidden select-none h-[100dvh] w-screen fixed bg-white">
@@ -77,7 +73,7 @@
             </div>
             <h3 id="notice-title" class="text-lg font-bold text-black mb-4">업데이트 & 신곡 안내</h3>
             <div id="notice-content" class="text-gray-600 text-sm mb-6 break-keep leading-relaxed space-y-4">
-                <!-- 내용 로딩 -->
+                📊 엔조이 차트 집계 시작!<br>(노래를 재생하면 순위가 올라갑니다)<br><br>🔥 신곡 2곡 발매 🔥<br>'똥을 싸고 손을 씻자', '미친 밤'<br>많은 감상 부탁드립니다! 🎧
             </div>
             <button id="notice-close" class="w-full bg-[#005ED2] text-white font-bold py-3 rounded-xl hover:bg-[#004bb5] transition-colors shadow-lg shadow-[#005ED2]/30">확인</button>
         </div>
@@ -128,7 +124,7 @@
             </button>
             <h2 class="text-xl font-bold text-black">엔조이 차트 TOP 100</h2>
         </div>
-        <div id="full-chart-list" class="flex-1 overflow-y-auto px-0 pb-40"></div>
+        <div id="full-chart-list" class="flex-1 overflow-y-auto px-0 pb-32"></div>
     </div>
 
     <!-- 1. 홈 화면 -->
@@ -221,7 +217,7 @@
                 <p>파일을 찾을 수 없습니다.</p>
                 <p class="mt-1 opacity-75 text-[10px]">music.mp3 확인 필요</p>
             </div>
-            <!-- 가사 오버레이 -->
+            <!-- 가사 오버레이 (닫기 버튼 추가) -->
             <div id="lyrics-overlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-md z-40 flex flex-col items-center justify-start pt-12 pb-32 px-8 text-center transition-opacity duration-300">
                  <button id="btn-close-lyrics" class="absolute top-6 right-6 text-white/60 hover:text-white p-2 bg-white/10 rounded-full transition-colors">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
@@ -282,7 +278,7 @@
                     </button>
                     <button id="btn-play" class="w-16 h-16 flex items-center justify-center bg-white text-black rounded-full shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:scale-105 hover:bg-[#005ED2] hover:text-white hover:shadow-[0_0_40px_rgba(0,94,210,0.5)] active:scale-95 transition-all duration-300">
                         <svg id="icon-play" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                        <svg id="icon-pause" class="hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                        <svg id="icon-pause" class.hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                     </button>
                     <button id="btn-next" class="text-white hover:text-[#005ED2] active:scale-90 transition-all p-2">
                          <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
@@ -782,14 +778,15 @@
         function parseLrc(lrcText) {
             const lines = lrcText.split('\n');
             const result = [];
-            const timeReg = /\[(\d{2}):(\d{2})\.(\d{2})\]/;
+            const timeReg = /\[(\d{2}):(\d{2})[.:](\d{2,3})\]/;
             
             lines.forEach(line => {
                 const match = timeReg.exec(line);
                 if (match) {
                     const min = parseInt(match[1]);
                     const sec = parseInt(match[2]);
-                    const ms = parseInt(match[3]);
+                    let ms = parseInt(match[3]);
+                    if (match[3].length === 3) ms = ms / 10; // 3자리 밀리초 대응
                     const time = min * 60 + sec + ms / 100;
                     const text = line.replace(timeReg, '').trim();
                     if (text) result.push({ time, text });
