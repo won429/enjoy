@@ -259,7 +259,7 @@
                 <div id="chart-slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide px-6 gap-4"></div>
             </div>
 
-            <!-- Artists Section (수정됨) -->
+            <!-- Artists Section (수정됨: OST 제거, 실제 가수만 포함) -->
             <div class="pl-6 mb-8">
                 <p class="text-sm text-[#005ED2] font-bold mb-4">Artists</p>
                 <div class="flex gap-5 overflow-x-auto scrollbar-hide pr-6" id="artist-list">
@@ -321,7 +321,7 @@
                 <p class="mt-1 opacity-75 text-[10px]">music.mp3 확인 필요</p>
             </div>
             
-            <!-- 가사 오버레이 -->
+            <!-- 가사 오버레이 (초기 상태: lyrics-closed 클래스 추가) -->
             <div id="lyrics-overlay" class="fixed inset-0 z-[60] flex flex-col lyrics-closed">
                  <!-- 배경 -->
                  <div class="absolute inset-0 z-0">
@@ -457,14 +457,12 @@
             { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", lrc: "./music3.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" } 
         ];
 
-        // 👨‍🎤 아티스트 데이터 - 요청에 따라 누락된 항목 모두 추가
+        // 👨‍🎤 아티스트 데이터 - OST 앨범명 제거하고 실제 가수 이름만 남김
         const artists = [
             { name: "엔조이" },
             { name: "오스틴" },
             { name: "전시기" },
-            { name: "성심당" },
-            { name: "엔쪽이 OST" }, 
-            { name: "그날, 엔조이 이야기 OST" } 
+            { name: "성심당" }
         ];
 
         let lastRanking = [];
@@ -606,8 +604,18 @@
             artistModalName.innerText = artist.name;
             artistSongList.innerHTML = '';
 
-            // 해당 아티스트 이름이 포함된 노래 찾기 (느슨한 일치)
-            const artistSongs = songs.filter(s => s.artist.includes(artist.name));
+            // 해당 아티스트 이름이 포함된 노래 필터링 (includes 사용)
+            const artistSongs = songs.filter(s => {
+                // '엔조이' 검색 시 '끝없는 여름밤(그날, 엔조이 이야기 OST)' 등은 제외
+                // (실제 '엔조이'라는 가수가 부른 곡만 포함하고 싶다면 아래처럼 필터링)
+                if (artist.name === '엔조이') {
+                     // '엔조이'만 정확히 포함하거나, 다른 가수가 섞이지 않은 순수 엔조이 곡만
+                     // 여기서는 간단히 'OST'가 포함된 경우 제외하는 로직 예시
+                     // 또는 데이터에 artistId 등을 부여하여 관리하는 것이 가장 정확함
+                     if (s.artist.includes('OST')) return false;
+                }
+                return s.artist.includes(artist.name);
+            });
             
             if (artistSongs.length > 0) {
                 artistSongs.forEach(song => {
