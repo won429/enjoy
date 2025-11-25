@@ -53,6 +53,10 @@
         .anim-fly-up { animation: flyUpHeart 0.8s ease-out forwards; }
         .scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* 가사 활성화 스타일 */
+        .lyric-line { transition: all 0.3s ease; opacity: 0.5; transform: scale(0.95); transform-origin: left center; }
+        .lyric-line.active { opacity: 1; transform: scale(1); font-weight: bold; color: #005ED2; }
     </style>
 </head>
 <body class="text-black overflow-hidden select-none h-[100dvh] w-screen fixed bg-white">
@@ -73,7 +77,7 @@
             </div>
             <h3 id="notice-title" class="text-lg font-bold text-black mb-4">업데이트 & 신곡 안내</h3>
             <div id="notice-content" class="text-gray-600 text-sm mb-6 break-keep leading-relaxed space-y-4">
-                📊 실시간 차트 집계 시작!<br>(노래를 재생하면 순위가 올라갑니다)<br><br>🔥 신곡 2곡 발매 🔥<br>'똥을 싸고 손을 씻자', '미친 밤'<br>많은 감상 부탁드립니다! 🎧
+                📊 엔조이 차트 집계 시작!<br>(노래를 재생하면 순위가 올라갑니다)<br><br>🔥 신곡 2곡 발매 🔥<br>'똥을 싸고 손을 씻자', '미친 밤'<br>많은 감상 부탁드립니다! 🎧
             </div>
             <button id="notice-close" class="w-full bg-[#005ED2] text-white font-bold py-3 rounded-xl hover:bg-[#004bb5] transition-colors shadow-lg shadow-[#005ED2]/30">확인</button>
         </div>
@@ -124,7 +128,7 @@
             </button>
             <h2 class="text-xl font-bold text-black">엔조이 차트 TOP 100</h2>
         </div>
-        <div id="full-chart-list" class="flex-1 overflow-y-auto px-0 pb-32"></div>
+        <div id="full-chart-list" class="flex-1 overflow-y-auto px-0 pb-40"></div>
     </div>
 
     <!-- 1. 홈 화면 -->
@@ -217,6 +221,13 @@
                 <p>파일을 찾을 수 없습니다.</p>
                 <p class="mt-1 opacity-75 text-[10px]">music.mp3 확인 필요</p>
             </div>
+            <!-- 가사 오버레이 -->
+            <div id="lyrics-overlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-md z-40 flex flex-col items-center justify-start pt-24 pb-32 px-8 text-center transition-opacity duration-300">
+                 <div id="lyrics-content" class="w-full h-full overflow-y-auto scrollbar-hide text-lg font-medium text-gray-400 space-y-6 leading-relaxed">
+                     <p class="text-white/50 text-sm">가사를 불러오는 중...</p>
+                 </div>
+            </div>
+
             <div class="relative w-full max-w-[320px] aspect-square mb-auto mt-4 group">
                 <div id="tone-arm" class="absolute -top-8 -right-4 w-24 h-48 z-20 origin-[70%_15%] transition-transform duration-700 ease-in-out" style="transform: rotate(-25deg);">
                     <svg viewBox="0 0 100 200" class="w-full h-full drop-shadow-2xl">
@@ -235,8 +246,15 @@
                     <h2 id="song-title" class="text-2xl font-bold text-white mb-1 truncate scroll-m-0 tracking-tight">빛</h2>
                     <p id="song-artist" class="text-white/60 text-base font-medium truncate">엔쪽이 OST Part.2</p>
                 </div>
-                <button id="btn-like" class="text-white/40 hover:text-[#005ED2] transition-all transform active:scale-90 p-2 relative">
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                <!-- 가사 버튼 -->
+                <button id="btn-lyrics" class="text-white/40 hover:text-[#005ED2] transition-all transform active:scale-90 p-2 relative">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
                 </button>
             </div>
             <div class="w-full mb-1 relative h-10 flex items-center justify-center" id="progress-container">
@@ -262,7 +280,7 @@
                         <svg id="icon-play" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                         <svg id="icon-pause" class="hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                     </button>
-                    <button id="btn-next" class.text-white hover:text-[#005ED2] active:scale-90 transition-all p-2">
+                    <button id="btn-next" class="text-white hover:text-[#005ED2] active:scale-90 transition-all p-2">
                          <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
                     </button>
                 </div>
@@ -306,17 +324,18 @@
 
         const today = new Date().toISOString().split('T')[0];
         
+        // 🎵 노래 데이터
         let songs = [
-            { id: 13, title: "똥을 싸고 손을 씻자", artist: "엔조이", src: "./music7.mp3", cover: "./cover12.jpg", playCount: 0, rankStatus: 'new', releaseDate: today },
-            { id: 14, title: "미친 밤", artist: "엔조이", src: "./music8.mp3", cover: "./cover13.jpg", playCount: 0, rankStatus: 'new', releaseDate: today },
-            { id: 15, title: "우리는 엔조이", artist: "오스틴", src: "./music9.mp3", cover: "./cover14.jpg", playCount: 0, rankStatus: 'new', releaseDate: today },
-            { id: 16, title: "너의 세상", artist: "전시기", src: "./music10.mp3", cover: "./cover15.jpg", playCount: 0, rankStatus: 'new', releaseDate: today },
-            { id: 1, title: "빛", artist: "엔쪽이 OST Part.2", src: "./music.mp3", cover: "./cover.jpg", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
-            { id: 2, title: "힘내라", artist: "엔쪽이 OST Part.1", src: "./music2.mp3", cover: "./cover.jpg", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
-            { id: 4, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", src: "./music4.mp3", cover: "./cover3.jpg", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
-            { id: 5, title: "행복을 꿈꾸며 울다", artist: "엔조이", src: "./music5.mp3", cover: "./cover4.jpg", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
-            { id: 6, title: "털어", artist: "엔조이", src: "./music6.mp3", cover: "./cover5.jpg", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
-            { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" } 
+            { id: 13, title: "똥을 싸고 손을 씻자", artist: "엔조이", src: "./music7.mp3", cover: "./cover12.jpg", lrc: "./music7.lrc", playCount: 0, rankStatus: 'new', releaseDate: today },
+            { id: 14, title: "미친 밤", artist: "엔조이", src: "./music8.mp3", cover: "./cover13.jpg", lrc: "./music8.lrc", playCount: 0, rankStatus: 'new', releaseDate: today },
+            { id: 15, title: "우리는 엔조이", artist: "오스틴", src: "./music9.mp3", cover: "./cover14.jpg", lrc: "./music9.lrc", playCount: 0, rankStatus: 'new', releaseDate: today },
+            { id: 16, title: "너의 세상", artist: "전시기", src: "./music10.mp3", cover: "./cover15.jpg", lrc: "./music10.lrc", playCount: 0, rankStatus: 'new', releaseDate: today },
+            { id: 1, title: "빛", artist: "엔쪽이 OST Part.2", src: "./music.mp3", cover: "./cover.jpg", lrc: "./music.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
+            { id: 2, title: "힘내라", artist: "엔쪽이 OST Part.1", src: "./music2.mp3", cover: "./cover.jpg", lrc: "./music2.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
+            { id: 4, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", src: "./music4.mp3", cover: "./cover3.jpg", lrc: "./music4.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
+            { id: 5, title: "행복을 꿈꾸며 울다", artist: "엔조이", src: "./music5.mp3", cover: "./cover4.jpg", lrc: "./music5.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
+            { id: 6, title: "털어", artist: "엔조이", src: "./music6.mp3", cover: "./cover5.jpg", lrc: "./music6.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
+            { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", lrc: "./music3.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" } 
         ];
 
         let lastRanking = [];
@@ -345,7 +364,7 @@
 
         const DEFAULT_NOTICE = {
             title: "업데이트 & 신곡 안내",
-            content: "📊 실시간 차트 집계 시작!\n(노래를 재생하면 순위가 올라갑니다)\n\n🔥 신곡 2곡 발매 🔥\n'똥을 싸고 손을 씻자', '미친 밤'\n많은 감상 부탁드립니다! 🎧".replace(/\n/g, "<br>")
+            content: "📊 엔조이 차트 집계 시작!\n(노래를 재생하면 순위가 올라갑니다)\n\n🔥 신곡 4곡 발매 🔥\n'똥을 싸고 손을 씻자', '미친 밤', '우리는 엔조이', '너의 세상'\n많은 감상 부탁드립니다! 🎧".replace(/\n/g, "<br>")
         };
 
         let currentIdx = 0;
@@ -356,6 +375,9 @@
         let songStats = {};
         let unsubscribeSnapshot = null;
         let latestSongStats = {};
+        
+        let currentLyrics = [];
+        let isLyricsOpen = false;
 
         const audio = document.getElementById('audio');
         const chartSlider = document.getElementById('chart-slider');
@@ -376,7 +398,7 @@
         const popupClose = document.getElementById('popup-close');
         const noticeModal = document.getElementById('notice-modal');
         const noticeClose = document.getElementById('notice-close');
-        const btnLike = document.getElementById('btn-like'); 
+        const btnLyrics = document.getElementById('btn-lyrics'); 
         const toneArm = document.getElementById('tone-arm');
         const btnRepeat = document.getElementById('btn-repeat'); 
         const miniCover = document.getElementById('mini-cover');
@@ -395,6 +417,8 @@
         const timeDur = document.getElementById('player-time-duration');
         const playerBgImage = document.getElementById('player-bg-image');
         const chartTime = document.getElementById('chart-time');
+        const lyricsOverlay = document.getElementById('lyrics-overlay');
+        const lyricsContent = document.getElementById('lyrics-content');
 
         const btnAdminLogin = document.getElementById('btn-admin-login');
         const adminLoginModal = document.getElementById('admin-login-modal');
@@ -483,16 +507,13 @@
             });
         }
 
-        // **Media Session API Update (수정됨)**
         function updateMediaSessionMetadata(song) {
             if ('mediaSession' in navigator) {
                 try {
-                    // 상대 경로를 절대 경로로 변환 (안전장치)
                     const getAbsoluteUrl = (url) => {
                         try { return new URL(url, document.baseURI).href; } catch(e) { return url; }
                     };
                     const artworkSrc = getAbsoluteUrl(song.cover);
-
                     navigator.mediaSession.metadata = new MediaMetadata({
                         title: song.title,
                         artist: song.artist,
@@ -517,23 +538,18 @@
                 navigator.mediaSession.setActionHandler('play', () => togglePlay(true));
                 navigator.mediaSession.setActionHandler('pause', () => togglePlay(false));
                 navigator.mediaSession.setActionHandler('previoustrack', () => {
-                     // Previous track logic
                      let prevIdx = currentIdx - 1;
                      if (prevIdx < 0) prevIdx = songs.length - 1;
                      openPlayer(prevIdx);
                 });
                 navigator.mediaSession.setActionHandler('nexttrack', () => {
-                    // Next track logic
                     let nextIdx = currentIdx + 1;
                     if (nextIdx >= songs.length) nextIdx = 0;
                     openPlayer(nextIdx);
                 });
             }
         }
-        
-        // Call this once on load
         setupMediaSessionActionHandlers();
-
 
         function setupRealtimeListener() {
             if (unsubscribeSnapshot) unsubscribeSnapshot();
@@ -699,7 +715,6 @@
                 const rank = index + 1;
                 const rankColorClass = rank <= 3 ? "text-[#005ED2]" : "text-gray-800";
                 const div = document.createElement('div');
-                // [디자인 복구] 컴팩트하고 꽉 찬 리스트 스타일
                 div.className = "flex items-center gap-3 p-3 border-b border-gray-100 hover:bg-gray-50 active:scale-[0.99] transition-all cursor-pointer";
                 div.innerHTML = `
                     <div class="flex flex-col items-center justify-center w-8 mr-2 flex-shrink-0">
@@ -748,7 +763,76 @@
             });
         }
 
-        const loadSongData = (index) => {
+        async function fetchLrc(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) return null;
+                const text = await response.text();
+                return parseLrc(text);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function parseLrc(lrcText) {
+            const lines = lrcText.split('\n');
+            const result = [];
+            const timeReg = /\[(\d{2}):(\d{2})\.(\d{2})\]/;
+            
+            lines.forEach(line => {
+                const match = timeReg.exec(line);
+                if (match) {
+                    const min = parseInt(match[1]);
+                    const sec = parseInt(match[2]);
+                    const ms = parseInt(match[3]);
+                    const time = min * 60 + sec + ms / 100;
+                    const text = line.replace(timeReg, '').trim();
+                    if (text) result.push({ time, text });
+                }
+            });
+            return result;
+        }
+
+        function syncLyrics() {
+            if (!isLyricsOpen || currentLyrics.length === 0) return;
+            const currentTime = audio.currentTime;
+            
+            let activeIdx = -1;
+            for (let i = 0; i < currentLyrics.length; i++) {
+                if (currentTime >= currentLyrics[i].time) {
+                    activeIdx = i;
+                } else {
+                    break;
+                }
+            }
+            
+            const lines = lyricsContent.getElementsByClassName('lyric-line');
+            for (let i = 0; i < lines.length; i++) {
+                if (i === activeIdx) {
+                    lines[i].classList.add('active');
+                    lines[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else {
+                    lines[i].classList.remove('active');
+                }
+            }
+        }
+        
+        if(btnLyrics) {
+            btnLyrics.addEventListener('click', () => {
+                isLyricsOpen = !isLyricsOpen;
+                if (isLyricsOpen) {
+                    btnLyrics.classList.remove('text-white/40');
+                    btnLyrics.classList.add('text-[#005ED2]');
+                    lyricsOverlay.classList.remove('hidden');
+                } else {
+                    btnLyrics.classList.add('text-white/40');
+                    btnLyrics.classList.remove('text-[#005ED2]');
+                    lyricsOverlay.classList.add('hidden');
+                }
+            });
+        }
+
+        const loadSongData = async (index) => {
             const song = songs[index];
             if (!song) return;
             audio.src = song.src;
@@ -764,8 +848,30 @@
             timeCurr.innerText = "00:00";
             timeDur.innerText = "00:00";
             
-            // Update Media Session Metadata
             updateMediaSessionMetadata(song);
+            
+            currentLyrics = [];
+            lyricsContent.innerHTML = '<p class="text-white/50 text-sm mt-20">가사 로딩 중...</p>';
+            
+            if (song.lrc) {
+                const parsed = await fetchLrc(song.lrc);
+                if (parsed && parsed.length > 0) {
+                    currentLyrics = parsed;
+                    lyricsContent.innerHTML = parsed.map(line => `<p class="lyric-line py-2 cursor-pointer hover:text-white transition-colors">${line.text}</p>`).join('');
+                    
+                    const lineElements = lyricsContent.getElementsByClassName('lyric-line');
+                    Array.from(lineElements).forEach((el, idx) => {
+                        el.addEventListener('click', () => {
+                            audio.currentTime = currentLyrics[idx].time;
+                        });
+                    });
+                    
+                } else {
+                    lyricsContent.innerHTML = '<p class="text-white/50 text-sm mt-20">가사가 없습니다.</p>';
+                }
+            } else {
+                lyricsContent.innerHTML = '<p class="text-white/50 text-sm mt-20">가사가 등록되지 않았습니다.</p>';
+            }
         };
 
         const openPlayer = (index) => {
@@ -800,14 +906,14 @@
         const updateUI = (playing) => {
             isPlaying = playing;
             if (playing) {
-                iconPlay.classList.add('hidden'); iconPause.classList.remove('hidden');
                 miniIconPlay.classList.add('hidden'); miniIconPause.classList.remove('hidden');
+                iconPlay.classList.add('hidden'); iconPause.classList.remove('hidden');
                 lpDisk.classList.add('running');
                 toneArm.style.transform = "rotate(10deg)";
                 if('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
             } else {
-                iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden');
                 miniIconPlay.classList.remove('hidden'); miniIconPause.classList.add('hidden');
+                iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden');
                 lpDisk.classList.remove('running');
                 toneArm.style.transform = "rotate(-25deg)";
                 if('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
@@ -835,7 +941,6 @@
             if (isRepeat) {
                 audio.currentTime = 0; audio.play();
             } else {
-                // [중요] 차트 순서대로 다음 곡 재생
                 let nextIdx = currentIdx + 1;
                 if (nextIdx < songs.length) {
                      openPlayer(nextIdx);
@@ -849,23 +954,8 @@
         btnMoreChart.onclick = () => fullChartView.classList.remove('translate-x-full');
         btnCloseChart.onclick = () => fullChartView.classList.add('translate-x-full');
         
-        // [수정] 모두 재생 버튼 - 차트 1위부터 재생 시작
         btnPlayAll.onclick = () => {
              openPlayer(0);
-        };
-
-        btnLike.onclick = () => {
-            isLiked = !isLiked;
-            const svg = btnLike.querySelector('svg');
-            if (isLiked) {
-                svg.setAttribute('fill', 'currentColor');
-                btnLike.classList.remove('text-white/40');
-                btnLike.classList.add('text-[#005ED2]');
-            } else {
-                svg.setAttribute('fill', 'none');
-                btnLike.classList.add('text-white/40');
-                btnLike.classList.remove('text-[#005ED2]');
-            }
         };
 
         btnRepeat.onclick = () => {
@@ -928,6 +1018,7 @@
                 const miniProg = document.getElementById('mini-progress');
                 if(miniProg) miniProg.style.width = `${percent}%`;
             }
+            syncLyrics();
         }
 
         audio.addEventListener('timeupdate', updateTimeDisplay);
