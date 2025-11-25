@@ -22,8 +22,8 @@
         html, body {
             width: 100%;
             height: 100%;
-            overflow: hidden; /* 전체 화면 스크롤 방지 (가사 내부만 스크롤) */
-            overscroll-behavior: none; /* 스크롤 튕김 방지 */
+            overflow: hidden; 
+            overscroll-behavior: none;
             font-family: 'GmarketSansMedium', -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, "Noto Sans KR", sans-serif;
             -webkit-tap-highlight-color: transparent;
             background-color: #ffffff;
@@ -38,8 +38,10 @@
         
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
         .fade-in { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
         .smooth-transition { transition: width 0.1s linear, left 0.1s linear; }
         .no-transition { transition: none !important; }
@@ -49,17 +51,8 @@
         .lp-texture {
             background: repeating-radial-gradient(#111 0, #111 2px, #1a1a1a 3px, #111 4px);
         }
-        @keyframes flyUpHeart {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            50% { opacity: 1; }
-            100% { transform: translate(-50%, -50%) translateY(-60px) scale(1.5); opacity: 0; }
-        }
-        .heart-effect { position: fixed; z-index: 9999; pointer-events: none; color: #005ED2; }
-        .anim-fly-up { animation: flyUpHeart 0.8s ease-out forwards; }
-        .scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        /* 가사 스타일 업그레이드 */
+        
+        /* 가사 스타일 */
         .lyric-line {
             transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), 
                         opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
@@ -74,7 +67,7 @@
             font-weight: 700;
             color: rgba(255, 255, 255, 0.35); 
             margin-bottom: 2.5rem;
-            line-height: 1.6; /* 줄간격 여유 있게 */
+            line-height: 1.6;
             cursor: pointer;
             will-change: transform, opacity, filter, color;
             
@@ -85,12 +78,8 @@
             max-width: 85%;             
         }
 
-        .lyric-line:hover {
-            opacity: 0.6;
-            color: rgba(255, 255, 255, 0.6);
-        }
+        .lyric-line:hover { opacity: 0.6; color: rgba(255, 255, 255, 0.6); }
 
-        /* 활성 상태 클래스 */
         .lyric-line.active {
             opacity: 1 !important;
             transform: scale(1.08) translateX(5px); 
@@ -99,44 +88,37 @@
             text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6); 
         }
 
-        /* 마스크 이미지 */
         .lyrics-mask {
-            mask-image: linear-gradient(to bottom, 
-                transparent 0%, 
-                black 5%,
-                black 85%, 
-                transparent 100%
-            );
-            -webkit-mask-image: linear-gradient(to bottom, 
-                transparent 0%, 
-                black 5%, 
-                black 85%, 
-                transparent 100%
-            );
+            mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 85%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 85%, transparent 100%);
         }
 
-        /* 가사 화면 트랜지션 - 스르륵 효과 강화 */
+        /* 가사 화면 트랜지션 - 스르륵 열리고 닫히는 전체 화면 효과 */
         #lyrics-overlay {
-            transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             overflow-x: hidden;
             width: 100%;
             height: 100%;
             overscroll-behavior: none;
         }
-        /* 닫힐 때: 살짝 아래로 내려가면서 작아지고 투명해짐 */
+        /* 닫힐 때: 투명해지면서 아래로 30px 정도 스르륵 내려감 */
         .lyrics-closed {
             opacity: 0;
-            transform: translateY(20px) scale(0.98);
+            transform: translateY(30px) scale(0.98);
             pointer-events: none;
             visibility: hidden;
         }
-        /* 열릴 때: 제자리로 돌아오며 선명해짐 */
+        /* 열릴 때: 제자리로 돌아옴 */
         .lyrics-open {
             opacity: 1;
             transform: translateY(0) scale(1);
             pointer-events: auto;
             visibility: visible;
         }
+
+        /* 팝업 애니메이션 */
+        .scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body class="text-black overflow-hidden select-none h-[100dvh] w-screen fixed bg-white">
@@ -175,7 +157,27 @@
         </div>
     </div>
 
-    <!-- 관리자 로그인 모달 -->
+    <!-- 아티스트 노래 목록 모달 -->
+    <div id="artist-modal" class="fixed inset-0 z-[80] bg-black/50 backdrop-blur-sm hidden flex items-end sm:items-center justify-center transition-opacity duration-300">
+        <div class="bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl p-6 pb-10 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] transform transition-transform duration-300 translate-y-full" id="artist-modal-content">
+            <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6"></div>
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-16 h-16 rounded-full overflow-hidden shadow-md border border-gray-100">
+                    <img id="artist-modal-img" src="" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <h3 id="artist-modal-name" class="text-xl font-bold text-black">Artist Name</h3>
+                    <p class="text-xs text-gray-500 mt-1">노래 목록</p>
+                </div>
+            </div>
+            <div id="artist-song-list" class="flex flex-col gap-1 max-h-[50vh] overflow-y-auto scrollbar-hide">
+                <!-- 노래 리스트 들어갈 곳 -->
+            </div>
+            <button id="artist-modal-close" class="w-full bg-gray-100 text-black font-bold py-3 rounded-xl mt-6 hover:bg-gray-200 transition-colors">닫기</button>
+        </div>
+    </div>
+
+    <!-- 관리자 로그인 및 수정 모달 (생략 - 기존과 동일) -->
     <div id="admin-login-modal" class="fixed inset-0 z-[90] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center px-6">
         <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl scale-in">
             <h3 class="text-lg font-bold text-black mb-4">관리자 로그인</h3>
@@ -186,8 +188,6 @@
             </div>
         </div>
     </div>
-
-    <!-- 관리자 공지 수정 모달 -->
     <div id="admin-edit-modal" class="fixed inset-0 z-[95] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center px-6">
         <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl scale-in">
             <h3 class="text-lg font-bold text-black mb-4 text-center">공지사항 수정</h3>
@@ -200,7 +200,7 @@
         </div>
     </div>
 
-    <!-- 전체 차트 뷰 (더보기) -->
+    <!-- 전체 차트 뷰 -->
     <div id="full-chart-view" class="fixed inset-0 z-[80] bg-white transform translate-x-full transition-transform duration-300 flex flex-col h-[100dvh]">
         <div class="px-6 pt-8 pb-4 flex items-center gap-4 bg-white/95 backdrop-blur-md sticky top-0 z-10 border-b border-gray-100">
             <button id="btn-close-chart" class="p-2 -ml-2 rounded-full text-black hover:bg-gray-100 transition-colors">
@@ -231,10 +231,13 @@
         </div>
 
         <div class="flex-1 overflow-y-auto scrollbar-hide pb-32">
+            <!-- New Album -->
             <div class="mb-8 pl-6">
                 <p class="text-sm text-[#005ED2] font-bold mb-4">New Album</p>
                 <div class="flex gap-4 overflow-x-auto scrollbar-hide pr-6" id="new-album-list"></div>
             </div>
+            
+            <!-- Chart -->
             <div class="mb-10">
                 <div class="flex justify-between items-center mb-4 px-6">
                     <div class="flex items-center gap-2">
@@ -251,12 +254,23 @@
                 </div>
                 <div id="chart-slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide px-6 gap-4"></div>
             </div>
+
+            <!-- Artists Section (새로 추가됨) -->
+            <div class="pl-6 mb-8">
+                <p class="text-sm text-[#005ED2] font-bold mb-4">Artists</p>
+                <div class="flex gap-5 overflow-x-auto scrollbar-hide pr-6" id="artist-list">
+                    <!-- 스크립트에서 렌더링 -->
+                </div>
+            </div>
+
+            <!-- Coming Soon -->
             <div class="pl-6 mb-8">
                 <p class="text-sm text-[#005ED2] font-bold mb-4">Coming Soon</p>
                 <div class="flex gap-4 overflow-x-auto scrollbar-hide pr-6" id="coming-soon-list"></div>
             </div>
         </div>
 
+        <!-- Mini Player -->
         <div id="mini-player" class="absolute bottom-0 left-0 right-0 bg-[#1E1E1E] border-t border-white/5 px-4 pt-3 pb-safe cursor-pointer translate-y-full transition-transform duration-300 z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
             <div class="flex items-center justify-between mb-1 pointer-events-none"> 
                 <div class="flex items-center gap-3">
@@ -303,26 +317,25 @@
                 <p class="mt-1 opacity-75 text-[10px]">music.mp3 확인 필요</p>
             </div>
             
-            <!-- 가사 오버레이 (풀 스크린 & 그라데이션 배경 적용) -->
+            <!-- 가사 오버레이 -->
             <div id="lyrics-overlay" class="fixed inset-0 z-[60] flex flex-col lyrics-closed">
-                 <!-- 배경: 앨범 아트 기반 그라데이션 -->
+                 <!-- 배경 -->
                  <div class="absolute inset-0 z-0">
                      <img id="lyrics-bg-image" src="./cover.jpg" class="w-full h-full object-cover blur-3xl scale-150 brightness-[0.4]">
                      <div class="absolute inset-0 bg-black/30 backdrop-blur-xl"></div>
                  </div>
 
-                 <!-- 가사 화면 상단 (닫기 버튼) -->
+                 <!-- 가사 화면 상단 -->
                  <div class="relative z-10 flex justify-between items-center p-6 pt-10">
                      <div class="w-10"></div> 
                      <span class="text-[10px] font-bold tracking-[0.2em] text-white/50">LYRICS</span>
-                     <!-- 가사 내리기 버튼 (음악 플레이어로 복귀) -->
+                     <!-- 가사 내리기 버튼 -->
                      <button id="btn-close-lyrics" class="w-10 h-10 flex items-center justify-center text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-sm shadow-lg active:scale-95">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                      </button>
                  </div>
                  
                  <div class="relative z-10 flex-1 overflow-hidden w-full">
-                     <!-- 가사 컨테이너: pt-24로 줄여서 윗공간 활용 -->
                      <div id="lyrics-content" class="w-full h-full overflow-y-auto scrollbar-hide font-lyrics px-8 pb-40 text-left pt-24 lyrics-mask">
                          <p class="text-white/50 text-sm font-medium animate-pulse">가사를 불러오는 중...</p>
                      </div>
@@ -440,6 +453,15 @@
             { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", lrc: "./music3.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" } 
         ];
 
+        // 👨‍🎤 아티스트 데이터 구성
+        const artists = [
+            { name: "엔조이", image: "./cover.jpg" },
+            { name: "오스틴", image: "./cover14.jpg" },
+            { name: "전시기", image: "./cover15.jpg" },
+            { name: "성심당", image: "./cover2.jpg" },
+            { name: "엔쪽이 OST", image: "./cover3.jpg" }, // 임의 이미지
+        ];
+
         let lastRanking = [];
         try {
             const saved = localStorage.getItem('last_ranking_ids');
@@ -489,6 +511,13 @@
         const btnCloseChart = document.getElementById('btn-close-chart');
         const btnPlayAll = document.getElementById('btn-play-all'); 
         const newAlbumList = document.getElementById('new-album-list');
+        const artistList = document.getElementById('artist-list');
+        const artistModal = document.getElementById('artist-modal');
+        const artistModalContent = document.getElementById('artist-modal-content');
+        const artistModalClose = document.getElementById('artist-modal-close');
+        const artistModalImg = document.getElementById('artist-modal-img');
+        const artistModalName = document.getElementById('artist-modal-name');
+        const artistSongList = document.getElementById('artist-song-list');
         const comingSoonList = document.getElementById('coming-soon-list');
         const playerScreen = document.getElementById('player-screen');
         const miniPlayer = document.getElementById('mini-player');
@@ -557,6 +586,59 @@
         noticeModal.onclick = (e) => { if (e.target === noticeModal) noticeModal.classList.add('hidden'); };
         popupClose.onclick = () => popupModal.classList.add('hidden');
         popupModal.onclick = (e) => { if (e.target === popupModal) popupModal.classList.add('hidden'); };
+
+        // 아티스트 모달 닫기
+        artistModalClose.onclick = closeArtistModal;
+        artistModal.onclick = (e) => { if (e.target === artistModal) closeArtistModal(); };
+
+        function closeArtistModal() {
+            artistModalContent.classList.add('translate-y-full');
+            setTimeout(() => {
+                artistModal.classList.add('hidden');
+            }, 300);
+        }
+
+        function openArtistModal(artist) {
+            artistModalImg.src = artist.image;
+            artistModalName.innerText = artist.name;
+            artistSongList.innerHTML = '';
+
+            // 해당 아티스트의 노래 필터링
+            const artistSongs = songs.filter(s => s.artist.includes(artist.name));
+            
+            if (artistSongs.length > 0) {
+                artistSongs.forEach(song => {
+                    const originalIndex = songs.findIndex(s => s.id === song.id);
+                    const div = document.createElement('div');
+                    div.className = "flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 cursor-pointer transition-colors";
+                    div.innerHTML = `
+                        <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+                            <img src="${song.cover}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-sm font-bold text-gray-900 truncate">${song.title}</h4>
+                            <p class="text-xs text-gray-500 truncate">${song.artist}</p>
+                        </div>
+                        <button class="text-[#005ED2]">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        </button>
+                    `;
+                    div.onclick = () => {
+                        openPlayer(originalIndex);
+                        closeArtistModal();
+                    };
+                    artistSongList.appendChild(div);
+                });
+            } else {
+                artistSongList.innerHTML = '<p class="text-gray-400 text-center py-4 text-sm">등록된 곡이 없습니다.</p>';
+            }
+
+            artistModal.classList.remove('hidden');
+            // 약간의 지연 후 슬라이드 업 애니메이션
+            setTimeout(() => {
+                artistModalContent.classList.remove('translate-y-full');
+            }, 10);
+        }
 
         btnAdminLogin.onclick = () => { adminPwInput.value = ""; adminLoginModal.classList.remove('hidden'); };
         adminLoginCancel.onclick = () => adminLoginModal.classList.add('hidden');
@@ -746,6 +828,7 @@
             renderChartList();
             renderFullChartList();
             renderComingSoonList();
+            renderArtistList();
         }
 
         function renderNewAlbumList() {
@@ -864,6 +947,22 @@
                 `;
                 div.addEventListener('click', () => popupModal.classList.remove('hidden'));
                 comingSoonList.appendChild(div);
+            });
+        }
+
+        function renderArtistList() {
+            artistList.innerHTML = '';
+            artists.forEach(artist => {
+                const div = document.createElement('div');
+                div.className = "flex-shrink-0 flex flex-col items-center cursor-pointer group";
+                div.innerHTML = `
+                    <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-transparent group-hover:border-[#005ED2] transition-colors shadow-md mb-2">
+                        <img src="${artist.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                    </div>
+                    <span class="text-xs font-bold text-black group-hover:text-[#005ED2] transition-colors">${artist.name}</span>
+                `;
+                div.onclick = () => openArtistModal(artist);
+                artistList.appendChild(div);
             });
         }
 
