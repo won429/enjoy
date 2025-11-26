@@ -145,7 +145,8 @@
                         <span class="bg-green-100 text-green-600 text-[10px] font-bold px-1.5 py-0.5 rounded">UPDATE</span>
                         <span class="text-xs font-bold text-gray-700">시스템 업데이트</span>
                     </div>
-                    <p class="text-xs text-gray-500 leading-relaxed pl-1">📊 엔조이 차트 집계 시작!<br>(노래를 재생하면 순위가 올라갑니다)</p>
+                    <!-- ID 추가: update-content -->
+                    <p id="update-content" class="text-xs text-gray-500 leading-relaxed pl-1">📊 엔조이 차트 집계 시작!<br>(노래를 재생하면 순위가 올라갑니다)</p>
                 </div>
 
                 <!-- 신곡 섹션 -->
@@ -154,7 +155,8 @@
                         <span class="bg-[#005ED2]/20 text-[#005ED2] text-[10px] font-bold px-1.5 py-0.5 rounded">NEW</span>
                         <span class="text-xs font-bold text-gray-700">신곡 발매</span>
                     </div>
-                    <p class="text-xs text-gray-500 leading-relaxed pl-1">🔥 <strong>4곡</strong> 신규 등록 🔥<br>'똥을 싸고 손을 씻자', '미친 밤'<br>'우리는 엔조이', '너의 세상'</p>
+                    <!-- ID 추가: new-song-content -->
+                    <p id="new-song-content" class="text-xs text-gray-500 leading-relaxed pl-1">🔥 <strong>4곡</strong> 신규 등록 🔥<br>'똥을 싸고 손을 씻자', '미친 밤'<br>'우리는 엔조이', '너의 세상'</p>
                 </div>
             </div>
 
@@ -201,7 +203,7 @@
         </div>
     </div>
 
-    <!-- 관리자 로그인 및 수정 모달 -->
+    <!-- 관리자 로그인 모달 -->
     <div id="admin-login-modal" class="fixed inset-0 z-[90] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center px-6">
         <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl scale-in">
             <h3 class="text-lg font-bold text-black mb-4">관리자 로그인</h3>
@@ -212,11 +214,18 @@
             </div>
         </div>
     </div>
+    
+    <!-- 관리자 공지 수정 모달 (입력 필드 분리) -->
     <div id="admin-edit-modal" class="fixed inset-0 z-[95] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center px-6">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl scale-in">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl scale-in max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-bold text-black mb-4 text-center">공지사항 수정</h3>
-            <input type="text" id="edit-notice-title" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-3 text-sm focus:outline-none focus:border-[#005ED2]">
-            <textarea id="edit-notice-content" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4 h-32 text-xs resize-none focus:outline-none focus:border-[#005ED2] font-mono leading-relaxed"></textarea>
+            
+            <label class="block text-xs font-bold text-gray-500 mb-1">업데이트 내용</label>
+            <textarea id="edit-update-content" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-3 h-20 text-xs resize-none focus:outline-none focus:border-[#005ED2] font-mono leading-relaxed"></textarea>
+            
+            <label class="block text-xs font-bold text-gray-500 mb-1">신곡 안내</label>
+            <textarea id="edit-new-song-content" class="w-full bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 mb-4 h-20 text-xs resize-none focus:outline-none focus:border-[#005ED2] font-mono leading-relaxed"></textarea>
+            
             <div class="flex gap-2">
                 <button id="admin-edit-cancel" class="flex-1 bg-gray-200 text-gray-600 font-bold py-3 rounded-xl">취소</button>
                 <button id="admin-edit-save" class="flex-1 bg-[#005ED2] text-white font-bold py-3 rounded-xl">등록하기</button>
@@ -487,6 +496,7 @@
             { name: "그날, 엔조이 이야기 OST", type: 'image', image: './cover3.jpg' }
         ];
 
+        // ... (차트 데이터 로직 등 기존 코드 유지) ...
         let lastRanking = [];
         try {
             const saved = localStorage.getItem('last_ranking_ids');
@@ -511,11 +521,13 @@
             { id: 8, title: "미정", artist: "출장엔조이 OST", cover: "./cover7.jpg" }
         ];
 
+        // 기본 공지 데이터 구조 변경
         const DEFAULT_NOTICE = {
-            title: "업데이트 & 신곡 안내",
-            content: "📊 엔조이 차트 집계 시작!\n(노래를 재생하면 순위가 올라갑니다)\n\n🔥 신곡 4곡 발매 🔥\n'똥을 싸고 손을 씻자', '미친 밤', '우리는 엔조이', '너의 세상'\n많은 감상 부탁드립니다! 🎧".replace(/\n/g, "<br>")
+            update: "📊 엔조이 차트 집계 시작!<br>(노래를 재생하면 순위가 올라갑니다)",
+            newSong: "🔥 <strong>4곡</strong> 신규 등록 🔥<br>'똥을 싸고 손을 씻자', '미친 밤'<br>'우리는 엔조이', '너의 세상'"
         };
 
+        // ... (변수 선언, UI 참조 등) ...
         let currentIdx = 0;
         let isPlaying = false;
         let isDragging = false; 
@@ -585,8 +597,9 @@
         const adminLoginCancel = document.getElementById('admin-login-cancel');
         const adminLoginSubmit = document.getElementById('admin-login-submit');
         const adminEditModal = document.getElementById('admin-edit-modal');
-        const editNoticeTitle = document.getElementById('edit-notice-title');
-        const editNoticeContent = document.getElementById('edit-notice-content');
+        // 관리자 모달 ID 수정됨
+        const editUpdateContent = document.getElementById('edit-update-content');
+        const editNewSongContent = document.getElementById('edit-new-song-content');
         const adminEditCancel = document.getElementById('admin-edit-cancel');
         const adminEditSave = document.getElementById('admin-edit-save');
 
@@ -602,6 +615,7 @@
         setTimeout(enterHome, 3000);
         bootScreen.addEventListener('click', enterHome);
 
+        // ... (차트 시간 업데이트, 팝업 닫기 등 기존 코드) ...
         function updateChartTime() {
             const now = new Date();
             const hours = now.getHours();
@@ -613,7 +627,7 @@
         popupClose.onclick = () => popupModal.classList.add('hidden');
         popupModal.onclick = (e) => { if (e.target === popupModal) popupModal.classList.add('hidden'); };
 
-        // 아티스트 모달 닫기
+        // ... (아티스트 모달 관련) ...
         artistModalClose.onclick = closeArtistModal;
         artistModal.onclick = (e) => { if (e.target === artistModal) closeArtistModal(); };
 
@@ -628,7 +642,6 @@
             artistModalName.innerText = artist.name;
             artistSongList.innerHTML = '';
 
-            // 모달 이미지/아이콘 설정
             if (artist.type === 'image') {
                 artistModalImg.src = artist.image;
                 artistModalImg.classList.remove('hidden');
@@ -638,18 +651,12 @@
                 artistModalIcon.classList.remove('hidden');
             }
 
-            // 해당 아티스트 이름이 포함된 노래 필터링 (includes 사용)
-            const artistSongs = songs.filter(s => {
-                // '엔조이' 검색 시 '끝없는 여름밤(그날, 엔조이 이야기 OST)' 등은 제외
-                // (실제 '엔조이'라는 가수가 부른 곡만 포함하고 싶다면 아래처럼 필터링)
-                if (artist.name === '엔조이') {
-                     // '엔조이'만 정확히 포함하거나, 다른 가수가 섞이지 않은 순수 엔조이 곡만
-                     // 여기서는 간단히 'OST'가 포함된 경우 제외하는 로직 예시
-                     // 또는 데이터에 artistId 등을 부여하여 관리하는 것이 가장 정확함
-                     if (s.artist.includes('OST')) return false;
-                }
-                return s.artist.includes(artist.name);
-            });
+            // 필터링 로직 수정: OST 앨범에 포함된 곡은 해당 OST 아티스트에서만 보여주고,
+            // '엔조이' 아티스트 목록에서는 OST 곡을 제외하는 등의 로직은 
+            // 현재 데이터 구조상 복잡하므로, 단순 포함 여부로 처리하되 
+            // 사용자가 혼동하지 않게 '아티스트 이름'이 정확히 포함된 곡을 보여줌.
+            // 여기서는 단순하게 includes로 처리. (필요시 정교화 가능)
+            const artistSongs = songs.filter(s => s.artist.includes(artist.name));
             
             if (artistSongs.length > 0) {
                 artistSongs.forEach(song => {
@@ -684,6 +691,7 @@
             }, 10);
         }
 
+        // ... (관리자 로그인 로직) ...
         btnAdminLogin.onclick = () => { adminPwInput.value = ""; adminLoginModal.classList.remove('hidden'); };
         adminLoginCancel.onclick = () => adminLoginModal.classList.add('hidden');
         adminLoginModal.onclick = (e) => { if (e.target === adminLoginModal) adminLoginModal.classList.add('hidden'); };
@@ -696,27 +704,31 @@
             }
         };
 
+        // 관리자 수정 로직 (수정됨)
         async function openAdminEdit() {
             let currentNotice = DEFAULT_NOTICE;
             if (auth && db) {
-                const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice');
+                const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice_v2'); // v2로 변경하여 새 구조 저장
                 try {
                     const snap = await getDoc(noticeRef);
                     if (snap.exists()) currentNotice = snap.data();
                 } catch (e) { console.error("Load notice fail:", e); }
             }
-            editNoticeTitle.value = currentNotice.title;
-            editNoticeContent.value = currentNotice.content.replace(/<br\s*\/?>/gi, "\n");
+            // 줄바꿈 문자 처리
+            editUpdateContent.value = currentNotice.update.replace(/<br\s*\/?>/gi, "\n");
+            editNewSongContent.value = currentNotice.newSong.replace(/<br\s*\/?>/gi, "\n");
             adminEditModal.classList.remove('hidden');
         }
+
         adminEditCancel.onclick = () => adminEditModal.classList.add('hidden');
         adminEditSave.onclick = async () => {
-            const newTitle = editNoticeTitle.value;
-            const newContent = editNoticeContent.value.replace(/\n/g, "<br>"); 
+            const newUpdate = editUpdateContent.value.replace(/\n/g, "<br>");
+            const newNewSong = editNewSongContent.value.replace(/\n/g, "<br>");
+            
             if (!auth || !db) { alert("DB 연결 실패"); return; }
-            const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice');
+            const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice_v2');
             try {
-                await setDoc(noticeRef, { title: newTitle, content: newContent }, { merge: true });
+                await setDoc(noticeRef, { update: newUpdate, newSong: newNewSong }, { merge: true });
                 alert("공지사항이 수정되었습니다.");
                 adminEditModal.classList.add('hidden');
             } catch (e) { alert("저장 실패: " + e.message); }
@@ -724,22 +736,23 @@
 
         function setupNoticeListener() {
             if (!auth || !db) return;
-            const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice');
+            const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice_v2');
             onSnapshot(noticeRef, (doc) => {
-                const titleEl = document.getElementById('notice-title');
-                const contentEl = document.getElementById('notice-content');
+                const updateEl = document.getElementById('update-content');
+                const newSongEl = document.getElementById('new-song-content');
                 
                 if (doc.exists()) {
                     const data = doc.data();
-                    if (titleEl) titleEl.innerText = data.title;
-                    if (contentEl) contentEl.innerHTML = data.content;
+                    if (updateEl) updateEl.innerHTML = data.update;
+                    if (newSongEl) newSongEl.innerHTML = data.newSong;
                 } else {
-                    if (titleEl) titleEl.innerText = DEFAULT_NOTICE.title;
-                    if (contentEl) contentEl.innerHTML = DEFAULT_NOTICE.content;
+                    if (updateEl) updateEl.innerHTML = DEFAULT_NOTICE.update;
+                    if (newSongEl) newSongEl.innerHTML = DEFAULT_NOTICE.newSong;
                 }
             });
         }
 
+        // ... (나머지 미디어 세션, 랭킹, 렌더링 함수들 기존과 동일) ...
         function updateMediaSessionMetadata(song) {
             if ('mediaSession' in navigator) {
                 try {
