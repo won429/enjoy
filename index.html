@@ -656,7 +656,17 @@
             // 현재 데이터 구조상 복잡하므로, 단순 포함 여부로 처리하되 
             // 사용자가 혼동하지 않게 '아티스트 이름'이 정확히 포함된 곡을 보여줌.
             // 여기서는 단순하게 includes로 처리. (필요시 정교화 가능)
-            const artistSongs = songs.filter(s => s.artist.includes(artist.name));
+            const artistSongs = songs.filter(s => {
+                // '엔조이' 검색 시 '끝없는 여름밤(그날, 엔조이 이야기 OST)' 등은 제외
+                // (실제 '엔조이'라는 가수가 부른 곡만 포함하고 싶다면 아래처럼 필터링)
+                if (artist.name === '엔조이') {
+                     // '엔조이'만 정확히 포함하거나, 다른 가수가 섞이지 않은 순수 엔조이 곡만
+                     // 여기서는 간단히 'OST'가 포함된 경우 제외하는 로직 예시
+                     // 또는 데이터에 artistId 등을 부여하여 관리하는 것이 가장 정확함
+                     if (s.artist.includes('OST')) return false;
+                }
+                return s.artist.includes(artist.name);
+            });
             
             if (artistSongs.length > 0) {
                 artistSongs.forEach(song => {
