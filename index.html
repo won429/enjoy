@@ -470,14 +470,15 @@
             db = getFirestore(app);
         } catch (e) { console.error("Firebase init failed:", e); }
 
-        const today = new Date().toISOString().split('T')[0];
+        // 고정 날짜 사용 (오늘 날짜를 매번 생성하지 않음)
+        // const today = new Date().toISOString().split('T')[0];
         
         // 🎵 노래 데이터
         let songs = [
-            { id: 13, title: "똥을 싸고 손을 씻자", artist: "엔조이", src: "./music7.mp3", cover: "./cover12.jpg", lrc: "./music7.lrc", playCount: 0, rankStatus: 'new', releaseDate: today },
-            { id: 14, title: "미친 밤", artist: "엔조이", src: "./music8.mp3", cover: "./cover13.jpg", lrc: "./music8.lrc", playCount: 0, rankStatus: 'new', releaseDate: today },
-            { id: 15, title: "우리는 엔조이", artist: "오스틴", src: "./music9.mp3", cover: "./cover14.jpg", lrc: "./music9.lrc", playCount: 0, rankStatus: 'new', releaseDate: today },
-            { id: 16, title: "너의 세상", artist: "전시기", src: "./music10.mp3", cover: "./cover15.jpg", lrc: "./music10.lrc", playCount: 0, rankStatus: 'new', releaseDate: today },
+            { id: 13, title: "똥을 싸고 손을 씻자", artist: "엔조이", src: "./music7.mp3", cover: "./cover12.jpg", lrc: "./music7.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-11-26' },
+            { id: 14, title: "미친 밤", artist: "엔조이", src: "./music8.mp3", cover: "./cover13.jpg", lrc: "./music8.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-11-26' },
+            { id: 15, title: "우리는 엔조이", artist: "오스틴", src: "./music9.mp3", cover: "./cover14.jpg", lrc: "./music9.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-11-26' },
+            { id: 16, title: "너의 세상", artist: "전시기", src: "./music10.mp3", cover: "./cover15.jpg", lrc: "./music10.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-11-26' },
             { id: 1, title: "빛", artist: "엔쪽이 OST Part.2", src: "./music.mp3", cover: "./cover.jpg", lrc: "./music.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
             { id: 2, title: "힘내라", artist: "엔쪽이 OST Part.1", src: "./music2.mp3", cover: "./cover.jpg", lrc: "./music2.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
             { id: 4, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", src: "./music4.mp3", cover: "./cover3.jpg", lrc: "./music4.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
@@ -496,7 +497,6 @@
             { name: "그날, 엔조이 이야기 OST", type: 'image', image: './cover3.jpg' }
         ];
 
-        // ... (차트 데이터 로직 등 기존 코드 유지) ...
         let lastRanking = [];
         try {
             const saved = localStorage.getItem('last_ranking_ids');
@@ -521,13 +521,11 @@
             { id: 8, title: "미정", artist: "출장엔조이 OST", cover: "./cover7.jpg" }
         ];
 
-        // 기본 공지 데이터 구조 변경
         const DEFAULT_NOTICE = {
             update: "📊 엔조이 차트 집계 시작!<br>(노래를 재생하면 순위가 올라갑니다)",
             newSong: "🔥 <strong>4곡</strong> 신규 등록 🔥<br>'똥을 싸고 손을 씻자', '미친 밤'<br>'우리는 엔조이', '너의 세상'"
         };
 
-        // ... (변수 선언, UI 참조 등) ...
         let currentIdx = 0;
         let isPlaying = false;
         let isDragging = false; 
@@ -651,11 +649,7 @@
                 artistModalIcon.classList.remove('hidden');
             }
 
-            // 필터링 로직 수정: OST 앨범에 포함된 곡은 해당 OST 아티스트에서만 보여주고,
-            // '엔조이' 아티스트 목록에서는 OST 곡을 제외하는 등의 로직은 
-            // 현재 데이터 구조상 복잡하므로, 단순 포함 여부로 처리하되 
-            // 사용자가 혼동하지 않게 '아티스트 이름'이 정확히 포함된 곡을 보여줌.
-            // 여기서는 단순하게 includes로 처리. (필요시 정교화 가능)
+            // 해당 아티스트 이름이 포함된 노래 필터링 (includes 사용)
             const artistSongs = songs.filter(s => {
                 // '엔조이' 검색 시 '끝없는 여름밤(그날, 엔조이 이야기 OST)' 등은 제외
                 // (실제 '엔조이'라는 가수가 부른 곡만 포함하고 싶다면 아래처럼 필터링)
