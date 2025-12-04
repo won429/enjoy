@@ -345,7 +345,8 @@
              <!-- 배경색 제거하고 그라데이션이 보이도록 투명도 조절 -->
              <div class="absolute inset-0 bg-white/10"></div> 
         </div>
-        <div class="relative z-10 flex justify-between items-center p-6 pt-10">
+        <!-- 수정됨: 상단 패딩을 줄여 공간 차지 감소 (p-6 pt-10 -> px-5 pt-6 pb-2) -->
+        <div class="relative z-10 flex justify-between items-center px-5 pt-6 pb-2">
             <button id="btn-minimize" class="p-2 rounded-full text-black hover:bg-black/5 transition-all"> <!-- 아이콘 색상 블랙으로 변경 -->
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
