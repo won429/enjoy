@@ -339,7 +339,7 @@
 
     <!-- 2. 전체 플레이어 화면 (업데이트: 배경 그라데이션 적용) -->
     <div id="player-screen" class="fixed inset-0 z-50 bg-gradient-to-br from-[#eff6ff] via-[#f5f3ff] to-[#fff1f2] transform translate-y-full transition-transform duration-500 flex flex-col h-[100dvh]">
-        <!-- 배경 이미지는 블러처리 되어 유지, 그 위에 그라데이션이 덮이도록 -->
+        <!-- 배경 이미지는 블러처리 되어 유지, 그 위에 그라데이션이 보이도록 -->
         <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
              <img id="player-bg-image" src="./cover.jpg" class="w-full h-full object-cover blur-3xl scale-150 opacity-30">
              <!-- 배경색 제거하고 그라데이션이 보이도록 투명도 조절 -->
@@ -385,8 +385,8 @@
                  </div>
             </div>
 
-            <!-- 앨범 커버: 크기 20% 축소 (max-w-[320px] -> max-w-[256px]) -->
-            <div class="relative w-full max-w-[256px] aspect-square mb-auto mt-8 group shadow-2xl rounded-3xl"> <!-- mt-4 -> mt-8로 약간 내림 -->
+            <!-- 앨범 커버: 크기 10% 확대 (max-w-[256px] -> max-w-[280px]) 및 위치 상향 (mt-8 -> mt-4) -->
+            <div class="relative w-full max-w-[280px] aspect-square mb-auto mt-4 group shadow-2xl rounded-3xl"> 
                 <div class="w-full h-full rounded-3xl overflow-hidden border border-black/5 relative">
                     <img id="cover-image" src="./cover.jpg" class="w-full h-full object-cover">
                     <!-- 광택 효과 -->
