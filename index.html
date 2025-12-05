@@ -56,7 +56,7 @@
             filter: blur(1px); 
             font-size: 1.8rem;
             font-weight: 700;
-            color: rgba(0, 0, 0, 0.3); /* 어두운 색상으로 변경 */
+            color: rgba(0, 0, 0, 0.3); 
             margin-bottom: 2.5rem;
             line-height: 1.6;
             cursor: pointer;
@@ -75,8 +75,8 @@
             opacity: 1 !important;
             transform: scale(1.08) translateX(5px); 
             filter: blur(0);
-            color: #005ED2 !important; /* 활성 가사: 파란색 */
-            text-shadow: none; /* 그림자 제거 */
+            color: #005ED2 !important; 
+            text-shadow: none; 
         }
 
         .lyrics-mask {
@@ -118,12 +118,12 @@
 
         /* Play Now 버튼용 유리 재질 (파스텔 블루) */
         .glass-btn-blue {
-            background: rgba(147, 197, 253, 0.6); /* 파스텔 블루 (Tailwind blue-300 느낌) */
+            background: rgba(147, 197, 253, 0.6); 
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
             border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15);
-            color: #1e3a8a; /* 텍스트는 진한 파랑 */
+            color: #1e3a8a; 
         }
         .glass-btn-blue:hover {
             background: rgba(147, 197, 253, 0.8);
@@ -187,7 +187,6 @@
 
     <!-- 아티스트 노래 목록 모달 -->
     <div id="artist-modal" class="fixed inset-0 z-[80] bg-black/50 backdrop-blur-sm hidden flex items-end sm:items-center justify-center transition-opacity duration-300">
-        <!-- 수정됨: bg-white -> bg-white/90 backdrop-blur-sm (유리 재질, 낮은 블러) -->
         <div class="bg-white/90 backdrop-blur-sm w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl p-6 pb-10 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] transform transition-transform duration-300 translate-y-full" id="artist-modal-content">
             <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6"></div>
             <div class="flex items-center gap-4 mb-6">
@@ -334,7 +333,8 @@
                 </div>
             </div>
             <div class="absolute top-0 left-0 right-0 h-[2px] bg-gray-200/50">
-                <div id="mini-progress" class="h-full bg-[#005ED2] w-0 transition-all duration-300"></div>
+                <!-- 미니 플레이어 진행 바 색상 변경 (파스텔 블루) -->
+                <div id="mini-progress" class="h-full bg-[#93C5FD] w-0 transition-all duration-300"></div>
             </div>
         </div>
     </div>
@@ -400,25 +400,21 @@
                     <h2 id="song-title" class="text-2xl font-bold text-black mb-1 truncate scroll-m-0 tracking-tight">빛</h2>
                     <p id="song-artist" class="text-gray-500 text-base font-medium truncate">엔쪽이 OST Part.2</p>
                 </div>
-                <!-- 가사 버튼 (색상 변경) -->
-                <button id="btn-lyrics" class="text-gray-400 hover:text-[#005ED2] transition-all transform active:scale-90 p-2 relative group">
-                    <div class="absolute inset-0 bg-[#005ED2]/10 rounded-full scale-0 group-hover:scale-150 transition-transform duration-300"></div>
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="relative z-10">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
+                <!-- 가사 버튼 (색상 변경: 회색, 아이콘 변경: 말풍선 모양) -->
+                <button id="btn-lyrics" class="text-gray-400 hover:text-gray-600 transition-all transform active:scale-90 p-2 relative group">
+                    <div class="absolute inset-0 bg-gray-200 rounded-full scale-0 group-hover:scale-150 transition-transform duration-300"></div>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="relative z-10">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
                 </button>
             </div>
             
-            <!-- 프로그레스 바 (색상 변경) -->
+            <!-- 프로그레스 바 (색상 변경: 파스텔 블루 #93C5FD) -->
             <div class="w-full mb-1 relative h-10 flex items-center justify-center" id="progress-container">
-                <div class="absolute left-0 right-0 h-1 bg-gray-200 rounded-full overflow-hidden pointer-events-none"> <!-- 배경색 변경 -->
-                    <div id="progress-fill" class="absolute top-0 left-0 h-full bg-[#005ED2] rounded-full smooth-transition" style="width: 0%"></div> <!-- 채움색 변경 -->
+                <div class="absolute left-0 right-0 h-1 bg-gray-200 rounded-full overflow-hidden pointer-events-none"> 
+                    <div id="progress-fill" class="absolute top-0 left-0 h-full bg-[#93C5FD] rounded-full smooth-transition" style="width: 0%"></div> <!-- 채움색 변경 -->
                 </div>
-                <div id="progress-handle" class="absolute h-3 w-3 bg-[#005ED2] rounded-full opacity-0 group-hover:opacity-100 smooth-transition pointer-events-none left-0 -ml-[6px] shadow-md"></div> <!-- 핸들색 변경 -->
+                <div id="progress-handle" class="absolute h-3 w-3 bg-[#93C5FD] rounded-full opacity-0 group-hover:opacity-100 smooth-transition pointer-events-none left-0 -ml-[6px] shadow-md"></div> <!-- 핸들색 변경 -->
                 <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" style="touch-action: none;">
             </div>
             <div class="w-full flex justify-between text-[10px] text-gray-400 font-mono font-medium tracking-wider">
@@ -426,27 +422,22 @@
                 <span id="player-time-duration">00:00</span>
             </div>
             
-            <!-- 컨트롤 버튼 (색상 변경) -->
-            <div class="mt-auto w-full flex justify-between items-center px-4 pb-safe pt-2">
-                <button class="text-gray-300 hover:text-black transition-colors p-2 hover:bg-black/5 rounded-full">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
-                </button>
-                <div class="flex items-center gap-6">
-                    <button id="btn-prev" class="text-black hover:text-[#005ED2] active:scale-90 transition-all p-2">
+            <!-- 컨트롤 버튼 (수정됨: 셔플/반복 제거 및 재생버튼 색상 변경) -->
+            <div class="mt-auto w-full flex justify-center items-center px-4 pb-safe pt-2">
+                <!-- 셔플, 반복 버튼 삭제됨 -->
+                <div class="flex items-center gap-8">
+                    <button id="btn-prev" class="text-black hover:text-[#93C5FD] active:scale-90 transition-all p-2">
                         <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6 6h2v12H6V6zm3.5 6l8.5 6V6l-8.5 6z"/></svg>
                     </button>
-                    <!-- 재생 버튼 스타일 (유리 재질 + 그림자) -->
-                    <button id="btn-play" class="w-16 h-16 flex items-center justify-center bg-[#005ED2] text-white rounded-full shadow-lg shadow-[#005ED2]/30 hover:scale-105 hover:bg-[#004bb5] active:scale-95 transition-all duration-300">
+                    <!-- 재생 버튼 스타일 (파스텔 블루) -->
+                    <button id="btn-play" class="w-16 h-16 flex items-center justify-center bg-[#93C5FD] text-white rounded-full shadow-lg shadow-[#93C5FD]/30 hover:scale-105 hover:bg-[#60A5FA] active:scale-95 transition-all duration-300">
                         <svg id="icon-play" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                         <svg id="icon-pause" class="hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                     </button>
-                    <button id="btn-next" class="text-black hover:text-[#005ED2] active:scale-90 transition-all p-2">
+                    <button id="btn-next" class="text-black hover:text-[#93C5FD] active:scale-90 transition-all p-2">
                          <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
                     </button>
                 </div>
-                <button id="btn-repeat" class="text-gray-300 hover:text-black transition-colors p-2 hover:bg-black/5 rounded-full">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
-                </button>
             </div>
         </div>
     </div>
@@ -580,7 +571,7 @@
         const btnLyrics = document.getElementById('btn-lyrics'); 
         const btnCloseLyrics = document.getElementById('btn-close-lyrics'); 
         
-        const btnRepeat = document.getElementById('btn-repeat'); 
+        // 반복 버튼 제거되어 관련 변수 제거 (btnRepeat)
         const miniCover = document.getElementById('mini-cover');
         const miniTitle = document.getElementById('mini-title');
         const miniArtist = document.getElementById('mini-artist');
@@ -1136,16 +1127,16 @@
                     isLyricsOpen = true;
                     lyricsOverlay.classList.remove('lyrics-closed');
                     lyricsOverlay.classList.add('lyrics-open');
-                    btnLyrics.classList.remove('text-white/40');
-                    btnLyrics.classList.add('text-[#005ED2]');
+                    btnLyrics.classList.remove('text-gray-400');
+                    btnLyrics.classList.add('text-gray-800'); // 활성 상태: 진한 회색
                     
                     scrollToActiveLyricImmediate();
                 } else {
                     isLyricsOpen = false;
                     lyricsOverlay.classList.remove('lyrics-open');
                     lyricsOverlay.classList.add('lyrics-closed');
-                    btnLyrics.classList.add('text-white/40');
-                    btnLyrics.classList.remove('text-[#005ED2]');
+                    btnLyrics.classList.add('text-gray-400');
+                    btnLyrics.classList.remove('text-gray-800');
                 }
             });
         }
@@ -1156,8 +1147,8 @@
                 isLyricsOpen = false;
                 lyricsOverlay.classList.remove('lyrics-open');
                 lyricsOverlay.classList.add('lyrics-closed');
-                btnLyrics.classList.add('text-white/40');
-                btnLyrics.classList.remove('text-[#005ED2]');
+                btnLyrics.classList.add('text-gray-400');
+                btnLyrics.classList.remove('text-gray-800');
             });
         }
 
@@ -1288,16 +1279,7 @@
              openPlayer(0);
         };
 
-        btnRepeat.onclick = () => {
-            isRepeat = !isRepeat;
-            if (isRepeat) {
-                btnRepeat.classList.remove('text-white/30');
-                btnRepeat.classList.add('text-[#005ED2]');
-            } else {
-                btnRepeat.classList.add('text-white/30');
-                btnRepeat.classList.remove('text-[#005ED2]');
-            }
-        };
+        // btnRepeat 관련 이벤트 리스너 제거됨
 
         function getClientX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
         function onScrub(e) {
