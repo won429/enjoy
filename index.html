@@ -209,12 +209,11 @@
 
     <!-- 1. 홈 화면 -->
     <div id="home-screen" class="relative z-10 h-full flex flex-col bg-gradient-to-br from-[#eff6ff] via-[#f5f3ff] to-[#fff1f2]">
-        <div class="px-6 pt-8 pb-4 flex justify-between items-center h-16">
-            <!-- 로고 및 프로필 아이콘 완전 제거됨 -->
-        </div>
-
-        <!-- 스크롤 영역 -->
-        <div class="flex-1 overflow-y-auto scrollbar-hide pb-32">
+        
+        <!-- 상단 빈 공간(헤더) 및 padding 제거 -->
+        
+        <!-- 스크롤 영역 (상단 여백 pt-6으로 대폭 축소) -->
+        <div class="flex-1 overflow-y-auto scrollbar-hide pb-32 pt-6">
             
             <!-- New Album -->
             <div class="mb-6 mx-4 p-5 rounded-3xl glass-box"> 
@@ -256,7 +255,8 @@
         <!-- 미니 플레이어 (알약 모양 다이나믹 아일랜드 스타일) -->
         <!-- 위치: bottom-[calc(0.5rem+env(safe-area-inset-bottom))]으로 설정되어 있음 -->
         <!-- transition-transform -> transition-all로 변경하여 width/right 변경 애니메이션 적용 -->
-        <div id="mini-player" class="fixed bottom-[calc(0.5rem+env(safe-area-inset-bottom))] left-6 right-24 h-14 bg-white/85 backdrop-blur-xl border border-white/60 rounded-full px-3 flex items-center justify-between shadow-2xl cursor-pointer translate-y-[150%] transition-all duration-300 z-[50] overflow-hidden ring-1 ring-white/40">
+        <!-- 스타일 변경: bg-white/85 backdrop-blur-xl -> bg-white/5 backdrop-blur-sm (하단 메뉴와 통일) -->
+        <div id="mini-player" class="fixed bottom-[calc(0.5rem+env(safe-area-inset-bottom))] left-6 right-24 h-14 bg-white/5 backdrop-blur-sm border border-white/60 rounded-full px-3 flex items-center justify-between shadow-2xl cursor-pointer translate-y-[150%] transition-all duration-300 z-[50] overflow-hidden ring-1 ring-white/40">
             <div class="flex items-center gap-3 w-full overflow-hidden">
                 <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200 relative shadow-inner shrink-0">
                     <img id="mini-cover" src="./cover.jpg" class="w-full h-full object-cover">
@@ -283,6 +283,7 @@
         <div id="dynamic-pill" class="fixed right-6 bottom-[calc(0.5rem+env(safe-area-inset-bottom))] z-[50] h-14 bg-white/5 backdrop-blur-sm border border-white/60 rounded-full flex items-center justify-end shadow-2xl w-14 overflow-hidden ring-1 ring-white/40">
             
             <!-- 홈 버튼 (내부 컨텐츠) - 왼쪽으로 나타남 -->
+            <!-- flex-col 및 텍스트 추가, 색상 변경(text-gray-500) -->
             <button id="pill-home-btn" onclick="window.location.href='https://won429.github.io/enjoysite/'" class="w-0 opacity-0 h-10 flex flex-col items-center justify-center text-gray-500 rounded-full hover:bg-white/10 shrink-0 mr-0 transition-all gap-[2px]">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
@@ -291,6 +292,7 @@
             </button>
 
             <!-- 메인 토글 버튼 -->
+            <!-- flex-col 및 텍스트 추가, 색상 변경(text-gray-500) -->
             <button id="pill-toggle-btn" class="relative w-14 h-14 flex flex-col items-center justify-center text-gray-500 shrink-0 hover:bg-white/10 rounded-full transition-colors gap-[2px]">
                 <div class="relative w-6 h-6 flex items-center justify-center">
                     <svg id="pill-icon-music" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="absolute inset-0">
