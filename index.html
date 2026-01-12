@@ -43,7 +43,7 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; box-shadow: none; border: none; }
         .fade-out { opacity: 0; visibility: hidden; transition: opacity 0.8s ease-out, visibility 0.8s; }
         
-        /* 가사 스타일 (밝은 배경용으로 수정됨) */
+        /* 가사 스타일 */
         .lyric-line {
             transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), 
                         opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
@@ -84,7 +84,7 @@
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 85%, transparent 100%);
         }
 
-        /* 가사 화면 트랜지션 - 슬라이드 효과 */
+        /* 가사 화면 트랜지션 */
         #lyrics-overlay {
             transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
             overflow-x: hidden;
@@ -94,20 +94,14 @@
             z-index: 60; 
         }
         
-        /* 닫힐 때: 화면 아래로 완전히 내려감 */
-        .lyrics-closed {
-            transform: translateY(100%);
-        }
-        /* 열릴 때: 화면을 덮음 */
-        .lyrics-open {
-            transform: translateY(0);
-        }
+        .lyrics-closed { transform: translateY(100%); }
+        .lyrics-open { transform: translateY(0); }
 
         /* 팝업 애니메이션 */
         .scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
-        /* 유리 재질 효과 클래스 (약한 블러) */
+        /* 유리 재질 효과 */
         .glass-box {
             background: rgba(255, 255, 255, 0.45);
             backdrop-filter: blur(8px);
@@ -116,7 +110,6 @@
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
         }
 
-        /* Play Now 버튼용 유리 재질 (파스텔 블루) */
         .glass-btn-blue {
             background: rgba(147, 197, 253, 0.6); 
             backdrop-filter: blur(4px);
@@ -128,50 +121,21 @@
         .glass-btn-blue:hover {
             background: rgba(147, 197, 253, 0.8);
         }
+
+        /* 다이나믹 아일랜드 스타일 - Flexbox 기반 */
+        #dynamic-pill {
+            transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        /* 홈 버튼 등장 애니메이션 */
+        #pill-home-btn {
+            transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, margin-right 0.4s ease;
+            overflow: hidden;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body class="text-black overflow-hidden select-none h-[100dvh] w-screen fixed bg-white">
-
-    <!-- 인트로 삭제됨 -->
-
-    <!-- 공지사항 팝업 (섹션 분리 디자인 적용) -->
-    <div id="notice-modal" class="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center px-6">
-        <div class="bg-white rounded-2xl p-0 w-full max-w-xs text-center shadow-2xl border border-gray-100 scale-in relative overflow-hidden">
-            <!-- 헤더 -->
-            <div class="bg-[#005ED2]/5 p-4 pb-2">
-                <div class="w-10 h-10 bg-[#005ED2]/10 rounded-full flex items-center justify-center mx-auto mb-2 text-[#005ED2]">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                </div>
-                <h3 id="notice-title" class="text-lg font-bold text-black">업데이트 & 신곡 안내</h3>
-            </div>
-
-            <div class="p-5 space-y-4 text-left">
-                <!-- 업데이트 섹션 -->
-                <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="bg-green-100 text-green-600 text-[10px] font-bold px-1.5 py-0.5 rounded">UPDATE</span>
-                        <span class="text-xs font-bold text-gray-700">시스템 업데이트</span>
-                    </div>
-                    <!-- ID 추가: update-content -->
-                    <p id="update-content" class="text-xs text-gray-500 leading-relaxed pl-1">📊 엔조이 차트 집계 시작!<br>(노래를 재생하면 순위가 올라갑니다)</p>
-                </div>
-
-                <!-- 신곡 섹션 -->
-                <div class="bg-blue-50 rounded-xl p-3 border border-blue-100">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="bg-[#005ED2]/20 text-[#005ED2] text-[10px] font-bold px-1.5 py-0.5 rounded">NEW</span>
-                        <span class="text-xs font-bold text-gray-700">신곡 발매</span>
-                    </div>
-                    <!-- ID 추가: new-song-content -->
-                    <p id="new-song-content" class="text-xs text-gray-500 leading-relaxed pl-1">🔥 <strong>4곡</strong> 신규 등록 🔥<br>'똥을 싸고 손을 씻자', '미친 밤'<br>'우리는 엔조이', '너의 세상'</p>
-                </div>
-            </div>
-
-            <div class="p-5 pt-0">
-                <button id="notice-close" class="w-full bg-[#005ED2] text-white font-bold py-3 rounded-xl hover:bg-[#004bb5] transition-colors shadow-lg shadow-[#005ED2]/30 text-sm">확인</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Coming Soon 팝업 -->
     <div id="popup-modal" class="fixed inset-0 z-[60] bg-black/30 backdrop-blur-sm hidden flex items-center justify-center px-6">
@@ -191,11 +155,9 @@
             <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6"></div>
             <div class="flex items-center gap-4 mb-6">
                 <div class="w-16 h-16 rounded-full overflow-hidden shadow-md border border-gray-100 flex items-center justify-center bg-gray-50 relative">
-                    <!-- 아이콘 (기본) -->
                     <svg id="artist-modal-icon" width="40" height="40" viewBox="0 0 24 24" fill="currentColor" class="text-gray-400 absolute">
                         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                     </svg>
-                    <!-- 이미지 (OST용) -->
                     <img id="artist-modal-img" src="" class="w-full h-full object-cover absolute hidden">
                 </div>
                 <div>
@@ -203,14 +165,12 @@
                     <p class="text-xs text-gray-500 mt-1">노래 목록</p>
                 </div>
             </div>
-            <div id="artist-song-list" class="flex flex-col gap-1 max-h-[50vh] overflow-y-auto scrollbar-hide">
-                <!-- 노래 리스트 들어갈 곳 -->
-            </div>
+            <div id="artist-song-list" class="flex flex-col gap-1 max-h-[50vh] overflow-y-auto scrollbar-hide"></div>
             <button id="artist-modal-close" class="w-full bg-gray-100 text-black font-bold py-3 rounded-xl mt-6 hover:bg-gray-200 transition-colors">닫기</button>
         </div>
     </div>
 
-    <!-- 관리자 로그인 모달 -->
+    <!-- 관리자 로그인 및 수정 모달 -->
     <div id="admin-login-modal" class="fixed inset-0 z-[90] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center px-6">
         <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl scale-in">
             <h3 class="text-lg font-bold text-black mb-4">관리자 로그인</h3>
@@ -222,17 +182,13 @@
         </div>
     </div>
     
-    <!-- 관리자 공지 수정 모달 (입력 필드 분리) -->
     <div id="admin-edit-modal" class="fixed inset-0 z-[95] bg-black/50 backdrop-blur-sm hidden flex items-center justify-center px-6">
         <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl scale-in max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-bold text-black mb-4 text-center">공지사항 수정</h3>
-            
             <label class="block text-xs font-bold text-gray-500 mb-1">업데이트 내용</label>
             <textarea id="edit-update-content" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-3 h-20 text-xs resize-none focus:outline-none focus:border-[#005ED2] font-mono leading-relaxed"></textarea>
-            
             <label class="block text-xs font-bold text-gray-500 mb-1">신곡 안내</label>
             <textarea id="edit-new-song-content" class="w-full bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 mb-4 h-20 text-xs resize-none focus:outline-none focus:border-[#005ED2] font-mono leading-relaxed"></textarea>
-            
             <div class="flex gap-2">
                 <button id="admin-edit-cancel" class="flex-1 bg-gray-200 text-gray-600 font-bold py-3 rounded-xl">취소</button>
                 <button id="admin-edit-save" class="flex-1 bg-[#005ED2] text-white font-bold py-3 rounded-xl">등록하기</button>
@@ -241,7 +197,7 @@
     </div>
 
     <!-- 전체 차트 뷰 -->
-    <div id="full-chart-view" class="fixed inset-0 z-[80] bg-white transform translate-x-full transition-transform duration-300 flex flex-col h-[100dvh]">
+    <div id="full-chart-view" class="fixed inset-0 z-[120] bg-white transform translate-x-full transition-transform duration-300 flex flex-col h-[100dvh]">
         <div class="px-6 pt-8 pb-4 flex items-center gap-4 bg-white/95 backdrop-blur-md sticky top-0 z-10 border-b border-gray-100">
             <button id="btn-close-chart" class="p-2 -ml-2 rounded-full text-black hover:bg-gray-100 transition-colors">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
@@ -251,35 +207,22 @@
         <div id="full-chart-list" class="flex-1 overflow-y-auto px-0 pb-32"></div>
     </div>
 
-    <!-- 1. 홈 화면 (배경에 은은한 파스텔 그라데이션 추가하여 유리 효과 극대화) -->
+    <!-- 1. 홈 화면 -->
     <div id="home-screen" class="relative z-10 h-full flex flex-col bg-gradient-to-br from-[#eff6ff] via-[#f5f3ff] to-[#fff1f2]">
         <div class="px-6 pt-8 pb-4 flex justify-between items-center">
-            <div class="flex items-center gap-2"> 
-                <!-- 나가기 버튼 (수정됨: a 태그 대신 button과 onclick을 사용하여 이동 오류 방지) -->
-                <button type="button" onclick="window.location.href='https://won429.github.io/enjoysite/'" class="p-2 -ml-2 rounded-full text-black hover:bg-white/50 transition-colors">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-                </button>
-                <div class="text-[#005ED2] flex items-center justify-center">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10v4"></path><path d="M9 7v10"></path><path d="M13 4v16"></path><path d="M17 8v8"></path><path d="M21 11v2"></path></svg>
-                </div>
-                <h1 class="font-logo tracking-tight text-black text-2xl lowercase pt-1">Play enjoy</h1>
-            </div>
-            <div class="flex items-center gap-2">
-                 <button id="btn-admin-login" class="p-2 rounded-full text-gray-400 hover:text-[#005ED2] hover:bg-white/50 transition-colors">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                </button>
-            </div>
+            <!-- 상단 로고 및 프로필 아이콘 영역 제거 -->
         </div>
 
+        <!-- 스크롤 영역 -->
         <div class="flex-1 overflow-y-auto scrollbar-hide pb-32">
             
-            <!-- New Album (Glass Style) -->
+            <!-- New Album -->
             <div class="mb-6 mx-4 p-5 rounded-3xl glass-box"> 
                 <p class="text-sm text-[#005ED2] font-bold mb-4">New Album</p>
                 <div class="flex gap-4 overflow-x-auto scrollbar-hide" id="new-album-list"></div>
             </div>
             
-            <!-- Chart (Glass Style) -->
+            <!-- Chart -->
             <div class="mb-6 mx-4 p-5 rounded-3xl glass-box">
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center gap-2">
@@ -297,22 +240,20 @@
                 <div id="chart-slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-4"></div>
             </div>
 
-            <!-- Artists Section (No Box Style) -->
+            <!-- Artists -->
             <div class="pl-6 mb-8 mt-2">
                 <p class="text-sm text-[#005ED2] font-bold mb-4">Artists</p>
-                <div class="flex gap-5 overflow-x-auto scrollbar-hide pr-6" id="artist-list">
-                    <!-- 스크립트에서 렌더링 -->
-                </div>
+                <div class="flex gap-5 overflow-x-auto scrollbar-hide pr-6" id="artist-list"></div>
             </div>
 
-            <!-- Coming Soon (Glass Style) -->
+            <!-- Coming Soon -->
             <div class="mb-8 mx-4 p-5 rounded-3xl glass-box">
                 <p class="text-sm text-[#005ED2] font-bold mb-4">Coming Soon</p>
                 <div class="flex gap-4 overflow-x-auto scrollbar-hide" id="coming-soon-list"></div>
             </div>
         </div>
 
-        <!-- Mini Player (유리 재질 + 밝은 테마로 변경) -->
+        <!-- 미니 플레이어 (위치 복구: 하단 고정) -->
         <div id="mini-player" class="absolute bottom-0 left-0 right-0 bg-white/85 backdrop-blur-xl border-t border-white/40 px-4 pt-3 pb-safe cursor-pointer translate-y-full transition-transform duration-300 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
             <div class="flex items-center justify-between mb-1 pointer-events-none"> 
                 <div class="flex items-center gap-3">
@@ -325,7 +266,6 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-4 pr-2 pointer-events-auto"> 
-                    <!-- 재생 버튼: 밝은 배경에 맞춰 검은색으로 변경 -->
                     <button id="mini-play-btn" class="w-9 h-9 flex items-center justify-center bg-black text-white rounded-full shadow-md active:scale-90 transition-transform">
                         <svg id="mini-icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                         <svg id="mini-icon-pause" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
@@ -333,47 +273,68 @@
                 </div>
             </div>
             <div class="absolute top-0 left-0 right-0 h-[2px] bg-gray-200/50">
-                <!-- 미니 플레이어 진행 바 색상 변경 (파스텔 블루) -->
                 <div id="mini-progress" class="h-full bg-[#93C5FD] w-0 transition-all duration-300"></div>
             </div>
         </div>
+
+        <!-- 우측 하단 플로팅 메뉴 (다이나믹 아일랜드 스타일) -->
+        <!-- 배경: 매우 옅은 흰색, 블러 처리, 테두리 강화 -->
+        <div id="dynamic-pill" class="fixed right-6 bottom-[calc(80px+env(safe-area-inset-bottom))] z-[50] h-14 bg-white/5 backdrop-blur-sm border border-white/60 rounded-full flex items-center justify-end shadow-2xl w-14 overflow-hidden ring-1 ring-white/40">
+            
+            <!-- 홈 버튼 (내부 컨텐츠) - 왼쪽으로 나타남 -->
+            <!-- flex-col 및 텍스트 추가, 색상 변경(text-gray-500) -->
+            <button id="pill-home-btn" onclick="window.location.href='https://won429.github.io/enjoysite/'" class="w-0 opacity-0 h-10 flex flex-col items-center justify-center text-gray-500 rounded-full hover:bg-white/10 shrink-0 mr-0 transition-all gap-[2px]">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+                <span class="text-[9px] font-bold leading-none">홈</span>
+            </button>
+
+            <!-- 메인 토글 버튼 -->
+            <!-- flex-col 및 텍스트 추가, 색상 변경(text-gray-500) -->
+            <button id="pill-toggle-btn" class="relative w-14 h-14 flex flex-col items-center justify-center text-gray-500 shrink-0 hover:bg-white/10 rounded-full transition-colors gap-[2px]">
+                <div class="relative w-6 h-6 flex items-center justify-center">
+                    <svg id="pill-icon-music" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="absolute inset-0">
+                        <path d="M21 3V15.5C21 17.43 19.43 19 17.5 19C15.57 19 14 17.43 14 15.5C14 13.57 15.57 12 17.5 12C18.04 12 18.55 12.12 19 12.34V6.47L9 8.6V17.5C9 19.43 7.43 21 5.5 21C3.57 21 2 19.43 2 17.5C2 15.57 3.57 14 5.5 14C6.04 14 6.55 14.12 7 14.34V6L21 3Z" />
+                    </svg>
+                    <svg id="pill-icon-close" class="hidden absolute inset-0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </div>
+                <span class="text-[9px] font-bold leading-none">음악</span>
+            </button>
+        </div>
     </div>
 
-    <!-- 2. 전체 플레이어 화면 (업데이트: 배경 그라데이션 적용) -->
-    <div id="player-screen" class="fixed inset-0 z-50 bg-gradient-to-br from-[#eff6ff] via-[#f5f3ff] to-[#fff1f2] transform translate-y-full transition-transform duration-500 flex flex-col h-[100dvh]">
-        <!-- 배경 이미지는 블러처리 되어 유지, 그 위에 그라데이션이 보이도록 -->
+    <!-- 2. 전체 플레이어 화면 -->
+    <div id="player-screen" class="fixed inset-0 z-[100] bg-gradient-to-br from-[#eff6ff] via-[#f5f3ff] to-[#fff1f2] transform translate-y-full transition-transform duration-500 flex flex-col h-[100dvh]">
         <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
              <img id="player-bg-image" src="./cover.jpg" class="w-full h-full object-cover blur-3xl scale-150 opacity-30">
-             <!-- 배경색 제거하고 그라데이션이 보이도록 투명도 조절 -->
              <div class="absolute inset-0 bg-white/10"></div> 
         </div>
-        <!-- 수정됨: 상단 패딩을 줄여 공간 차지 감소 (p-6 pt-10 -> px-5 pt-6 pb-2) -->
         <div class="relative z-10 flex justify-between items-center px-5 pt-6 pb-2">
-            <button id="btn-minimize" class="p-2 rounded-full text-black hover:bg-black/5 transition-all"> <!-- 아이콘 색상 블랙으로 변경 -->
+            <button id="btn-minimize" class="p-2 rounded-full text-black hover:bg-black/5 transition-all">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
-            <span class="text-[10px] font-bold tracking-[0.2em] text-black/50">NOW PLAYING</span> <!-- 텍스트 색상 변경 -->
-            <div class="w-10 h-10"></div> <!-- 점세개 버튼 제거 후 레이아웃 유지를 위한 빈 공간 -->
+            <span class="text-[10px] font-bold tracking-[0.2em] text-black/50">NOW PLAYING</span>
+            <div class="w-10 h-10"></div>
         </div>
-        <div class="relative z-10 flex-1 flex flex-col items-center justify-center px-8 pb-8 text-black"> <!-- 기본 텍스트 색상 변경 -->
+        <div class="relative z-10 flex-1 flex flex-col items-center justify-center px-8 pb-8 text-black">
              <div id="error-box" class="hidden bg-red-500/90 text-white text-xs p-3 rounded-xl mb-8 text-center animate-pulse w-full max-w-xs">
                 <p>파일을 찾을 수 없습니다.</p>
                 <p class="mt-1 opacity-75 text-[10px]">music.mp3 확인 필요</p>
             </div>
             
-            <!-- 가사 오버레이 (밝은 유리 테마로 변경됨) -->
             <div id="lyrics-overlay" class="fixed inset-0 flex flex-col lyrics-closed bg-gradient-to-br from-[#eff6ff] via-[#f5f3ff] to-[#fff1f2]">
-                 <!-- 배경: 밝은 그라데이션 및 투명도 높은 이미지 -->
                  <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
                      <img id="lyrics-bg-image" src="./cover.jpg" class="w-full h-full object-cover blur-3xl scale-150 opacity-20">
                      <div class="absolute inset-0 bg-white/10"></div>
                  </div>
 
-                 <!-- 가사 화면 상단 (어두운 텍스트/아이콘) -->
                  <div class="relative z-10 flex justify-between items-center p-6 pt-10">
                      <div class="w-10"></div> 
                      <span class="text-[10px] font-bold tracking-[0.2em] text-black/50">LYRICS</span>
-                     <!-- 가사 내리기 버튼 -->
                      <button id="btn-close-lyrics" class="w-10 h-10 flex items-center justify-center text-black/70 hover:text-black bg-black/5 hover:bg-black/10 rounded-full transition-all backdrop-blur-sm shadow-sm active:scale-95">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                      </button>
@@ -386,11 +347,9 @@
                  </div>
             </div>
 
-            <!-- 앨범 커버: 크기 10% 확대 (max-w-[256px] -> max-w-[280px]) 및 위치 상향 (mt-8 -> mt-4) -->
             <div class="relative w-full max-w-[280px] aspect-square mb-auto mt-4 group shadow-2xl rounded-3xl"> 
                 <div class="w-full h-full rounded-3xl overflow-hidden border border-black/5 relative">
                     <img id="cover-image" src="./cover.jpg" class="w-full h-full object-cover">
-                    <!-- 광택 효과 -->
                     <div class="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none"></div>
                 </div>
             </div>
@@ -400,7 +359,6 @@
                     <h2 id="song-title" class="text-2xl font-bold text-black mb-1 truncate scroll-m-0 tracking-tight">빛</h2>
                     <p id="song-artist" class="text-gray-500 text-base font-medium truncate">엔쪽이 OST Part.2</p>
                 </div>
-                <!-- 가사 버튼 (색상 변경: 회색, 아이콘 변경: 말풍선 모양) -->
                 <button id="btn-lyrics" class="text-gray-400 hover:text-gray-600 transition-all transform active:scale-90 p-2 relative group">
                     <div class="absolute inset-0 bg-gray-200 rounded-full scale-0 group-hover:scale-150 transition-transform duration-300"></div>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="relative z-10">
@@ -409,12 +367,11 @@
                 </button>
             </div>
             
-            <!-- 프로그레스 바 (색상 변경: 파스텔 블루 #93C5FD) -->
             <div class="w-full mb-1 relative h-10 flex items-center justify-center" id="progress-container">
                 <div class="absolute left-0 right-0 h-1 bg-gray-200 rounded-full overflow-hidden pointer-events-none"> 
-                    <div id="progress-fill" class="absolute top-0 left-0 h-full bg-[#93C5FD] rounded-full smooth-transition" style="width: 0%"></div> <!-- 채움색 변경 -->
+                    <div id="progress-fill" class="absolute top-0 left-0 h-full bg-[#93C5FD] rounded-full smooth-transition" style="width: 0%"></div>
                 </div>
-                <div id="progress-handle" class="absolute h-3 w-3 bg-[#93C5FD] rounded-full opacity-0 group-hover:opacity-100 smooth-transition pointer-events-none left-0 -ml-[6px] shadow-md"></div> <!-- 핸들색 변경 -->
+                <div id="progress-handle" class="absolute h-3 w-3 bg-[#93C5FD] rounded-full opacity-0 group-hover:opacity-100 smooth-transition pointer-events-none left-0 -ml-[6px] shadow-md"></div>
                 <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" style="touch-action: none;">
             </div>
             <div class="w-full flex justify-between text-[10px] text-gray-400 font-mono font-medium tracking-wider">
@@ -422,14 +379,11 @@
                 <span id="player-time-duration">00:00</span>
             </div>
             
-            <!-- 컨트롤 버튼 (수정됨: 셔플/반복 제거 및 재생버튼 색상 변경) -->
             <div class="mt-auto w-full flex justify-center items-center px-4 pb-safe pt-2">
-                <!-- 셔플, 반복 버튼 삭제됨 -->
                 <div class="flex items-center gap-8">
                     <button id="btn-prev" class="text-black hover:text-[#93C5FD] active:scale-90 transition-all p-2">
                         <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6 6h2v12H6V6zm3.5 6l8.5 6V6l-8.5 6z"/></svg>
                     </button>
-                    <!-- 재생 버튼 스타일 (파스텔 블루) -->
                     <button id="btn-play" class="w-16 h-16 flex items-center justify-center bg-[#93C5FD] text-white rounded-full shadow-lg shadow-[#93C5FD]/30 hover:scale-105 hover:bg-[#60A5FA] active:scale-95 transition-all duration-300">
                         <svg id="icon-play" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                         <svg id="icon-pause" class="hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
@@ -473,10 +427,6 @@
             db = getFirestore(app);
         } catch (e) { console.error("Firebase init failed:", e); }
 
-        // 고정 날짜 사용 (오늘 날짜를 매번 생성하지 않음)
-        // const today = new Date().toISOString().split('T')[0];
-        
-        // 🎵 노래 데이터
         let songs = [
             { id: 13, title: "똥을 싸고 손을 씻자", artist: "엔조이", src: "./music7.mp3", cover: "./cover12.jpg", lrc: "./music7.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-11-26' },
             { id: 14, title: "미친 밤", artist: "엔조이", src: "./music8.mp3", cover: "./cover13.jpg", lrc: "./music8.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-11-26' },
@@ -490,7 +440,6 @@
             { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", lrc: "./music3.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" } 
         ];
 
-        // 👨‍🎤 아티스트 데이터 - OST 포함, 타입 구분
         const artists = [
             { name: "엔조이", type: 'icon' },
             { name: "오스틴", type: 'icon' },
@@ -566,12 +515,10 @@
         const homeScreen = document.getElementById('home-screen');
         const popupModal = document.getElementById('popup-modal');
         const popupClose = document.getElementById('popup-close');
-        const noticeModal = document.getElementById('notice-modal');
-        const noticeClose = document.getElementById('notice-close');
+        // noticeModal 관련 변수 삭제됨
         const btnLyrics = document.getElementById('btn-lyrics'); 
         const btnCloseLyrics = document.getElementById('btn-close-lyrics'); 
         
-        // 반복 버튼 제거되어 관련 변수 제거 (btnRepeat)
         const miniCover = document.getElementById('mini-cover');
         const miniTitle = document.getElementById('mini-title');
         const miniArtist = document.getElementById('mini-artist');
@@ -598,37 +545,39 @@
         const adminLoginCancel = document.getElementById('admin-login-cancel');
         const adminLoginSubmit = document.getElementById('admin-login-submit');
         const adminEditModal = document.getElementById('admin-edit-modal');
-        // 관리자 모달 ID 수정됨
         const editUpdateContent = document.getElementById('edit-update-content');
         const editNewSongContent = document.getElementById('edit-new-song-content');
         const adminEditCancel = document.getElementById('admin-edit-cancel');
         const adminEditSave = document.getElementById('admin-edit-save');
+        
+        // Dynamic Island 요소
+        const dynamicPill = document.getElementById('dynamic-pill');
+        const pillHomeBtn = document.getElementById('pill-home-btn');
+        const pillToggleBtn = document.getElementById('pill-toggle-btn');
+        const pillIconMusic = document.getElementById('pill-icon-music');
+        const pillIconClose = document.getElementById('pill-icon-close');
+        let isPillOpen = false;
 
         let hasEntered = false;
-        // 인트로 제거로 인해 초기화 함수 변경
         function initApp() {
             if (hasEntered) return;
             hasEntered = true;
-            setTimeout(() => noticeModal.classList.remove('hidden'), 500);
+            // 초기 팝업 띄우는 코드 제거됨
             updateChartTime();
         }
-        
-        // 페이지 로드 시 바로 초기화
         initApp();
 
-        // ... (차트 시간 업데이트, 팝업 닫기 등 기존 코드) ...
         function updateChartTime() {
             const now = new Date();
             const hours = now.getHours();
             if (chartTime) chartTime.innerText = `${hours}시 기준`;
         }
 
-        noticeClose.onclick = () => noticeModal.classList.add('hidden');
-        noticeModal.onclick = (e) => { if (e.target === noticeModal) noticeModal.classList.add('hidden'); };
+        // noticeClose.onclick removed
+        // noticeModal.onclick removed
         popupClose.onclick = () => popupModal.classList.add('hidden');
         popupModal.onclick = (e) => { if (e.target === popupModal) popupModal.classList.add('hidden'); };
 
-        // ... (아티스트 모달 관련) ...
         artistModalClose.onclick = closeArtistModal;
         artistModal.onclick = (e) => { if (e.target === artistModal) closeArtistModal(); };
 
@@ -652,14 +601,8 @@
                 artistModalIcon.classList.remove('hidden');
             }
 
-            // 해당 아티스트 이름이 포함된 노래 필터링 (includes 사용)
             const artistSongs = songs.filter(s => {
-                // '엔조이' 검색 시 '끝없는 여름밤(그날, 엔조이 이야기 OST)' 등은 제외
-                // (실제 '엔조이'라는 가수가 부른 곡만 포함하고 싶다면 아래처럼 필터링)
                 if (artist.name === '엔조이') {
-                     // '엔조이'만 정확히 포함하거나, 다른 가수가 섞이지 않은 순수 엔조이 곡만
-                     // 여기서는 간단히 'OST'가 포함된 경우 제외하는 로직 예시
-                     // 또는 데이터에 artistId 등을 부여하여 관리하는 것이 가장 정확함
                      if (s.artist.includes('OST')) return false;
                 }
                 return s.artist.includes(artist.name);
@@ -698,8 +641,9 @@
             }, 10);
         }
 
-        // ... (관리자 로그인 로직) ...
-        btnAdminLogin.onclick = () => { adminPwInput.value = ""; adminLoginModal.classList.remove('hidden'); };
+        if (btnAdminLogin) {
+            btnAdminLogin.onclick = () => { adminPwInput.value = ""; adminLoginModal.classList.remove('hidden'); };
+        }
         adminLoginCancel.onclick = () => adminLoginModal.classList.add('hidden');
         adminLoginModal.onclick = (e) => { if (e.target === adminLoginModal) adminLoginModal.classList.add('hidden'); };
         adminLoginSubmit.onclick = () => {
@@ -711,17 +655,15 @@
             }
         };
 
-        // 관리자 수정 로직 (수정됨)
         async function openAdminEdit() {
             let currentNotice = DEFAULT_NOTICE;
             if (auth && db) {
-                const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice_v2'); // v2로 변경하여 새 구조 저장
+                const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice_v2'); 
                 try {
                     const snap = await getDoc(noticeRef);
                     if (snap.exists()) currentNotice = snap.data();
                 } catch (e) { console.error("Load notice fail:", e); }
             }
-            // 줄바꿈 문자 처리
             editUpdateContent.value = currentNotice.update.replace(/<br\s*\/?>/gi, "\n");
             editNewSongContent.value = currentNotice.newSong.replace(/<br\s*\/?>/gi, "\n");
             adminEditModal.classList.remove('hidden');
@@ -759,7 +701,6 @@
             });
         }
 
-        // ... (나머지 미디어 세션, 랭킹, 렌더링 함수들 기존과 동일) ...
         function updateMediaSessionMetadata(song) {
             if ('mediaSession' in navigator) {
                 try {
@@ -1069,7 +1010,6 @@
             return result;
         }
 
-        // 특정 가사 위치로 즉시 스크롤 (애니메이션 없이 - 초기 로딩용)
         function scrollToActiveLyricImmediate() {
             if (!isLyricsOpen || currentLyrics.length === 0) return;
             const currentTime = audio.currentTime;
@@ -1082,7 +1022,6 @@
 
             const lines = lyricsContent.getElementsByClassName('lyric-line');
             if (lines[activeIdx]) {
-                // 상단 15% 지점 (더 위쪽)에 위치하도록 계산
                 const offset = lines[activeIdx].offsetTop - (lyricsContent.clientHeight * 0.15);
                 lyricsContent.scrollTo({ top: offset, behavior: 'auto' });
                 
@@ -1111,7 +1050,6 @@
                 if (i === activeIdx) {
                     if (!lines[i].classList.contains('active')) {
                         lines[i].classList.add('active');
-                        // 활성화 시 상단 15% 지점에 오도록 부드럽게 스크롤
                         const offset = lines[i].offsetTop - (lyricsContent.clientHeight * 0.15);
                         lyricsContent.scrollTo({ top: offset, behavior: 'smooth' });
                     }
@@ -1128,7 +1066,7 @@
                     lyricsOverlay.classList.remove('lyrics-closed');
                     lyricsOverlay.classList.add('lyrics-open');
                     btnLyrics.classList.remove('text-gray-400');
-                    btnLyrics.classList.add('text-gray-800'); // 활성 상태: 진한 회색
+                    btnLyrics.classList.add('text-gray-800'); 
                     
                     scrollToActiveLyricImmediate();
                 } else {
@@ -1141,7 +1079,6 @@
             });
         }
 
-        // 닫기 버튼 로직 추가
         if (btnCloseLyrics) {
             btnCloseLyrics.addEventListener('click', () => {
                 isLyricsOpen = false;
@@ -1151,6 +1088,34 @@
                 btnLyrics.classList.remove('text-gray-800');
             });
         }
+
+        // 다이나믹 아일랜드 토글 로직 (Flex 기반 수정)
+        pillToggleBtn.addEventListener('click', () => {
+            isPillOpen = !isPillOpen;
+            if (isPillOpen) {
+                // 확장
+                dynamicPill.classList.remove('w-14');
+                dynamicPill.classList.add('w-32', 'bg-white/20', 'border-white/80'); // 확장 시 배경/테두리 진하게
+                
+                pillIconMusic.classList.add('hidden');
+                pillIconClose.classList.remove('hidden');
+                
+                // 홈 버튼 등장 (너비, 투명도, 마진 조절)
+                pillHomeBtn.classList.remove('w-0', 'opacity-0', 'mr-0');
+                pillHomeBtn.classList.add('w-10', 'opacity-100', 'mr-2');
+            } else {
+                // 축소
+                dynamicPill.classList.remove('w-32', 'bg-white/20', 'border-white/80');
+                dynamicPill.classList.add('w-14');
+                
+                pillIconMusic.classList.remove('hidden');
+                pillIconClose.classList.add('hidden');
+                
+                // 홈 버튼 숨김
+                pillHomeBtn.classList.remove('w-10', 'opacity-100', 'mr-2');
+                pillHomeBtn.classList.add('w-0', 'opacity-0', 'mr-0');
+            }
+        });
 
         const loadSongData = async (index) => {
             const song = songs[index];
@@ -1231,18 +1196,20 @@
             if (playing) {
                 miniIconPlay.classList.add('hidden'); miniIconPause.classList.remove('hidden');
                 iconPlay.classList.add('hidden'); iconPause.classList.remove('hidden');
-                // LP 애니메이션 관련 클래스 제거됨
                 if('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
             } else {
                 miniIconPlay.classList.remove('hidden'); miniIconPause.classList.add('hidden');
                 iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden');
-                // LP 애니메이션 관련 클래스 제거됨
                 if('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
             }
         };
 
-        miniPlayer.addEventListener('click', () => playerScreen.classList.remove('translate-y-full'));
-        document.getElementById('btn-minimize').onclick = () => playerScreen.classList.add('translate-y-full');
+        miniPlayer.addEventListener('click', () => {
+            playerScreen.classList.remove('translate-y-full');
+        });
+        document.getElementById('btn-minimize').onclick = () => {
+            playerScreen.classList.add('translate-y-full');
+        };
         
         btnPlay.addEventListener('click', () => togglePlay());
         miniPlayBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
@@ -1278,8 +1245,6 @@
         btnPlayAll.onclick = () => {
              openPlayer(0);
         };
-
-        // btnRepeat 관련 이벤트 리스너 제거됨
 
         function getClientX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
         function onScrub(e) {
