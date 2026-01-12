@@ -254,8 +254,9 @@
         </div>
 
         <!-- 미니 플레이어 (알약 모양 다이나믹 아일랜드 스타일) -->
-        <!-- 위치: bottom-[calc(0.5rem+env(safe-area-inset-bottom))]으로 더 내림 -->
-        <div id="mini-player" class="fixed bottom-[calc(0.5rem+env(safe-area-inset-bottom))] left-6 right-24 h-14 bg-white/85 backdrop-blur-xl border border-white/60 rounded-full px-3 flex items-center justify-between shadow-2xl cursor-pointer translate-y-[150%] transition-transform duration-300 z-[50] overflow-hidden ring-1 ring-white/40">
+        <!-- 위치: bottom-[calc(0.5rem+env(safe-area-inset-bottom))]으로 설정되어 있음 -->
+        <!-- transition-transform -> transition-all로 변경하여 width/right 변경 애니메이션 적용 -->
+        <div id="mini-player" class="fixed bottom-[calc(0.5rem+env(safe-area-inset-bottom))] left-6 right-24 h-14 bg-white/85 backdrop-blur-xl border border-white/60 rounded-full px-3 flex items-center justify-between shadow-2xl cursor-pointer translate-y-[150%] transition-all duration-300 z-[50] overflow-hidden ring-1 ring-white/40">
             <div class="flex items-center gap-3 w-full overflow-hidden">
                 <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200 relative shadow-inner shrink-0">
                     <img id="mini-cover" src="./cover.jpg" class="w-full h-full object-cover">
@@ -278,7 +279,7 @@
         </div>
 
         <!-- 우측 하단 플로팅 메뉴 (다이나믹 아일랜드 스타일) -->
-        <!-- 위치: bottom-[calc(0.5rem+env(safe-area-inset-bottom))]으로 더 내림 -->
+        <!-- 위치: bottom-[calc(0.5rem+env(safe-area-inset-bottom))]으로 설정되어 있음 -->
         <div id="dynamic-pill" class="fixed right-6 bottom-[calc(0.5rem+env(safe-area-inset-bottom))] z-[50] h-14 bg-white/5 backdrop-blur-sm border border-white/60 rounded-full flex items-center justify-end shadow-2xl w-14 overflow-hidden ring-1 ring-white/40">
             
             <!-- 홈 버튼 (내부 컨텐츠) - 왼쪽으로 나타남 -->
@@ -1101,6 +1102,10 @@
                 // 홈 버튼 등장 (너비, 투명도, 마진 조절)
                 pillHomeBtn.classList.remove('w-0', 'opacity-0', 'mr-0');
                 pillHomeBtn.classList.add('w-10', 'opacity-100', 'mr-2');
+                
+                // 미니 플레이어 우측 여백 늘려서 겹침 방지 (right-24 -> right-44)
+                miniPlayer.classList.remove('right-24');
+                miniPlayer.classList.add('right-44');
             } else {
                 // 축소
                 dynamicPill.classList.remove('w-32', 'bg-white/20', 'border-white/80');
@@ -1112,6 +1117,10 @@
                 // 홈 버튼 숨김
                 pillHomeBtn.classList.remove('w-10', 'opacity-100', 'mr-2');
                 pillHomeBtn.classList.add('w-0', 'opacity-0', 'mr-0');
+                
+                // 미니 플레이어 우측 여백 원상복구
+                miniPlayer.classList.remove('right-44');
+                miniPlayer.classList.add('right-24');
             }
         });
 
