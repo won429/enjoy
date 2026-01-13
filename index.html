@@ -90,13 +90,14 @@
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
         }
 
-        /* 다이나믹 아일랜드 & 미니 플레이어 스타일 (Toss Glass) */
+        /* [수정] 다이나믹 아일랜드 & 미니 플레이어 스타일 (Real Glass) */
+        /* index-5.html의 bottom-nav 스타일 적용: bg-white/10, backdrop-blur-4px */
         .dynamic-glass {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(16px) saturate(180%);
-            -webkit-backdrop-filter: blur(16px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.2); /* 더 투명하게 */
+            backdrop-filter: blur(12px) saturate(180%);
+            -webkit-backdrop-filter: blur(12px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
         }
 
         /* Range Slider Customization */
@@ -185,15 +186,10 @@
         <!-- 1. 홈 화면 -->
         <div id="home-screen" class="relative z-10 h-full flex flex-col">
             
-            <!-- 상단 헤더 삭제됨 -->
-            <!-- 히든 관리자 로그인 버튼 (헤더가 없으므로 우측 하단이나 적절한 곳에 배치 필요, 여기서는 기존 위치 유지하되 투명하게 처리하거나 다른 방식으로 접근 필요) -->
-            <!-- 사용자가 "헤더 없앴는데 왜 튀어나왔냐"고 했으므로 헤더 영역 자체를 삭제하고, 관리자 버튼 기능은 숨겨둠 -->
             <button id="btn-admin-login" class="absolute top-safe right-4 w-10 h-10 z-50 opacity-0"></button>
 
-            <!-- 스크롤 영역 (헤더 공간 없이 상단부터 시작, pt-safe 적용) -->
+            <!-- 스크롤 영역 -->
             <div class="flex-1 overflow-y-auto scrollbar-hide pb-32 pt-safe px-5">
-                
-                <!-- 여백 추가 -->
                 <div class="h-6"></div>
 
                 <!-- New Album Section -->
@@ -235,6 +231,7 @@
             </div>
 
             <!-- 미니 플레이어 (Dynamic Island Style) -->
+            <!-- 미니 플레이어 스타일: dynamic-glass 적용 -->
             <div id="mini-player" class="absolute bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-5 right-[5.5rem] h-[60px] dynamic-glass rounded-[30px] px-2 flex items-center justify-between z-[50] overflow-hidden translate-y-[150%] transition-all duration-500 cursor-pointer active:scale-[0.98]">
                 <div class="flex items-center gap-3 w-full overflow-hidden pl-1">
                     <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-100 relative shadow-inner shrink-0 border border-white/50 animate-[spin_10s_linear_infinite]" id="mini-cover-container">
@@ -258,9 +255,10 @@
             </div>
 
             <!-- 우측 하단 플로팅 메뉴 (Dynamic Pill) -->
-            <div id="dynamic-pill" class="absolute right-5 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-[50] h-[60px] dynamic-glass rounded-full flex items-center justify-end w-[60px] overflow-hidden transition-all duration-500 active:scale-95 shadow-lg">
-                <!-- 홈 버튼 -->
-                <button id="pill-home-btn" onclick="window.location.href='https://won429.github.io/enjoysite/'" class="w-0 opacity-0 h-full flex flex-col items-center justify-center text-[#6B7684] shrink-0 mr-0 transition-all gap-0.5 hover:text-[#191F28]">
+            <!-- 유리 재질 적용 (.dynamic-glass) -->
+            <div id="dynamic-pill" class="absolute right-1/2 translate-x-1/2 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-[50] h-[60px] dynamic-glass rounded-full flex items-center justify-end w-[130px] overflow-hidden transition-all duration-500 active:scale-95 shadow-lg">
+                <!-- 홈 버튼: 기본 보임 -->
+                <button id="pill-home-btn" onclick="window.location.href='https://won429.github.io/enjoysite/'" class="w-10 opacity-100 h-full flex flex-col items-center justify-center text-[#6B7684] shrink-0 mr-3 transition-all gap-0.5 hover:text-[#191F28]">
                     <i class="fa-solid fa-house text-lg"></i>
                     <span class="text-[9px] font-bold">홈</span>
                 </button>
@@ -268,8 +266,8 @@
                 <!-- 토글 버튼 -->
                 <button id="pill-toggle-btn" class="relative w-[60px] h-full flex flex-col items-center justify-center text-[#6B7684] shrink-0 gap-0.5 hover:text-[#191F28]">
                     <div class="relative w-6 h-6 flex items-center justify-center">
-                        <i id="pill-icon-music" class="fa-solid fa-music text-xl"></i>
-                        <i id="pill-icon-close" class="fa-solid fa-xmark text-xl hidden"></i>
+                        <!-- [수정] 헤드셋 아이콘만 표시 (X 제거) -->
+                        <i id="pill-icon-music" class="fa-solid fa-headphones text-xl"></i>
                     </div>
                     <span class="text-[9px] font-bold">음악</span>
                 </button>
@@ -456,6 +454,7 @@
         
         let currentLyrics = [];
         let isLyricsOpen = false;
+        let isPlayerVisible = false;
 
         const audio = document.getElementById('audio');
         const chartSlider = document.getElementById('chart-slider');
@@ -519,9 +518,8 @@
         const dynamicPill = document.getElementById('dynamic-pill');
         const pillHomeBtn = document.getElementById('pill-home-btn');
         const pillToggleBtn = document.getElementById('pill-toggle-btn');
-        const pillIconMusic = document.getElementById('pill-icon-music');
-        const pillIconClose = document.getElementById('pill-icon-close');
-        let isPillOpen = false;
+        // pillIconMusic과 pillIconClose는 HTML에서 수정됨 (하나로 통합)
+        let isPillOpen = true; 
 
         let hasEntered = false;
         function initApp() {
@@ -649,7 +647,6 @@
             if (!auth || !db) return;
             const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice_v2');
             onSnapshot(noticeRef, (doc) => {
-                // UI update logic removed as home UI changed significantly
             });
         }
 
@@ -1016,33 +1013,34 @@
             });
         }
 
-        // 다이나믹 아일랜드 토글 로직
+        // 다이나믹 아일랜드 토글 로직 수정
         pillToggleBtn.addEventListener('click', () => {
             isPillOpen = !isPillOpen;
+            
             if (isPillOpen) {
+                // 확장 상태
                 dynamicPill.classList.remove('w-[60px]');
                 dynamicPill.classList.add('w-[130px]'); 
-                
-                pillIconMusic.classList.add('hidden');
-                pillIconClose.classList.remove('hidden');
                 
                 pillHomeBtn.classList.remove('w-0', 'opacity-0', 'mr-0');
                 pillHomeBtn.classList.add('w-10', 'opacity-100', 'mr-3');
                 
-                miniPlayer.classList.remove('right-[5.5rem]');
-                miniPlayer.classList.add('right-[9.5rem]');
+                if (isPlayerVisible) {
+                    miniPlayer.classList.remove('right-[5.5rem]');
+                    miniPlayer.classList.add('right-[9.5rem]');
+                }
             } else {
+                // 축소 상태
                 dynamicPill.classList.remove('w-[130px]');
                 dynamicPill.classList.add('w-[60px]');
-                
-                pillIconMusic.classList.remove('hidden');
-                pillIconClose.classList.add('hidden');
                 
                 pillHomeBtn.classList.remove('w-10', 'opacity-100', 'mr-3');
                 pillHomeBtn.classList.add('w-0', 'opacity-0', 'mr-0');
                 
-                miniPlayer.classList.remove('right-[9.5rem]');
-                miniPlayer.classList.add('right-[5.5rem]');
+                if (isPlayerVisible) {
+                    miniPlayer.classList.remove('right-[9.5rem]');
+                    miniPlayer.classList.add('right-[5.5rem]');
+                }
             }
         });
 
@@ -1093,6 +1091,19 @@
         };
 
         const openPlayer = (index) => {
+            // 처음 재생 시 플로팅 메뉴 이동 처리
+            if (!isPlayerVisible) {
+                isPlayerVisible = true;
+                // 메뉴: 중앙 -> 우측
+                dynamicPill.classList.remove('right-1/2', 'translate-x-1/2');
+                dynamicPill.classList.add('right-5', 'translate-x-0');
+                
+                if (isPillOpen) {
+                    miniPlayer.classList.remove('right-[5.5rem]');
+                    miniPlayer.classList.add('right-[9.5rem]');
+                }
+            }
+
             if (currentIdx === index && !audio.paused) {
                 playerScreen.classList.remove('translate-y-full');
                 miniPlayer.classList.remove('translate-y-[150%]');
