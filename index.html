@@ -89,15 +89,19 @@
             mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
         }
+        
+        /* [수정] 가사 오버레이 상태 클래스 추가 */
+        .lyrics-closed { transform: translateY(100%); }
+        .lyrics-open { transform: translateY(0); }
 
         /* [수정] 다이나믹 아일랜드 & 미니 플레이어 스타일 (Real Glass) */
-        /* index-5.html의 bottom-nav 스타일 적용: bg-white/10, backdrop-blur-4px */
+        /* 블러 4px 유지, 투명하게 */
         .dynamic-glass {
-            background: rgba(255, 255, 255, 0.2); /* 더 투명하게 */
-            backdrop-filter: blur(12px) saturate(180%);
-            -webkit-backdrop-filter: blur(12px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(4px) saturate(180%);
+            -webkit-backdrop-filter: blur(4px) saturate(180%);
+            border: 2px solid rgba(255, 255, 255, 0.3); /* 2px */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); 
         }
 
         /* Range Slider Customization */
@@ -107,11 +111,15 @@
         .rank-badge-new { color: #EAB308; font-size: 8px; font-weight: 800; }
         .rank-badge-up { color: #F04452; font-size: 10px; font-weight: 800; }
         .rank-badge-down { color: #3182F6; font-size: 10px; font-weight: 800; }
+        
+        /* 메뉴 활성화 상태 스타일 */
+        .nav-active { color: #191F28 !important; }
+        .nav-inactive { color: #9CA3AF !important; }
     </style>
 </head>
 <body class="h-[100dvh] w-screen fixed bg-[#F2F4F6]">
 
-    <!-- 메인 컨테이너: 테두리/마진 등 모두 제거하고 전체화면(Full)으로 설정 -->
+    <!-- 메인 컨테이너 -->
     <main class="w-full h-full relative bg-gradient-to-br from-[#F2F4F6] via-[#E8ECF2] to-[#DEE2E6] overflow-hidden">
 
         <!-- Coming Soon 팝업 -->
@@ -204,7 +212,7 @@
                 <div class="mb-5 toss-card p-6">
                     <div class="flex justify-between items-center mb-4">
                         <div class="flex items-center gap-2">
-                            <h3 class="text-lg font-bold text-[#191F28]">인기 차트</h3>
+                            <h3 class="text-lg font-bold text-[#191F28]">실시간 차트</h3>
                             <span id="chart-time" class="text-xs text-[#6B7684] bg-gray-100 px-1.5 py-0.5 rounded font-medium">--시 기준</span>
                         </div>
                         <button id="btn-play-all" class="text-xs text-[#3182F6] font-bold bg-blue-50 px-2.5 py-1.5 rounded-full active:scale-95 transition-transform flex items-center gap-1">
@@ -255,22 +263,24 @@
             </div>
 
             <!-- 우측 하단 플로팅 메뉴 (Dynamic Pill) -->
-            <!-- 유리 재질 적용 (.dynamic-glass) -->
-            <div id="dynamic-pill" class="absolute right-1/2 translate-x-1/2 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-[50] h-[60px] dynamic-glass rounded-full flex items-center justify-end w-[130px] overflow-hidden transition-all duration-500 active:scale-95 shadow-lg">
-                <!-- 홈 버튼: 기본 보임 -->
-                <button id="pill-home-btn" onclick="window.location.href='https://won429.github.io/enjoysite/'" class="w-10 opacity-100 h-full flex flex-col items-center justify-center text-[#6B7684] shrink-0 mr-3 transition-all gap-0.5 hover:text-[#191F28]">
+            <!-- 유리 재질 적용 (.dynamic-glass), flex layout 조정, padding 추가 -->
+            <div id="dynamic-pill" class="absolute right-1/2 translate-x-1/2 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-[50] h-[60px] dynamic-glass rounded-full flex items-center justify-between p-1 w-[130px] overflow-hidden transition-all duration-500 active:scale-95 shadow-lg box-border">
+                
+                <!-- 홈 버튼 -->
+                <button id="pill-home-btn" onclick="window.location.href='https://won429.github.io/enjoysite/'" class="flex-1 opacity-100 h-full flex flex-col items-center justify-center nav-inactive transition-all gap-0.5 hover:opacity-80">
                     <i class="fa-solid fa-house text-lg"></i>
                     <span class="text-[9px] font-bold">홈</span>
                 </button>
 
-                <!-- 토글 버튼 -->
-                <button id="pill-toggle-btn" class="relative w-[60px] h-full flex flex-col items-center justify-center text-[#6B7684] shrink-0 gap-0.5 hover:text-[#191F28]">
-                    <div class="relative w-6 h-6 flex items-center justify-center">
-                        <!-- [수정] 헤드셋 아이콘만 표시 (X 제거) -->
-                        <i id="pill-icon-music" class="fa-solid fa-headphones text-xl"></i>
-                    </div>
-                    <span class="text-[9px] font-bold">음악</span>
-                </button>
+                <!-- 음악 버튼 (동그라미 틀 진하게 수정: border-[3px] border-white) -->
+                <div class="w-[52px] h-[52px] rounded-full border-[3px] border-white bg-white/10 flex items-center justify-center shrink-0 shadow-inner">
+                    <button id="pill-toggle-btn" class="w-full h-full flex flex-col items-center justify-center nav-active gap-0.5 hover:opacity-80">
+                        <div class="relative w-6 h-6 flex items-center justify-center">
+                            <i id="pill-icon-music" class="fa-solid fa-headphones text-xl"></i>
+                        </div>
+                        <span class="text-[9px] font-bold">음악</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -518,14 +528,18 @@
         const dynamicPill = document.getElementById('dynamic-pill');
         const pillHomeBtn = document.getElementById('pill-home-btn');
         const pillToggleBtn = document.getElementById('pill-toggle-btn');
-        // pillIconMusic과 pillIconClose는 HTML에서 수정됨 (하나로 통합)
+        
         let isPillOpen = true; 
+        // [수정] 기본 활성 탭을 'music'으로 설정
+        let activeTab = 'music'; 
 
         let hasEntered = false;
         function initApp() {
             if (hasEntered) return;
             hasEntered = true;
             updateChartTime();
+            // [수정] 초기 UI 상태 업데이트 (음악 탭 활성 상태 반영)
+            updatePillState();
         }
         initApp();
 
@@ -1013,12 +1027,10 @@
             });
         }
 
-        // 다이나믹 아일랜드 토글 로직 수정
-        pillToggleBtn.addEventListener('click', () => {
-            isPillOpen = !isPillOpen;
-            
+        // [수정] 필 상태 업데이트 함수
+        function updatePillState() {
+            // 1. 펼침/접힘 스타일 적용
             if (isPillOpen) {
-                // 확장 상태
                 dynamicPill.classList.remove('w-[60px]');
                 dynamicPill.classList.add('w-[130px]'); 
                 
@@ -1030,7 +1042,6 @@
                     miniPlayer.classList.add('right-[9.5rem]');
                 }
             } else {
-                // 축소 상태
                 dynamicPill.classList.remove('w-[130px]');
                 dynamicPill.classList.add('w-[60px]');
                 
@@ -1042,6 +1053,40 @@
                     miniPlayer.classList.add('right-[5.5rem]');
                 }
             }
+
+            // 2. 활성 탭 스타일 적용 (색상 변경)
+            if (activeTab === 'home') {
+                pillHomeBtn.classList.add('nav-active');
+                pillHomeBtn.classList.remove('nav-inactive');
+                
+                pillToggleBtn.classList.remove('nav-active');
+                pillToggleBtn.classList.add('nav-inactive');
+            } else {
+                pillHomeBtn.classList.remove('nav-active');
+                pillHomeBtn.classList.add('nav-inactive');
+                
+                pillToggleBtn.classList.add('nav-active');
+                pillToggleBtn.classList.remove('nav-inactive');
+            }
+        }
+
+        // 홈 버튼 클릭 이벤트 (수정됨: 기본 동작 허용)
+        // [삭제] pillHomeBtn.addEventListener('click', (e) => { ... }); -> HTML onclick으로 처리됨
+
+        // 토글(음악) 버튼 클릭 이벤트
+        pillToggleBtn.addEventListener('click', () => {
+            // 플레이어가 활성화된 상태에서만 접기/펼치기 가능
+            if (!isPlayerVisible) return;
+
+            // 만약 현재 탭이 홈이라면, 음악 탭으로 전환하고 플레이어 열기
+            if (activeTab === 'home') {
+                activeTab = 'music';
+                playerScreen.classList.remove('translate-y-full');
+            }
+
+            // 토글 수행
+            isPillOpen = !isPillOpen;
+            updatePillState();
         });
 
         const loadSongData = async (index) => {
@@ -1097,12 +1142,19 @@
                 // 메뉴: 중앙 -> 우측
                 dynamicPill.classList.remove('right-1/2', 'translate-x-1/2');
                 dynamicPill.classList.add('right-5', 'translate-x-0');
-                
-                if (isPillOpen) {
-                    miniPlayer.classList.remove('right-[5.5rem]');
-                    miniPlayer.classList.add('right-[9.5rem]');
-                }
             }
+            
+            // [수정] 음악 재생 시: 음악 탭 활성화 & 메뉴 자동 접힘
+            activeTab = 'music';
+            isPillOpen = false; // 자동으로 접기
+            updatePillState();
+
+            // 리셋: 가사창 닫기
+            isLyricsOpen = false;
+            lyricsOverlay.classList.add('lyrics-closed');
+            lyricsOverlay.classList.remove('lyrics-open');
+            btnLyrics.classList.remove('text-[#3182F6]', 'bg-white');
+            btnLyrics.classList.add('text-[#6B7684]', 'bg-white/50');
 
             if (currentIdx === index && !audio.paused) {
                 playerScreen.classList.remove('translate-y-full');
@@ -1266,3 +1318,5 @@
     </script>
 </body>
 </html>
+
+
