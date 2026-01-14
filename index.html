@@ -238,43 +238,27 @@
                 </div>
             </div>
 
-            <!-- 미니 플레이어 (Dynamic Island Style) -->
-            <!-- 미니 플레이어 스타일: dynamic-glass 적용 -->
-            <div id="mini-player" class="absolute bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-5 right-[5.5rem] h-[60px] dynamic-glass rounded-[30px] px-2 flex items-center justify-between z-[50] overflow-hidden translate-y-[150%] transition-all duration-500 cursor-pointer active:scale-[0.98]">
-                <div class="flex items-center gap-3 w-full overflow-hidden pl-1">
-                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-100 relative shadow-inner shrink-0 border border-white/50" id="mini-cover-container">
-                        <img id="mini-cover" src="" class="w-full h-full object-cover">
-                    </div>
-                    <div class="flex flex-col justify-center min-w-0 pr-2">
-                        <h4 id="mini-title" class="text-sm font-bold text-[#191F28] truncate leading-tight">Title</h4>
-                        <p id="mini-artist" class="text-[11px] text-[#6B7684] truncate font-medium">Artist</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-1 shrink-0 pr-1"> 
-                    <button id="mini-play-btn" class="w-10 h-10 flex items-center justify-center text-[#191F28] hover:scale-110 transition-transform">
-                        <i id="mini-icon-play" class="fa-solid fa-play text-lg"></i>
-                        <i id="mini-icon-pause" class="fa-solid fa-pause text-lg hidden"></i>
-                    </button>
-                </div>
-                <!-- 진행바 (하단) -->
-                <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-transparent">
-                    <div id="mini-progress" class="h-full bg-[#3182F6]/50 w-0 transition-all duration-300"></div>
-                </div>
+            <!-- 미니 플레이어 (Dynamic Island Style) - REMOVED AS REQUESTED -->
+            <!-- 
+            <div id="mini-player" class="absolute bottom-[calc(0.5rem+env(safe-area-inset-bottom))] left-5 right-[5.5rem] h-[60px] dynamic-glass rounded-[30px] px-2 flex items-center justify-between z-[50] overflow-hidden translate-y-[150%] transition-all duration-500 cursor-pointer active:scale-[0.98]">
+               ... (HTML 제거됨) ...
             </div>
+            -->
 
             <!-- 우측 하단 플로팅 메뉴 (Dynamic Pill) -->
             <!-- 유리 재질 적용 (.dynamic-glass), flex layout 조정, padding 추가 -->
-            <div id="dynamic-pill" class="absolute right-1/2 translate-x-1/2 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-[50] h-[60px] dynamic-glass rounded-full flex items-center justify-between p-1 w-[130px] overflow-hidden transition-all duration-500 active:scale-95 shadow-lg box-border">
+            <!-- [수정] bottom 위치를 0.5rem(약 8px) + safe-area로 조정하여 더 바짝 붙임 -->
+            <div id="dynamic-pill" class="absolute right-1/2 translate-x-1/2 bottom-[calc(0.5rem+env(safe-area-inset-bottom))] z-[50] h-[60px] dynamic-glass rounded-full flex items-center justify-between p-1 w-[130px] overflow-hidden transition-all duration-500 active:scale-95 shadow-lg box-border">
                 
                 <!-- 홈 버튼 -->
-                <button id="pill-home-btn" onclick="window.location.href='https://won429.github.io/enjoysite/'" class="flex-1 opacity-100 h-full flex flex-col items-center justify-center nav-inactive transition-all gap-0.5 hover:opacity-80">
+                <button id="pill-home-btn" onclick="window.location.href='https://won429.github.io/enjoysite/'" class="flex-1 opacity-100 h-full flex flex-col items-center justify-center nav-active transition-all gap-0.5 hover:opacity-80">
                     <i class="fa-solid fa-house text-lg"></i>
                     <span class="text-[9px] font-bold">홈</span>
                 </button>
 
                 <!-- 음악 버튼 (동그라미 틀 진하게 수정: border-[3px] border-white) -->
                 <div class="w-[52px] h-[52px] rounded-full border-[3px] border-white bg-white/10 flex items-center justify-center shrink-0 shadow-inner">
-                    <button id="pill-toggle-btn" class="w-full h-full flex flex-col items-center justify-center nav-active gap-0.5 hover:opacity-80">
+                    <button id="pill-toggle-btn" class="w-full h-full flex flex-col items-center justify-center nav-inactive gap-0.5 hover:opacity-80">
                         <div class="relative w-6 h-6 flex items-center justify-center">
                             <i id="pill-icon-music" class="fa-solid fa-headphones text-xl"></i>
                         </div>
@@ -497,8 +481,11 @@
         const artistSongList = document.getElementById('artist-song-list');
         const comingSoonList = document.getElementById('coming-soon-list');
         const playerScreen = document.getElementById('player-screen');
-        const miniPlayer = document.getElementById('mini-player');
-        const miniPlayBtn = document.getElementById('mini-play-btn');
+        
+        /* 미니 플레이어 변수 제거 및 주석 처리 */
+        // const miniPlayer = document.getElementById('mini-player');
+        // const miniPlayBtn = document.getElementById('mini-play-btn');
+        
         const errorBox = document.getElementById('error-box');
         const homeScreen = document.getElementById('home-screen');
         const popupModal = document.getElementById('popup-modal');
@@ -507,11 +494,12 @@
         const btnLyrics = document.getElementById('btn-lyrics'); 
         const btnCloseLyrics = document.getElementById('btn-close-lyrics'); 
         
-        const miniCover = document.getElementById('mini-cover');
-        const miniTitle = document.getElementById('mini-title');
-        const miniArtist = document.getElementById('mini-artist');
-        const miniIconPlay = document.getElementById('mini-icon-play');
-        const miniIconPause = document.getElementById('mini-icon-pause');
+        /* 미니 플레이어 변수 제거 및 주석 처리 */
+        // const miniCover = document.getElementById('mini-cover');
+        // const miniTitle = document.getElementById('mini-title');
+        // const miniArtist = document.getElementById('mini-artist');
+        // const miniIconPlay = document.getElementById('mini-icon-play');
+        // const miniIconPause = document.getElementById('mini-icon-pause');
         
         const btnPlay = document.getElementById('btn-play');
         const iconPlay = document.getElementById('icon-play');
@@ -546,8 +534,8 @@
         const pillToggleBtn = document.getElementById('pill-toggle-btn');
         
         let isPillOpen = true; 
-        // [수정] 기본 활성 탭을 'music'으로 설정
-        let activeTab = 'music'; 
+        // [수정] 기본 활성 탭을 'home'으로 설정 (초기엔 음악 탭 비활성)
+        let activeTab = 'home'; 
 
         // [추가] 가사 싱크를 위한 requestAnimationFrame ID
         let rafId = null;
@@ -557,7 +545,7 @@
             if (hasEntered) return;
             hasEntered = true;
             updateChartTime();
-            // [수정] 초기 UI 상태 업데이트 (음악 탭 활성 상태 반영)
+            // [수정] 초기 UI 상태 업데이트
             updatePillState();
         }
         initApp();
@@ -959,15 +947,9 @@
                 if (match) {
                     const min = parseInt(match[1]);
                     const sec = parseInt(match[2]);
-                    const msStr = match[3];
-                    // [수정] 밀리초 파싱 로직 개선: 3자리(1000분율)와 2자리(100분율) 구분
-                    let ms = parseInt(msStr);
-                    let time;
-                    if (msStr.length === 3) {
-                        time = min * 60 + sec + ms / 1000;
-                    } else {
-                        time = min * 60 + sec + ms / 100;
-                    }
+                    let ms = parseInt(match[3]);
+                    if (match[3].length === 3) ms = ms / 10;
+                    const time = min * 60 + sec + ms / 100;
                     const text = line.replace(timeReg, '').trim();
                     if (text) result.push({ time, text });
                 }
@@ -1002,8 +984,6 @@
             const currentTime = audio.currentTime;
             
             let activeIdx = -1;
-            // [최적화] 역순 탐색이 더 빠를 수 있음 (현재 시간보다 작거나 같은 마지막 인덱스 찾기)
-            // 하지만 리스트가 짧으므로 정순 탐색도 무방함. 로직 유지하되 break 조건 활용.
             for (let i = 0; i < currentLyrics.length; i++) {
                 if (currentTime >= currentLyrics[i].time) {
                     activeIdx = i;
@@ -1013,24 +993,19 @@
             }
             
             const lines = lyricsContent.getElementsByClassName('lyric-line');
-            // [최적화] 모든 라인을 순회하며 클래스를 뗐다 붙였다 하는 것은 비효율적일 수 있으나
-            // 가시적인 라인 개수가 적으므로 현재 방식 유지. 다만 requestAnimationFrame으로 인해 빈번히 호출됨.
             for (let i = 0; i < lines.length; i++) {
                 if (i === activeIdx) {
                     if (!lines[i].classList.contains('active')) {
                         lines[i].classList.add('active');
-                        // 자동 스크롤
                         const offset = lines[i].offsetTop - (lyricsContent.clientHeight * 0.2);
                         lyricsContent.scrollTo({ top: offset, behavior: 'smooth' });
                     }
                 } else {
-                    if (lines[i].classList.contains('active')) {
-                        lines[i].classList.remove('active');
-                    }
+                    lines[i].classList.remove('active');
                 }
             }
         }
-
+        
         // [추가] requestAnimationFrame을 이용한 가사 싱크 루프
         function animateLyrics() {
             if (isLyricsOpen && !audio.paused) {
@@ -1081,34 +1056,52 @@
             });
         }
 
-        // [수정] 필 상태 업데이트 함수
+        // [수정] 필 상태 업데이트 함수 (중앙/우측 위치 조정 로직 보완)
         function updatePillState() {
-            // 1. 펼침/접힘 스타일 적용
-            if (isPillOpen) {
+            // 미니 플레이어가 보이는 상태(노래 재생 중) -> 우측으로 이동
+            if (isPlayerVisible) {
+                // 우측 배치
+                dynamicPill.classList.remove('right-1/2', 'translate-x-1/2');
+                dynamicPill.classList.add('right-5', 'translate-x-0');
+
+                // 접힘/펼침 상태에 따른 너비 조정
+                if (isPillOpen) {
+                    dynamicPill.classList.remove('w-[60px]');
+                    dynamicPill.classList.add('w-[130px]'); 
+                    
+                    pillHomeBtn.classList.remove('w-0', 'opacity-0', 'mr-0');
+                    pillHomeBtn.classList.add('w-10', 'opacity-100', 'mr-3');
+                    
+                    // miniPlayer 관련 코드는 주석처리
+                    // miniPlayer.classList.remove('right-[5.5rem]');
+                    // miniPlayer.classList.add('right-[9.5rem]');
+                } else {
+                    dynamicPill.classList.remove('w-[130px]');
+                    dynamicPill.classList.add('w-[60px]');
+                    
+                    pillHomeBtn.classList.remove('w-10', 'opacity-100', 'mr-3');
+                    pillHomeBtn.classList.add('w-0', 'opacity-0', 'mr-0');
+                    
+                    // miniPlayer 관련 코드는 주석처리
+                    // miniPlayer.classList.remove('right-[9.5rem]');
+                    // miniPlayer.classList.add('right-[5.5rem]');
+                }
+            } 
+            // 미니 플레이어가 숨겨진 상태(초기 상태) -> 중앙 배치
+            else {
+                // 중앙 배치
+                dynamicPill.classList.remove('right-5', 'translate-x-0');
+                dynamicPill.classList.add('right-1/2', 'translate-x-1/2');
+                
+                // 중앙일 때는 항상 펼쳐진 상태로 유지 (홈/음악 둘 다 접근 가능하도록)
                 dynamicPill.classList.remove('w-[60px]');
-                dynamicPill.classList.add('w-[130px]'); 
+                dynamicPill.classList.add('w-[130px]');
                 
                 pillHomeBtn.classList.remove('w-0', 'opacity-0', 'mr-0');
                 pillHomeBtn.classList.add('w-10', 'opacity-100', 'mr-3');
-                
-                if (isPlayerVisible) {
-                    miniPlayer.classList.remove('right-[5.5rem]');
-                    miniPlayer.classList.add('right-[9.5rem]');
-                }
-            } else {
-                dynamicPill.classList.remove('w-[130px]');
-                dynamicPill.classList.add('w-[60px]');
-                
-                pillHomeBtn.classList.remove('w-10', 'opacity-100', 'mr-3');
-                pillHomeBtn.classList.add('w-0', 'opacity-0', 'mr-0');
-                
-                if (isPlayerVisible) {
-                    miniPlayer.classList.remove('right-[9.5rem]');
-                    miniPlayer.classList.add('right-[5.5rem]');
-                }
             }
 
-            // 2. 활성 탭 스타일 적용 (색상 변경)
+            // 활성 탭 스타일 적용 (색상 변경)
             if (activeTab === 'home') {
                 pillHomeBtn.classList.add('nav-active');
                 pillHomeBtn.classList.remove('nav-inactive');
@@ -1124,13 +1117,26 @@
             }
         }
 
-        // 홈 버튼 클릭 이벤트 (수정됨: 기본 동작 허용)
-        // [삭제] pillHomeBtn.addEventListener('click', (e) => { ... }); -> HTML onclick으로 처리됨
+        // 홈 버튼 클릭 이벤트
+        // pillHomeBtn onclick 핸들러는 HTML에 인라인으로 정의되어 있음
 
         // 토글(음악) 버튼 클릭 이벤트
         pillToggleBtn.addEventListener('click', () => {
             // 플레이어가 활성화된 상태에서만 접기/펼치기 가능
-            if (!isPlayerVisible) return;
+            // 중앙에 있을 때는 접기/펼치기 동작 안 함 (항상 펼침 유지)
+            if (!isPlayerVisible) {
+                // 만약 홈 탭에서 음악 버튼 누르면 -> 음악 탭(플레이어) 활성화 시도
+                if (activeTab === 'home' && currentIdx >= 0) {
+                     // 이미 재생 중이거나 선택된 곡이 있다면 플레이어 화면 열기
+                     // 여기서는 단순히 탭 전환 효과만 줄 수도 있고, 
+                     // 기존 로직대로라면 openPlayer를 호출하거나 화면을 전환해야 함.
+                     // 현재는 화면 전환(playerScreen 표시)만 처리
+                     activeTab = 'music';
+                     playerScreen.classList.remove('translate-y-full');
+                     updatePillState();
+                }
+                return;
+            }
 
             // 만약 현재 탭이 홈이라면, 음악 탭으로 전환하고 플레이어 열기
             if (activeTab === 'home') {
@@ -1155,9 +1161,10 @@
             // 플레이어 배경 이미지 처리
             playerBgImage.src = song.cover;
             
-            miniTitle.innerText = song.title;
-            miniArtist.innerText = song.artist;
-            miniCover.src = song.cover;
+            // 미니 플레이어 업데이트 주석 처리
+            // miniTitle.innerText = song.title;
+            // miniArtist.innerText = song.artist;
+            // miniCover.src = song.cover;
             
             errorBox.classList.add('hidden');
             timeCurr.innerText = "00:00";
@@ -1165,13 +1172,12 @@
             
             updateMediaSessionMetadata(song);
             
-            // [수정] 가사 화면 상단 고정 곡 정보 업데이트
+            // 가사 화면 상단 고정 곡 정보 업데이트
             lyricsCover.src = song.cover;
             lyricsTitle.innerText = song.title;
             lyricsArtist.innerText = song.artist;
             
             currentLyrics = [];
-            // [수정] 안내 메시지에 text-center w-full 추가
             lyricsContent.innerHTML = '<p class="text-[#B0B8C1] text-sm mt-20 font-medium animate-pulse text-center w-full">가사를 불러오는 중...</p>';
             
             if (song.lrc) {
@@ -1196,15 +1202,10 @@
         };
 
         const openPlayer = (index) => {
-            // 처음 재생 시 플로팅 메뉴 이동 처리
-            if (!isPlayerVisible) {
-                isPlayerVisible = true;
-                // 메뉴: 중앙 -> 우측
-                dynamicPill.classList.remove('right-1/2', 'translate-x-1/2');
-                dynamicPill.classList.add('right-5', 'translate-x-0');
-            }
+            // [수정] 노래 재생 시 플레이어 활성화 상태로 변경 -> 미니 플레이어 등장
+            isPlayerVisible = true;
             
-            // [수정] 음악 재생 시: 음악 탭 활성화 & 메뉴 자동 접힘
+            // 음악 재생 시: 음악 탭 활성화 & 메뉴 자동 접힘
             activeTab = 'music';
             isPillOpen = false; // 자동으로 접기
             updatePillState();
@@ -1217,9 +1218,11 @@
             btnLyrics.classList.add('text-[#6B7684]', 'bg-white/50');
             stopLyricsSync();
 
+            // 미니 플레이어 등장 애니메이션 주석 처리
+            // miniPlayer.classList.remove('translate-y-[150%]');
+
             if (currentIdx === index && !audio.paused) {
                 playerScreen.classList.remove('translate-y-full');
-                miniPlayer.classList.remove('translate-y-[150%]');
                 return;
             }
             const songToPlay = songs[index];
@@ -1227,7 +1230,6 @@
             currentIdx = index;
             loadSongData(index);
             playerScreen.classList.remove('translate-y-full');
-            miniPlayer.classList.remove('translate-y-[150%]');
             setTimeout(() => togglePlay(true), 300);
         };
 
@@ -1248,31 +1250,36 @@
         const updateUI = (playing) => {
             isPlaying = playing;
             if (playing) {
-                miniIconPlay.classList.add('hidden'); miniIconPause.classList.remove('hidden');
+                // 미니 아이콘 제어 주석 처리
+                // miniIconPlay.classList.add('hidden'); miniIconPause.classList.remove('hidden');
                 iconPlay.classList.add('hidden'); iconPause.classList.remove('hidden');
-                const miniCoverContainer = document.getElementById('mini-cover-container');
-                if(miniCoverContainer) miniCoverContainer.style.animationPlayState = 'running'; // 실제로는 CSS 제거됨
+                // const miniCoverContainer = document.getElementById('mini-cover-container');
+                // if(miniCoverContainer) miniCoverContainer.style.animationPlayState = 'running'; // 제거됨
                 if('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
                 startLyricsSync(); // 재생시 가사 싱크 시작
             } else {
-                miniIconPlay.classList.remove('hidden'); miniIconPause.classList.add('hidden');
+                // 미니 아이콘 제어 주석 처리
+                // miniIconPlay.classList.remove('hidden'); miniIconPause.classList.add('hidden');
                 iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden');
-                const miniCoverContainer = document.getElementById('mini-cover-container');
-                if(miniCoverContainer) miniCoverContainer.style.animationPlayState = 'paused';
+                // const miniCoverContainer = document.getElementById('mini-cover-container');
+                // if(miniCoverContainer) miniCoverContainer.style.animationPlayState = 'paused'; // 제거됨
                 if('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
                 stopLyricsSync(); // 일시정지시 가사 싱크 중지
             }
         };
 
+        // 미니 플레이어 이벤트 주석 처리
+        /*
         miniPlayer.addEventListener('click', () => {
             playerScreen.classList.remove('translate-y-full');
         });
+        */
         document.getElementById('btn-minimize').onclick = () => {
             playerScreen.classList.add('translate-y-full');
         };
         
         btnPlay.addEventListener('click', () => togglePlay());
-        miniPlayBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
+        // miniPlayBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
         
         document.getElementById('btn-next').addEventListener('click', () => {
             let nextIdx = currentIdx + 1;
@@ -1350,8 +1357,9 @@
                 if(progressFill) progressFill.style.width = `${percent}%`;
                 if(progressHandle) progressHandle.style.left = `${percent}%`;
                 if(seekSlider) seekSlider.value = percent;
-                const miniProg = document.getElementById('mini-progress');
-                if(miniProg) miniProg.style.width = `${percent}%`;
+                // 미니 프로그레스 주석 처리
+                // const miniProg = document.getElementById('mini-progress');
+                // if(miniProg) miniProg.style.width = `${percent}%`;
             }
             // syncLyrics(); // requestAnimationFrame으로 대체됨
         }
@@ -1377,7 +1385,8 @@
             renderAll();
         }
 
-        loadSongData(0);
+        // [수정] 초기 로드시에는 노래 데이터를 로드하되 플레이어는 열지 않음 (자동재생 X)
+        // loadSongData(0); // 이 부분은 유지하되 openPlayer가 아니므로 UI는 숨겨진 상태
     </script>
 </body>
 </html>
