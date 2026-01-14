@@ -238,12 +238,30 @@
                 </div>
             </div>
 
-            <!-- 미니 플레이어 (Dynamic Island Style) - REMOVED AS REQUESTED -->
-            <!-- 
+            <!-- 미니 플레이어 (Dynamic Island Style) -->
+            <!-- 미니 플레이어 스타일: dynamic-glass 적용 -->
+            <!-- [수정] bottom 위치를 0.5rem(약 8px) + safe-area로 조정하여 더 바짝 붙임 -->
             <div id="mini-player" class="absolute bottom-[calc(0.5rem+env(safe-area-inset-bottom))] left-5 right-[5.5rem] h-[60px] dynamic-glass rounded-[30px] px-2 flex items-center justify-between z-[50] overflow-hidden translate-y-[150%] transition-all duration-500 cursor-pointer active:scale-[0.98]">
-               ... (HTML 제거됨) ...
+                <div class="flex items-center gap-3 w-full overflow-hidden pl-1">
+                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-100 relative shadow-inner shrink-0 border border-white/50" id="mini-cover-container">
+                        <img id="mini-cover" src="" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex flex-col justify-center min-w-0 pr-2">
+                        <h4 id="mini-title" class="text-sm font-bold text-[#191F28] truncate leading-tight">Title</h4>
+                        <p id="mini-artist" class="text-[11px] text-[#6B7684] truncate font-medium">Artist</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0 pr-1"> 
+                    <button id="mini-play-btn" class="w-10 h-10 flex items-center justify-center text-[#191F28] hover:scale-110 transition-transform">
+                        <i id="mini-icon-play" class="fa-solid fa-play text-lg"></i>
+                        <i id="mini-icon-pause" class="fa-solid fa-pause text-lg hidden"></i>
+                    </button>
+                </div>
+                <!-- 진행바 (하단) -->
+                <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-transparent">
+                    <div id="mini-progress" class="h-full bg-[#3182F6]/50 w-0 transition-all duration-300"></div>
+                </div>
             </div>
-            -->
 
             <!-- 우측 하단 플로팅 메뉴 (Dynamic Pill) -->
             <!-- 유리 재질 적용 (.dynamic-glass), flex layout 조정, padding 추가 -->
@@ -481,11 +499,8 @@
         const artistSongList = document.getElementById('artist-song-list');
         const comingSoonList = document.getElementById('coming-soon-list');
         const playerScreen = document.getElementById('player-screen');
-        
-        /* 미니 플레이어 변수 제거 및 주석 처리 */
-        // const miniPlayer = document.getElementById('mini-player');
-        // const miniPlayBtn = document.getElementById('mini-play-btn');
-        
+        const miniPlayer = document.getElementById('mini-player');
+        const miniPlayBtn = document.getElementById('mini-play-btn');
         const errorBox = document.getElementById('error-box');
         const homeScreen = document.getElementById('home-screen');
         const popupModal = document.getElementById('popup-modal');
@@ -494,12 +509,11 @@
         const btnLyrics = document.getElementById('btn-lyrics'); 
         const btnCloseLyrics = document.getElementById('btn-close-lyrics'); 
         
-        /* 미니 플레이어 변수 제거 및 주석 처리 */
-        // const miniCover = document.getElementById('mini-cover');
-        // const miniTitle = document.getElementById('mini-title');
-        // const miniArtist = document.getElementById('mini-artist');
-        // const miniIconPlay = document.getElementById('mini-icon-play');
-        // const miniIconPause = document.getElementById('mini-icon-pause');
+        const miniCover = document.getElementById('mini-cover');
+        const miniTitle = document.getElementById('mini-title');
+        const miniArtist = document.getElementById('mini-artist');
+        const miniIconPlay = document.getElementById('mini-icon-play');
+        const miniIconPause = document.getElementById('mini-icon-pause');
         
         const btnPlay = document.getElementById('btn-play');
         const iconPlay = document.getElementById('icon-play');
@@ -1072,9 +1086,8 @@
                     pillHomeBtn.classList.remove('w-0', 'opacity-0', 'mr-0');
                     pillHomeBtn.classList.add('w-10', 'opacity-100', 'mr-3');
                     
-                    // miniPlayer 관련 코드는 주석처리
-                    // miniPlayer.classList.remove('right-[5.5rem]');
-                    // miniPlayer.classList.add('right-[9.5rem]');
+                    miniPlayer.classList.remove('right-[5.5rem]');
+                    miniPlayer.classList.add('right-[9.5rem]');
                 } else {
                     dynamicPill.classList.remove('w-[130px]');
                     dynamicPill.classList.add('w-[60px]');
@@ -1082,9 +1095,8 @@
                     pillHomeBtn.classList.remove('w-10', 'opacity-100', 'mr-3');
                     pillHomeBtn.classList.add('w-0', 'opacity-0', 'mr-0');
                     
-                    // miniPlayer 관련 코드는 주석처리
-                    // miniPlayer.classList.remove('right-[9.5rem]');
-                    // miniPlayer.classList.add('right-[5.5rem]');
+                    miniPlayer.classList.remove('right-[9.5rem]');
+                    miniPlayer.classList.add('right-[5.5rem]');
                 }
             } 
             // 미니 플레이어가 숨겨진 상태(초기 상태) -> 중앙 배치
@@ -1161,10 +1173,9 @@
             // 플레이어 배경 이미지 처리
             playerBgImage.src = song.cover;
             
-            // 미니 플레이어 업데이트 주석 처리
-            // miniTitle.innerText = song.title;
-            // miniArtist.innerText = song.artist;
-            // miniCover.src = song.cover;
+            miniTitle.innerText = song.title;
+            miniArtist.innerText = song.artist;
+            miniCover.src = song.cover;
             
             errorBox.classList.add('hidden');
             timeCurr.innerText = "00:00";
@@ -1218,8 +1229,8 @@
             btnLyrics.classList.add('text-[#6B7684]', 'bg-white/50');
             stopLyricsSync();
 
-            // 미니 플레이어 등장 애니메이션 주석 처리
-            // miniPlayer.classList.remove('translate-y-[150%]');
+            // 미니 플레이어 등장 애니메이션 (아래에서 위로)
+            miniPlayer.classList.remove('translate-y-[150%]');
 
             if (currentIdx === index && !audio.paused) {
                 playerScreen.classList.remove('translate-y-full');
@@ -1250,36 +1261,31 @@
         const updateUI = (playing) => {
             isPlaying = playing;
             if (playing) {
-                // 미니 아이콘 제어 주석 처리
-                // miniIconPlay.classList.add('hidden'); miniIconPause.classList.remove('hidden');
+                miniIconPlay.classList.add('hidden'); miniIconPause.classList.remove('hidden');
                 iconPlay.classList.add('hidden'); iconPause.classList.remove('hidden');
-                // const miniCoverContainer = document.getElementById('mini-cover-container');
+                const miniCoverContainer = document.getElementById('mini-cover-container');
                 // if(miniCoverContainer) miniCoverContainer.style.animationPlayState = 'running'; // 제거됨
                 if('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
                 startLyricsSync(); // 재생시 가사 싱크 시작
             } else {
-                // 미니 아이콘 제어 주석 처리
-                // miniIconPlay.classList.remove('hidden'); miniIconPause.classList.add('hidden');
+                miniIconPlay.classList.remove('hidden'); miniIconPause.classList.add('hidden');
                 iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden');
-                // const miniCoverContainer = document.getElementById('mini-cover-container');
+                const miniCoverContainer = document.getElementById('mini-cover-container');
                 // if(miniCoverContainer) miniCoverContainer.style.animationPlayState = 'paused'; // 제거됨
                 if('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
                 stopLyricsSync(); // 일시정지시 가사 싱크 중지
             }
         };
 
-        // 미니 플레이어 이벤트 주석 처리
-        /*
         miniPlayer.addEventListener('click', () => {
             playerScreen.classList.remove('translate-y-full');
         });
-        */
         document.getElementById('btn-minimize').onclick = () => {
             playerScreen.classList.add('translate-y-full');
         };
         
         btnPlay.addEventListener('click', () => togglePlay());
-        // miniPlayBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
+        miniPlayBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
         
         document.getElementById('btn-next').addEventListener('click', () => {
             let nextIdx = currentIdx + 1;
@@ -1357,9 +1363,8 @@
                 if(progressFill) progressFill.style.width = `${percent}%`;
                 if(progressHandle) progressHandle.style.left = `${percent}%`;
                 if(seekSlider) seekSlider.value = percent;
-                // 미니 프로그레스 주석 처리
-                // const miniProg = document.getElementById('mini-progress');
-                // if(miniProg) miniProg.style.width = `${percent}%`;
+                const miniProg = document.getElementById('mini-progress');
+                if(miniProg) miniProg.style.width = `${percent}%`;
             }
             // syncLyrics(); // requestAnimationFrame으로 대체됨
         }
