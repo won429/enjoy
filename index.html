@@ -90,17 +90,16 @@
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
         }
         
-        /* [수정] 가사 오버레이 상태 클래스 추가 */
+        /* 가사 오버레이 상태 클래스 */
         .lyrics-closed { transform: translateY(100%); }
         .lyrics-open { transform: translateY(0); }
 
-        /* [수정] 다이나믹 아일랜드 & 미니 플레이어 스타일 (Real Glass) */
-        /* 블러 4px 유지, 투명하게 */
+        /* 다이나믹 아일랜드 & 미니 플레이어 스타일 (Real Glass) */
         .dynamic-glass {
             background: rgba(255, 255, 255, 0.1); 
             backdrop-filter: blur(4px) saturate(180%);
             -webkit-backdrop-filter: blur(4px) saturate(180%);
-            border: 2px solid rgba(255, 255, 255, 0.3); /* 2px */
+            border: 2px solid rgba(255, 255, 255, 0.3); 
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); 
         }
 
@@ -242,7 +241,8 @@
             <!-- 미니 플레이어 스타일: dynamic-glass 적용 -->
             <div id="mini-player" class="absolute bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-5 right-[5.5rem] h-[60px] dynamic-glass rounded-[30px] px-2 flex items-center justify-between z-[50] overflow-hidden translate-y-[150%] transition-all duration-500 cursor-pointer active:scale-[0.98]">
                 <div class="flex items-center gap-3 w-full overflow-hidden pl-1">
-                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-100 relative shadow-inner shrink-0 border border-white/50 animate-[spin_10s_linear_infinite]" id="mini-cover-container">
+                    <!-- [수정] 회전 애니메이션 클래스(animate-[spin_...]) 제거 -->
+                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-100 relative shadow-inner shrink-0 border border-white/50" id="mini-cover-container">
                         <img id="mini-cover" src="" class="w-full h-full object-cover">
                     </div>
                     <div class="flex flex-col justify-center min-w-0 pr-2">
@@ -287,6 +287,35 @@
         <!-- 2. 전체 플레이어 화면 (Full Screen) -->
         <div id="player-screen" class="absolute inset-0 z-[100] bg-[#F2F4F6] transform translate-y-full transition-transform duration-500 flex flex-col h-full rounded-t-[32px] overflow-hidden shadow-[0_-10px_60px_-15px_rgba(0,0,0,0.3)]">
             
+            <!-- 가사 오버레이 (z-index 수정: z-[120], 위치: player-screen 직계 자식으로 이동) -->
+            <div id="lyrics-overlay" class="absolute inset-0 z-[120] flex flex-col lyrics-closed bg-[#F2F4F6]/95 backdrop-blur-xl transition-transform duration-500 rounded-t-[32px]">
+                 <div class="flex justify-between items-center p-6 pt-8 border-b border-gray-100">
+                     <div class="w-10"></div> 
+                     <span class="text-xs font-bold tracking-widest text-[#B0B8C1]">LYRICS</span>
+                     <button id="btn-close-lyrics" class="w-10 h-10 flex items-center justify-center text-[#191F28] bg-white rounded-full shadow-sm active:scale-95">
+                        <i class="fa-solid fa-xmark"></i>
+                     </button>
+                 </div>
+                 
+                 <!-- 가사 화면 상단 고정 영역 (헤더 + 곡정보) -->
+                 <div class="px-8 pb-4 pt-2 shrink-0 flex items-center gap-4 border-b border-gray-100/50">
+                     <div class="w-16 h-16 rounded-xl overflow-hidden bg-gray-200 shadow-sm shrink-0">
+                         <img id="lyrics-cover" src="" class="w-full h-full object-cover">
+                     </div>
+                     <div class="flex flex-col text-left min-w-0">
+                         <h4 id="lyrics-title" class="text-lg font-bold text-[#191F28] truncate">Title</h4>
+                         <p id="lyrics-artist" class="text-sm text-[#6B7684] font-medium truncate">Artist</p>
+                     </div>
+                 </div>
+
+                 <div class="flex-1 overflow-hidden w-full relative">
+                     <!-- 가사 콘텐츠 -->
+                     <div id="lyrics-content" class="w-full h-full overflow-y-auto scrollbar-hide px-8 pb-40 text-left pt-8 lyrics-mask">
+                         <p class="text-[#B0B8C1] text-sm font-medium animate-pulse mt-20 text-center w-full">가사를 불러오는 중...</p>
+                     </div>
+                 </div>
+            </div>
+
             <!-- 블러 배경 -->
             <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-white">
                  <img id="player-bg-image" src="" class="w-full h-full object-cover opacity-20 blur-3xl scale-150 transform transition-all duration-1000">
@@ -311,22 +340,6 @@
                     <p class="mt-1 opacity-75">오디오 파일을 확인해주세요</p>
                 </div>
                 
-                <!-- 가사 오버레이 -->
-                <div id="lyrics-overlay" class="absolute inset-0 z-20 flex flex-col lyrics-closed bg-[#F2F4F6]/95 backdrop-blur-xl transition-transform duration-500 rounded-t-[32px]">
-                     <div class="flex justify-between items-center p-6 pt-8 border-b border-gray-100">
-                         <div class="w-10"></div> 
-                         <span class="text-xs font-bold tracking-widest text-[#B0B8C1]">LYRICS</span>
-                         <button id="btn-close-lyrics" class="w-10 h-10 flex items-center justify-center text-[#191F28] bg-white rounded-full shadow-sm active:scale-95">
-                            <i class="fa-solid fa-xmark"></i>
-                         </button>
-                     </div>
-                     <div class="flex-1 overflow-hidden w-full relative">
-                         <div id="lyrics-content" class="w-full h-full overflow-y-auto scrollbar-hide px-8 pb-40 text-left pt-12 lyrics-mask text-center">
-                             <p class="text-[#B0B8C1] text-sm font-medium animate-pulse mt-20">가사를 불러오는 중...</p>
-                         </div>
-                     </div>
-                </div>
-
                 <!-- 앨범 아트 -->
                 <div class="relative w-full max-w-[280px] aspect-square mb-10 group shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] rounded-[32px] transition-transform duration-500"> 
                     <div class="w-full h-full rounded-[32px] overflow-hidden bg-white p-2">
@@ -335,7 +348,7 @@
                 </div>
 
                 <!-- 곡 정보 -->
-                <div class="w-full mb-8 text-center">
+                <div class="w-full mb-8 text-left">
                     <h2 id="song-title" class="text-2xl font-black text-[#191F28] mb-2 truncate leading-tight">Title</h2>
                     <p id="song-artist" class="text-[#6B7684] text-base font-medium truncate">Artist</p>
                 </div>
@@ -512,6 +525,9 @@
         const chartTime = document.getElementById('chart-time');
         const lyricsOverlay = document.getElementById('lyrics-overlay');
         const lyricsContent = document.getElementById('lyrics-content');
+        const lyricsCover = document.getElementById('lyrics-cover');
+        const lyricsTitle = document.getElementById('lyrics-title');
+        const lyricsArtist = document.getElementById('lyrics-artist');
 
         const btnAdminLogin = document.getElementById('btn-admin-login');
         const adminLoginModal = document.getElementById('admin-login-modal');
@@ -1111,8 +1127,14 @@
             
             updateMediaSessionMetadata(song);
             
+            // [수정] 가사 화면 상단 고정 곡 정보 업데이트
+            lyricsCover.src = song.cover;
+            lyricsTitle.innerText = song.title;
+            lyricsArtist.innerText = song.artist;
+            
             currentLyrics = [];
-            lyricsContent.innerHTML = '<p class="text-[#B0B8C1] text-sm mt-20 font-medium animate-pulse">가사 로딩 중...</p>';
+            // [수정] 안내 메시지에 text-center w-full 추가
+            lyricsContent.innerHTML = '<p class="text-[#B0B8C1] text-sm mt-20 font-medium animate-pulse text-center w-full">가사를 불러오는 중...</p>';
             
             if (song.lrc) {
                 const parsed = await fetchLrc(song.lrc);
@@ -1128,10 +1150,10 @@
                     });
                     
                 } else {
-                    lyricsContent.innerHTML = '<p class="text-[#B0B8C1] text-sm mt-20">가사가 없습니다.</p>';
+                    lyricsContent.innerHTML = '<p class="text-[#B0B8C1] text-sm mt-20 text-center w-full">가사가 없습니다.</p>';
                 }
             } else {
-                lyricsContent.innerHTML = '<p class="text-[#B0B8C1] text-sm mt-20">가사가 등록되지 않았습니다.</p>';
+                lyricsContent.innerHTML = '<p class="text-[#B0B8C1] text-sm mt-20 text-center w-full">가사가 등록되지 않았습니다.</p>';
             }
         };
 
