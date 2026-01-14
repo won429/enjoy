@@ -239,9 +239,8 @@
             </div>
 
             <!-- 미니 플레이어 (Dynamic Island Style) -->
-            <!-- 미니 플레이어 스타일: dynamic-glass 적용 -->
-            <!-- [수정] bottom 위치를 0.5rem(약 8px) + safe-area로 조정하여 더 바짝 붙임 -->
-            <div id="mini-player" class="absolute bottom-[calc(0.5rem+env(safe-area-inset-bottom))] left-5 right-[5.5rem] h-[60px] dynamic-glass rounded-[30px] px-2 flex items-center justify-between z-[50] overflow-hidden translate-y-[150%] transition-all duration-500 cursor-pointer active:scale-[0.98]">
+            <!-- [복구됨] & [수정] 초기 상태를 invisible 및 translate-y-[150%]로 설정하여 숨김 -->
+            <div id="mini-player" class="absolute bottom-[calc(0.5rem+env(safe-area-inset-bottom))] left-5 right-[5.5rem] h-[60px] dynamic-glass rounded-[30px] px-2 flex items-center justify-between z-[50] overflow-hidden translate-y-[150%] invisible transition-all duration-500 cursor-pointer active:scale-[0.98]">
                 <div class="flex items-center gap-3 w-full overflow-hidden pl-1">
                     <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-100 relative shadow-inner shrink-0 border border-white/50" id="mini-cover-container">
                         <img id="mini-cover" src="" class="w-full h-full object-cover">
@@ -1229,8 +1228,11 @@
             btnLyrics.classList.add('text-[#6B7684]', 'bg-white/50');
             stopLyricsSync();
 
-            // 미니 플레이어 등장 애니메이션 (아래에서 위로)
-            miniPlayer.classList.remove('translate-y-[150%]');
+            // [수정] 미니 플레이어 등장 애니메이션 (invisible 제거 후 애니메이션)
+            miniPlayer.classList.remove('invisible'); 
+            requestAnimationFrame(() => {
+                miniPlayer.classList.remove('translate-y-[150%]');
+            });
 
             if (currentIdx === index && !audio.paused) {
                 playerScreen.classList.remove('translate-y-full');
