@@ -95,11 +95,12 @@
         .lyrics-open { transform: translateY(0); }
 
         /* 다이나믹 아일랜드 & 미니 플레이어 스타일 (Real Glass) */
+        /* 블러 4px 유지, 투명하게 */
         .dynamic-glass {
             background: rgba(255, 255, 255, 0.1); 
             backdrop-filter: blur(4px) saturate(180%);
             -webkit-backdrop-filter: blur(4px) saturate(180%);
-            border: 2px solid rgba(255, 255, 255, 0.3); 
+            border: 2px solid rgba(255, 255, 255, 0.3); /* 2px */
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); 
         }
 
@@ -241,7 +242,6 @@
             <!-- 미니 플레이어 스타일: dynamic-glass 적용 -->
             <div id="mini-player" class="absolute bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-5 right-[5.5rem] h-[60px] dynamic-glass rounded-[30px] px-2 flex items-center justify-between z-[50] overflow-hidden translate-y-[150%] transition-all duration-500 cursor-pointer active:scale-[0.98]">
                 <div class="flex items-center gap-3 w-full overflow-hidden pl-1">
-                    <!-- [수정] 회전 애니메이션 클래스(animate-[spin_...]) 제거 -->
                     <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-100 relative shadow-inner shrink-0 border border-white/50" id="mini-cover-container">
                         <img id="mini-cover" src="" class="w-full h-full object-cover">
                     </div>
@@ -548,6 +548,9 @@
         let isPillOpen = true; 
         // [수정] 기본 활성 탭을 'music'으로 설정
         let activeTab = 'music'; 
+
+        // [추가] 가사 싱크를 위한 requestAnimationFrame ID
+        let rafId = null;
 
         let hasEntered = false;
         function initApp() {
@@ -880,6 +883,7 @@
                         <h3 class="text-sm font-bold text-[#191F28] leading-tight break-keep mb-0.5">${song.title}</h3>
                         <p class="text-xs text-[#6B7684] break-keep font-medium">${song.artist}</p>
                     </div>
+                    <!-- [수정] 재생 횟수 복구 -->
                     <span class="text-[10px] text-[#B0B8C1] font-medium whitespace-nowrap">${song.playCount}회</span>
                 `;
                 div.addEventListener('click', () => {
@@ -955,9 +959,15 @@
                 if (match) {
                     const min = parseInt(match[1]);
                     const sec = parseInt(match[2]);
-                    let ms = parseInt(match[3]);
-                    if (match[3].length === 3) ms = ms / 10;
-                    const time = min * 60 + sec + ms / 100;
+                    const msStr = match[3];
+                    // [수정] 밀리초 파싱 로직 개선: 3자리(1000분율)와 2자리(100분율) 구분
+                    let ms = parseInt(msStr);
+                    let time;
+                    if (msStr.length === 3) {
+                        time = min * 60 + sec + ms / 1000;
+                    } else {
+                        time = min * 60 + sec + ms / 100;
+                    }
                     const text = line.replace(timeReg, '').trim();
                     if (text) result.push({ time, text });
                 }
@@ -992,6 +1002,8 @@
             const currentTime = audio.currentTime;
             
             let activeIdx = -1;
+            // [최적화] 역순 탐색이 더 빠를 수 있음 (현재 시간보다 작거나 같은 마지막 인덱스 찾기)
+            // 하지만 리스트가 짧으므로 정순 탐색도 무방함. 로직 유지하되 break 조건 활용.
             for (let i = 0; i < currentLyrics.length; i++) {
                 if (currentTime >= currentLyrics[i].time) {
                     activeIdx = i;
@@ -1001,17 +1013,40 @@
             }
             
             const lines = lyricsContent.getElementsByClassName('lyric-line');
+            // [최적화] 모든 라인을 순회하며 클래스를 뗐다 붙였다 하는 것은 비효율적일 수 있으나
+            // 가시적인 라인 개수가 적으므로 현재 방식 유지. 다만 requestAnimationFrame으로 인해 빈번히 호출됨.
             for (let i = 0; i < lines.length; i++) {
                 if (i === activeIdx) {
                     if (!lines[i].classList.contains('active')) {
                         lines[i].classList.add('active');
+                        // 자동 스크롤
                         const offset = lines[i].offsetTop - (lyricsContent.clientHeight * 0.2);
                         lyricsContent.scrollTo({ top: offset, behavior: 'smooth' });
                     }
                 } else {
-                    lines[i].classList.remove('active');
+                    if (lines[i].classList.contains('active')) {
+                        lines[i].classList.remove('active');
+                    }
                 }
             }
+        }
+
+        // [추가] requestAnimationFrame을 이용한 가사 싱크 루프
+        function animateLyrics() {
+            if (isLyricsOpen && !audio.paused) {
+                syncLyrics();
+                rafId = requestAnimationFrame(animateLyrics);
+            }
+        }
+
+        function startLyricsSync() {
+            if (rafId) cancelAnimationFrame(rafId);
+            animateLyrics();
+        }
+
+        function stopLyricsSync() {
+            if (rafId) cancelAnimationFrame(rafId);
+            rafId = null;
         }
         
         if(btnLyrics) {
@@ -1023,12 +1058,14 @@
                     btnLyrics.classList.add('text-[#3182F6]', 'bg-white');
                     btnLyrics.classList.remove('text-[#6B7684]', 'bg-white/50');
                     scrollToActiveLyricImmediate();
+                    startLyricsSync(); // 가사창 열면 싱크 시작
                 } else {
                     isLyricsOpen = false;
                     lyricsOverlay.classList.remove('lyrics-open');
                     lyricsOverlay.classList.add('lyrics-closed');
                     btnLyrics.classList.remove('text-[#3182F6]', 'bg-white');
                     btnLyrics.classList.add('text-[#6B7684]', 'bg-white/50');
+                    stopLyricsSync(); // 가사창 닫으면 싱크 중지
                 }
             });
         }
@@ -1040,6 +1077,7 @@
                 lyricsOverlay.classList.add('lyrics-closed');
                 btnLyrics.classList.remove('text-[#3182F6]', 'bg-white');
                 btnLyrics.classList.add('text-[#6B7684]', 'bg-white/50');
+                stopLyricsSync(); // 가사창 닫으면 싱크 중지
             });
         }
 
@@ -1177,6 +1215,7 @@
             lyricsOverlay.classList.remove('lyrics-open');
             btnLyrics.classList.remove('text-[#3182F6]', 'bg-white');
             btnLyrics.classList.add('text-[#6B7684]', 'bg-white/50');
+            stopLyricsSync();
 
             if (currentIdx === index && !audio.paused) {
                 playerScreen.classList.remove('translate-y-full');
@@ -1212,14 +1251,16 @@
                 miniIconPlay.classList.add('hidden'); miniIconPause.classList.remove('hidden');
                 iconPlay.classList.add('hidden'); iconPause.classList.remove('hidden');
                 const miniCoverContainer = document.getElementById('mini-cover-container');
-                if(miniCoverContainer) miniCoverContainer.style.animationPlayState = 'running';
+                if(miniCoverContainer) miniCoverContainer.style.animationPlayState = 'running'; // 실제로는 CSS 제거됨
                 if('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
+                startLyricsSync(); // 재생시 가사 싱크 시작
             } else {
                 miniIconPlay.classList.remove('hidden'); miniIconPause.classList.add('hidden');
                 iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden');
                 const miniCoverContainer = document.getElementById('mini-cover-container');
                 if(miniCoverContainer) miniCoverContainer.style.animationPlayState = 'paused';
                 if('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
+                stopLyricsSync(); // 일시정지시 가사 싱크 중지
             }
         };
 
@@ -1312,7 +1353,7 @@
                 const miniProg = document.getElementById('mini-progress');
                 if(miniProg) miniProg.style.width = `${percent}%`;
             }
-            syncLyrics();
+            // syncLyrics(); // requestAnimationFrame으로 대체됨
         }
 
         audio.addEventListener('timeupdate', updateTimeDisplay);
