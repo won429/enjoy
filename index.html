@@ -203,7 +203,7 @@
                 <!-- New Album Section -->
                 <div class="mb-5 toss-card p-6"> 
                     <div class="flex justify-between items-end mb-4">
-                        <h2 class="text-xl font-bold text-[#191F28]">New Album <span class="text-[#3182F6] text-xs align-top">●</span></h2>
+                        <h2 class="text-xl font-bold text-[#191F28]">최신 앨범 <span class="text-[#3182F6] text-xs align-top">●</span></h2>
                     </div>
                     <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory" id="new-album-list"></div>
                 </div>
@@ -212,7 +212,7 @@
                 <div class="mb-5 toss-card p-6">
                     <div class="flex justify-between items-center mb-4">
                         <div class="flex items-center gap-2">
-                            <h3 class="text-lg font-bold text-[#191F28]">실시간 차트</h3>
+                            <h3 class="text-lg font-bold text-[#191F28]">실시간 차트 <span class="text-[#3182F6] text-xs align-top">●</span></h3>
                             <span id="chart-time" class="text-xs text-[#6B7684] bg-gray-100 px-1.5 py-0.5 rounded font-medium">--시 기준</span>
                         </div>
                         <button id="btn-play-all" class="text-xs text-[#3182F6] font-bold bg-blue-50 px-2.5 py-1.5 rounded-full active:scale-95 transition-transform flex items-center gap-1">
@@ -227,7 +227,7 @@
 
                 <!-- Artists Section -->
                 <div class="mb-8">
-                    <h3 class="text-lg font-bold text-[#191F28] mb-4 px-1">Artists</h3>
+                    <h3 class="text-lg font-bold text-[#191F28] mb-4 px-1">아티스트</h3>
                     <div class="flex gap-4 overflow-x-auto scrollbar-hide px-1" id="artist-list"></div>
                 </div>
 
@@ -453,12 +453,12 @@
         } catch(e) {}
 
         const comingSoonSongs = [
+            { id: 8, title: "하이스피드런", artist: "출장엔조이 OST", cover: "./cover7.jpg" },
             { id: 12, title: "너의 모든 순간", artist: "현식", cover: "./cover11.jpg" }, 
             { id: 9, title: "소주한잔", artist: "이상훈&류래완", cover: "./cover8.jpg" },
             { id: 10, title: "노래방에서", artist: "홍준호", cover: "./cover9.jpg" },
             { id: 11, title: "나팔바지", artist: "이상훈, 이진호, 류래완", cover: "./cover10.jpg" },
-            { id: 7, title: "미정", artist: "엔조이 숙려 캠프 OST", cover: "./cover6.jpg" },
-            { id: 8, title: "미정", artist: "출장엔조이 OST", cover: "./cover7.jpg" }
+            { id: 7, title: "미정", artist: "엔조이 숙려 캠프 OST", cover: "./cover6.jpg" }
         ];
 
         const DEFAULT_NOTICE = {
@@ -1242,7 +1242,7 @@
             currentIdx = index;
             loadSongData(index);
             playerScreen.classList.remove('translate-y-full');
-            setTimeout(() => togglePlay(true), 300);
+            togglePlay(true);
         };
 
         const togglePlay = (forcePlay = null) => {
@@ -1396,5 +1396,3 @@
     </script>
 </body>
 </html>
-
-
