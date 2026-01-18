@@ -264,10 +264,10 @@
 
             <!-- 우측 하단 플로팅 메뉴 (Dynamic Pill) -->
             <!-- [수정] bottom-[env(safe-area-inset-bottom)] 사용하여 하단 밀착 -->
-            <div id="dynamic-pill" class="absolute right-1/2 translate-x-1/2 bottom-[env(safe-area-inset-bottom)] z-[50] h-[60px] dynamic-glass rounded-full flex items-center justify-between p-1 w-[130px] overflow-hidden transition-all duration-500 active:scale-95 shadow-lg box-border">
+            <div id="dynamic-pill" class="absolute right-1/2 translate-x-1/2 bottom-[env(safe-area-inset-bottom)] z-[50] h-[60px] dynamic-glass rounded-full flex items-center justify-end p-1 w-[130px] overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-95 shadow-lg box-border">
                 
                 <!-- 홈 버튼 -->
-                <button id="pill-home-btn" onclick="window.location.href='https://won429.github.io/enjoysite/'" class="flex-1 opacity-100 h-full flex flex-col items-center justify-center nav-active transition-all gap-0.5 hover:opacity-80">
+                <button id="pill-home-btn" onclick="window.location.href='https://won429.github.io/enjoysite/'" class="w-[4.5rem] opacity-100 h-full flex flex-col items-center justify-center nav-active transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] gap-0.5 hover:opacity-80 overflow-hidden whitespace-nowrap mr-2">
                     <i class="fa-solid fa-house text-lg"></i>
                     <span class="text-[9px] font-bold">홈</span>
                 </button>
@@ -1081,8 +1081,8 @@
                     dynamicPill.classList.remove('w-[60px]');
                     dynamicPill.classList.add('w-[130px]'); 
                     
-                    pillHomeBtn.classList.remove('w-0', 'opacity-0', 'mr-0');
-                    pillHomeBtn.classList.add('w-10', 'opacity-100', 'mr-3');
+                    pillHomeBtn.classList.remove('w-0', 'opacity-0', 'mr-0', 'px-0');
+                    pillHomeBtn.classList.add('w-[4.5rem]', 'opacity-100', 'mr-2');
                     
                     miniPlayer.classList.remove('right-[5.5rem]');
                     miniPlayer.classList.add('right-[9.5rem]');
@@ -1090,8 +1090,8 @@
                     dynamicPill.classList.remove('w-[130px]');
                     dynamicPill.classList.add('w-[60px]');
                     
-                    pillHomeBtn.classList.remove('w-10', 'opacity-100', 'mr-3');
-                    pillHomeBtn.classList.add('w-0', 'opacity-0', 'mr-0');
+                    pillHomeBtn.classList.remove('w-[4.5rem]', 'opacity-100', 'mr-2');
+                    pillHomeBtn.classList.add('w-0', 'opacity-0', 'mr-0', 'px-0');
                     
                     miniPlayer.classList.remove('right-[9.5rem]');
                     miniPlayer.classList.add('right-[5.5rem]');
@@ -1107,8 +1107,8 @@
                 dynamicPill.classList.remove('w-[60px]');
                 dynamicPill.classList.add('w-[130px]');
                 
-                pillHomeBtn.classList.remove('w-0', 'opacity-0', 'mr-0');
-                pillHomeBtn.classList.add('w-10', 'opacity-100', 'mr-3');
+                pillHomeBtn.classList.remove('w-0', 'opacity-0', 'mr-0', 'px-0');
+                pillHomeBtn.classList.add('w-[4.5rem]', 'opacity-100', 'mr-2');
             }
 
             // 활성 탭 스타일 적용 (색상 변경)
