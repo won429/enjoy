@@ -416,7 +416,7 @@
         } catch (e) { console.error("Firebase init failed:", e); }
 
         let songs = [
-            { id: 8, title: "하이스피드런", artist: "출장엔조이 OST", src: "./music11.mp3", cover: "./cover7.jpg", lrc: "./music11.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-01-26' },
+            { id: 8, title: "하이 스피드 러브", artist: "출장엔조이 OST", src: "./music11.mp3", cover: "./cover7.jpg", lrc: "./music11.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-01-26' },
             { id: 13, title: "똥을 싸고 손을 씻자", artist: "엔조이", src: "./music7.mp3", cover: "./cover12.jpg", lrc: "./music7.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-11-26' },
             { id: 14, title: "미친 밤", artist: "엔조이", src: "./music8.mp3", cover: "./cover13.jpg", lrc: "./music8.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-11-26' },
             { id: 15, title: "우리는 엔조이", artist: "오스틴", src: "./music9.mp3", cover: "./cover14.jpg", lrc: "./music9.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-11-26' },
@@ -815,8 +815,8 @@
         function renderNewAlbumList() {
             newAlbumList.innerHTML = '';
             const sortedByNewest = [...songs].sort((a, b) => {
-                if (a.title === '하이스피드런') return -1;
-                if (b.title === '하이스피드런') return 1;
+                if (a.title === '하이 스피드 러브') return -1;
+                if (b.title === '하이 스피드 러브') return 1;
                 return b.id - a.id;
             }); 
             sortedByNewest.forEach((song) => {
