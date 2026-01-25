@@ -500,7 +500,7 @@
         let songStats = {};
         let unsubscribeSnapshot = null;
         let latestSongStats = {};
-        let latestWeeklyStats = {}; // 주간 데이터 저장용
+        let latestWeeklyStats = {}; // 주간 데이터 객체 전체 저장용
         
         let currentLyrics = [];
         let isLyricsOpen = false;
@@ -611,6 +611,11 @@
             return { year: d.getUTCFullYear(), week: weekNo };
         }
 
+        function getWeekId(date) {
+            const info = getWeekNumber(date);
+            return `${info.year}-W${info.week}`;
+        }
+
         function updateWeeklyChartTime() {
             const now = new Date();
             const month = now.getMonth() + 1;
@@ -620,7 +625,15 @@
             const weekOfMonth = Math.ceil((now.getDate() + firstDayOfMonth.getDay()) / 7);
             
             if (weeklyChartTime) weeklyChartTime.innerText = `${month}월 ${weekOfMonth}주차`;
-            return `${now.getFullYear()}-W${getWeekNumber(now).week}`; // DB 저장용 주차 식별자
+            
+            return getWeekId(now); 
+        }
+
+        // 지난 주 ID 계산 (현재 날짜 기준 -7일)
+        function getPrevWeekId() {
+            const now = new Date();
+            const prevDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+            return getWeekId(prevDate);
         }
 
         popupClose.onclick = () => popupModal.classList.add('hidden');
@@ -789,19 +802,15 @@
             });
 
             // 2. 주간 차트 리스너 (별도 컬렉션)
+            // [수정] 이제 문서의 모든 필드(thisWeek, lastWeek 정보)를 가져옵니다.
             const weeklyStatsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'weekly_stats');
             onSnapshot(weeklyStatsRef, (snapshot) => {
-                const currentWeekId = updateWeeklyChartTime();
                 latestWeeklyStats = {};
-                
                 snapshot.forEach(doc => {
-                    const data = doc.data();
-                    // 현재 주차 데이터만 유효한 것으로 처리 (주차가 다르면 0으로 취급하여 리셋 효과)
-                    if (data.weekId === currentWeekId) {
-                        latestWeeklyStats[doc.id] = data.count || 0;
-                    }
+                    latestWeeklyStats[doc.id] = doc.data(); 
                 });
                 renderWeeklyChart();
+                renderFullWeeklyChartList(); // 전체보기 리스트도 갱신
             });
         }
 
@@ -869,20 +878,39 @@
             // 1. 전체/실시간 카운트 증가
             const docRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'song_stats', String(songId));
             
-            // 2. 주간 카운트 증가 (주차 확인 로직 포함)
+            // 2. 주간 카운트 증가 (주차가 바뀌면 지난주 데이터로 이관)
             const weeklyDocRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'weekly_stats', String(songId));
 
             try { 
                 await setDoc(docRef, { count: increment(1) }, { merge: true }); 
                 
-                // 주간 데이터 가져오기
+                // 주간 데이터 가져오기 및 갱신 로직
                 const weeklySnap = await getDoc(weeklyDocRef);
-                if (weeklySnap.exists() && weeklySnap.data().weekId === currentWeekId) {
-                    // 같은 주차면 카운트 증가
-                    await updateDoc(weeklyDocRef, { count: increment(1) });
+                
+                if (weeklySnap.exists()) {
+                    const data = weeklySnap.data();
+                    
+                    if (data.thisWeekId === currentWeekId) {
+                        // 같은 주차면 '이번 주' 카운트 증가
+                        await updateDoc(weeklyDocRef, { thisWeekCount: increment(1) });
+                    } else {
+                        // 주차가 바뀌었음 -> 기존 '이번 주' 데이터를 '지난 주'로 백업하고 초기화
+                        // (단, 기존 데이터가 바로 직전 주차 데이터인 경우에만 의미있는 백업)
+                        await setDoc(weeklyDocRef, { 
+                            thisWeekId: currentWeekId,
+                            thisWeekCount: 1, // 새 주차 첫 카운트
+                            lastWeekId: data.thisWeekId || "",
+                            lastWeekCount: data.thisWeekCount || 0
+                        }, { merge: true });
+                    }
                 } else {
-                    // 데이터가 없거나 지난 주차 데이터면 새로 1로 시작 (리셋 효과)
-                    await setDoc(weeklyDocRef, { count: 1, weekId: currentWeekId });
+                    // 데이터가 없으면 새로 생성
+                    await setDoc(weeklyDocRef, { 
+                        thisWeekId: currentWeekId, 
+                        thisWeekCount: 1, 
+                        lastWeekId: "", 
+                        lastWeekCount: 0 
+                    });
                 }
             } catch (e) { console.error("Inc failed", e); }
         }
@@ -963,17 +991,30 @@
             }
         }
 
-        // 주간 차트 렌더링 함수 (신곡 상위 노출 로직 적용)
+        // 주간 차트 렌더링 함수 (지난 주 데이터 기준)
         function renderWeeklyChart() {
             weeklyChartSlider.innerHTML = '';
+            const targetPrevWeekId = getPrevWeekId(); // 지난 주 ID 구하기
             
             // 주간 데이터 반영 및 정렬
-            let weeklySongs = [...songs].map(s => ({
-                ...s,
-                weeklyCount: latestWeeklyStats[s.id] || 0
-            }));
+            let weeklySongs = [...songs].map(s => {
+                const data = latestWeeklyStats[s.id] || {};
+                let displayCount = 0;
 
-            // 정렬 로직: 신곡(isNew) 우선 -> 그 다음 주간 재생수 내림차순
+                // 데이터베이스에서 '지난 주'에 해당하는 기록 찾기
+                // Case 1: DB의 lastWeekId가 우리가 찾는 지난 주일 때
+                if (data.lastWeekId === targetPrevWeekId) {
+                    displayCount = data.lastWeekCount || 0;
+                }
+                // Case 2: DB의 thisWeekId가 우리가 찾는 지난 주일 때 (아직 이번주에 재생 안 돼서 갱신 안 된 경우)
+                else if (data.thisWeekId === targetPrevWeekId) {
+                    displayCount = data.thisWeekCount || 0;
+                }
+                
+                return { ...s, weeklyCount: displayCount };
+            });
+
+            // 정렬 로직: 신곡(isNew) 우선 -> 그 다음 지난 주 재생수 내림차순
             weeklySongs.sort((a, b) => {
                 if (a.isNew && !b.isNew) return -1; // a가 신곡이면 위로
                 if (!a.isNew && b.isNew) return 1;  // b가 신곡이면 위로
@@ -1015,17 +1056,26 @@
             }
         }
 
-        // 주간 차트 전체 리스트 렌더링 함수 (새로 추가됨)
+        // 주간 차트 전체 리스트 렌더링 함수 (지난 주 데이터 기준)
         function renderFullWeeklyChartList() {
             weeklyFullChartList.innerHTML = '';
+            const targetPrevWeekId = getPrevWeekId(); // 지난 주 ID 구하기
             
             // 주간 데이터 반영 및 정렬
-            let weeklySongs = [...songs].map(s => ({
-                ...s,
-                weeklyCount: latestWeeklyStats[s.id] || 0
-            }));
+            let weeklySongs = [...songs].map(s => {
+                const data = latestWeeklyStats[s.id] || {};
+                let displayCount = 0;
 
-            // 정렬 로직: 신곡(isNew) 우선 -> 그 다음 주간 재생수 내림차순
+                if (data.lastWeekId === targetPrevWeekId) {
+                    displayCount = data.lastWeekCount || 0;
+                } else if (data.thisWeekId === targetPrevWeekId) {
+                    displayCount = data.thisWeekCount || 0;
+                }
+                
+                return { ...s, weeklyCount: displayCount };
+            });
+
+            // 정렬 로직: 신곡(isNew) 우선 -> 그 다음 지난 주 재생수 내림차순
             weeklySongs.sort((a, b) => {
                 if (a.isNew && !b.isNew) return -1;
                 if (!a.isNew && b.isNew) return 1;
