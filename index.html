@@ -338,11 +338,13 @@
                 <!-- 앰비언트 효과 -->
                 <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-[#3182F6]/15 blur-[80px] rounded-full pointer-events-none"></div>
 
-                 <div class="relative z-10 flex justify-between items-center p-6 pt-8 border-b border-white/[0.05]">
-                     <div class="w-10"></div> 
-                     <span class="text-[11px] font-bold tracking-widest text-[#3182F6] uppercase">Lyrics</span>
-                     <button id="btn-close-lyrics" class="w-10 h-10 flex items-center justify-center text-white bg-white/5 border border-white/10 rounded-full shadow-sm active:scale-95 hover:bg-white/10 transition-all">
-                        <i class="fa-solid fa-chevron-down"></i>
+                 <div class="relative z-10 flex justify-between items-center px-6 pt-8 pb-4 border-b border-white/[0.05]">
+                     <div class="w-11"></div> 
+                     <div class="flex flex-col items-center justify-center">
+                         <span class="text-[11px] font-black tracking-[0.2em] text-[#3182F6] uppercase opacity-90">Lyrics</span>
+                     </div>
+                     <button id="btn-close-lyrics" class="w-11 h-11 rounded-full bg-white/[0.03] border border-white/[0.05] backdrop-blur-2xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/[0.08] transition-all active:scale-90 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+                        <i class="fa-solid fa-xmark text-[18px]"></i>
                      </button>
                  </div>
                  
@@ -371,13 +373,14 @@
 
             <!-- 헤더 -->
             <div class="relative z-10 flex justify-between items-center px-6 pt-8 pb-4">
-                <button id="btn-minimize" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/10 transition-colors shadow-sm active:scale-95">
-                    <i class="fa-solid fa-chevron-down"></i>
+                <button id="btn-minimize" class="w-11 h-11 rounded-full bg-white/[0.03] border border-white/[0.05] backdrop-blur-2xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/[0.08] transition-all active:scale-90 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+                    <i class="fa-solid fa-chevron-down text-[15px]"></i>
                 </button>
-                <span class="text-[11px] font-bold tracking-widest text-[#3182F6] uppercase">Now Playing</span>
-                <button id="btn-lyrics" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/10 transition-colors shadow-sm active:scale-95">
-                    <i class="fa-solid fa-align-center"></i>
-                </button>
+                <div class="flex flex-col items-center justify-center">
+                    <!-- Now Playing 제거됨 -->
+                </div>
+                <!-- 우측 여백을 맞춰주기 위한 빈 공간 -->
+                <div class="w-11 h-11"></div>
             </div>
 
             <!-- 메인 컨텐츠 -->
@@ -411,17 +414,49 @@
                     <span id="player-time-duration">00:00</span>
                 </div>
                 
-                <div class="mt-auto w-full flex justify-center items-center gap-10 pb-6">
-                    <button id="btn-prev" class="text-white hover:text-[#3182F6] active:scale-90 transition-all p-3 opacity-80 hover:opacity-100">
-                        <i class="fa-solid fa-backward-step text-[28px]"></i>
-                    </button>
-                    <button id="btn-play" class="w-[84px] h-[84px] flex items-center justify-center bg-white text-black rounded-full shadow-[0_8px_32px_rgba(255,255,255,0.25)] hover:scale-105 hover:bg-gray-100 active:scale-95 transition-all duration-300">
-                        <i id="icon-play" class="fa-solid fa-play text-[32px] pl-1.5"></i>
-                        <i id="icon-pause" class="fa-solid fa-pause text-[32px] hidden"></i>
-                    </button>
-                    <button id="btn-next" class="text-white hover:text-[#3182F6] active:scale-90 transition-all p-3 opacity-80 hover:opacity-100">
-                        <i class="fa-solid fa-forward-step text-[28px]"></i>
-                    </button>
+                <div class="mt-auto w-full flex flex-col pb-4">
+                    <!-- 재생 컨트롤 -->
+                    <div class="w-full flex justify-center items-center gap-10 mb-8">
+                        <button id="btn-prev" class="text-white hover:text-[#3182F6] active:scale-90 transition-all p-3 opacity-80 hover:opacity-100">
+                            <i class="fa-solid fa-backward-step text-[28px]"></i>
+                        </button>
+                        <button id="btn-play" class="w-[84px] h-[84px] flex items-center justify-center bg-white text-black rounded-full shadow-[0_8px_32px_rgba(255,255,255,0.25)] hover:scale-105 hover:bg-gray-100 active:scale-95 transition-all duration-300">
+                            <i id="icon-play" class="fa-solid fa-play text-[32px] pl-1.5"></i>
+                            <i id="icon-pause" class="fa-solid fa-pause text-[32px] hidden"></i>
+                        </button>
+                        <button id="btn-next" class="text-white hover:text-[#3182F6] active:scale-90 transition-all p-3 opacity-80 hover:opacity-100">
+                            <i class="fa-solid fa-forward-step text-[28px]"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- 볼륨 컨트롤 바 -->
+                    <div class="w-full flex items-center gap-3 px-4 mb-6">
+                        <i class="fa-solid fa-volume-low text-gray-400 text-[12px]"></i>
+                        <div class="relative flex-1 h-6 flex items-center justify-center group" id="volume-container">
+                            <div class="absolute left-0 right-0 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                <div id="volume-fill" class="absolute top-0 left-0 h-full bg-white rounded-full transition-all duration-75" style="width: 100%"></div>
+                            </div>
+                            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30">
+                        </div>
+                        <i class="fa-solid fa-volume-high text-gray-400 text-[14px]"></i>
+                    </div>
+                    
+                    <!-- 하단 서브 메뉴 (가사, 재생목록) -->
+                    <div class="w-full flex justify-between items-center px-2">
+                        <!-- 가사 버튼 (사진과 동일한 말풍선+따옴표 조합) -->
+                        <button id="btn-lyrics" class="relative w-12 h-12 flex items-center justify-center text-gray-400 hover:text-[#3182F6] transition-colors active:scale-90">
+                            <i class="fa-regular fa-comment text-[24px]"></i>
+                            <i class="fa-solid fa-quote-left absolute text-[10px] mt-[1px] ml-[1px]"></i>
+                        </button>
+                        
+                        <!-- 빈 공간 (가운데) -->
+                        <div class="flex-1"></div>
+                        
+                        <!-- 재생목록 버튼 -->
+                        <button id="btn-playlist" class="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-white transition-colors active:scale-90">
+                            <i class="fa-solid fa-list-ul text-[20px]"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -579,6 +614,8 @@
         const progressFill = document.getElementById('progress-fill');
         const progressHandle = document.getElementById('progress-handle');
         const seekSlider = document.getElementById('seek-slider');
+        const volumeSlider = document.getElementById('volume-slider');
+        const volumeFill = document.getElementById('volume-fill');
         const timeCurr = document.getElementById('player-time-current');
         const timeDur = document.getElementById('player-time-duration');
         const playerBgImage = document.getElementById('player-bg-image');
@@ -1135,16 +1172,16 @@
                     isLyricsOpen = true;
                     lyricsOverlay.classList.remove('lyrics-closed');
                     lyricsOverlay.classList.add('lyrics-open');
-                    btnLyrics.classList.add('text-[#3182F6]', 'bg-white');
-                    btnLyrics.classList.remove('text-gray-400', 'bg-white/10');
+                    btnLyrics.classList.add('text-[#3182F6]');
+                    btnLyrics.classList.remove('text-gray-400');
                     scrollToActiveLyricImmediate();
                     startLyricsSync();
                 } else {
                     isLyricsOpen = false;
                     lyricsOverlay.classList.remove('lyrics-open');
                     lyricsOverlay.classList.add('lyrics-closed');
-                    btnLyrics.classList.remove('text-[#3182F6]', 'bg-white');
-                    btnLyrics.classList.add('text-gray-400', 'bg-white/10');
+                    btnLyrics.classList.remove('text-[#3182F6]');
+                    btnLyrics.classList.add('text-gray-400');
                     stopLyricsSync();
                 }
             });
@@ -1155,8 +1192,8 @@
                 isLyricsOpen = false;
                 lyricsOverlay.classList.remove('lyrics-open');
                 lyricsOverlay.classList.add('lyrics-closed');
-                btnLyrics.classList.remove('text-[#3182F6]', 'bg-white');
-                btnLyrics.classList.add('text-gray-400', 'bg-white/10');
+                btnLyrics.classList.remove('text-[#3182F6]');
+                btnLyrics.classList.add('text-gray-400');
                 stopLyricsSync();
             });
         }
@@ -1248,8 +1285,8 @@
             isLyricsOpen = false;
             lyricsOverlay.classList.add('lyrics-closed');
             lyricsOverlay.classList.remove('lyrics-open');
-            btnLyrics.classList.remove('text-[#3182F6]', 'bg-white');
-            btnLyrics.classList.add('text-gray-400', 'bg-white/10');
+            btnLyrics.classList.remove('text-[#3182F6]');
+            btnLyrics.classList.add('text-gray-400');
             stopLyricsSync();
             miniPlayer.classList.remove('invisible'); 
             requestAnimationFrame(() => { miniPlayer.classList.remove('translate-y-[150%]'); });
@@ -1368,6 +1405,14 @@
         audio.addEventListener('timeupdate', updateTimeDisplay);
         audio.addEventListener('loadedmetadata', updateTimeDisplay);
         audio.addEventListener('durationchange', updateTimeDisplay);
+
+        if (volumeSlider) {
+            volumeSlider.addEventListener('input', (e) => {
+                const vol = e.target.value;
+                audio.volume = vol;
+                if(volumeFill) volumeFill.style.width = `${vol * 100}%`;
+            });
+        }
 
         if (auth) {
             onAuthStateChanged(auth, (user) => {
