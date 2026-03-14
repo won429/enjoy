@@ -611,6 +611,7 @@
         const seekSlider = document.getElementById('seek-slider');
         const volumeSlider = document.getElementById('volume-slider');
         const volumeFill = document.getElementById('volume-fill');
+        const btnPlaylist = document.getElementById('btn-playlist');
         const timeCurr = document.getElementById('player-time-current');
         const timeDur = document.getElementById('player-time-duration');
         const playerBgImage = document.getElementById('player-bg-image');
@@ -1416,10 +1417,30 @@
         audio.addEventListener('durationchange', updateTimeDisplay);
 
         if (volumeSlider) {
-            volumeSlider.addEventListener('input', (e) => {
-                const vol = e.target.value;
-                audio.volume = vol;
+            const updateVol = (e) => {
+                const vol = parseFloat(e.target.value);
+                try { audio.volume = vol; } catch(err) {} // 모바일 환경(iOS 등) 기기 제어 제한 에러 무시
                 if(volumeFill) volumeFill.style.width = `${vol * 100}%`;
+            };
+            // 데스크탑과 모바일 환경 모두 매끄럽게 반응하도록 이벤트 강화
+            volumeSlider.addEventListener('input', updateVol);
+            volumeSlider.addEventListener('change', updateVol);
+        }
+
+        if (btnPlaylist) {
+            btnPlaylist.addEventListener('click', () => {
+                // 플레이어 창을 닫고
+                document.getElementById('btn-minimize').click();
+                
+                // 자연스러운 전환을 위해 창이 닫힌 직후 재생목록(전체 차트) 띄우기
+                setTimeout(() => {
+                    const tabWeekly = document.getElementById('tab-weekly');
+                    if (tabWeekly && tabWeekly.classList.contains('text-white')) {
+                        weeklyFullChartView.classList.remove('translate-x-full');
+                    } else {
+                        fullChartView.classList.remove('translate-x-full');
+                    }
+                }, 350);
             });
         }
 
