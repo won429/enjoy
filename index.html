@@ -137,21 +137,27 @@
         </div>
 
         <!-- 아티스트 노래 목록 모달 -->
-        <div id="artist-modal" class="absolute inset-0 z-[80] bg-black/60 backdrop-blur-sm hidden flex items-end justify-center transition-opacity duration-300">
-            <div class="bg-[#1C1C1E] w-full rounded-t-[32px] p-6 pb-10 shadow-2xl transform transition-transform duration-300 translate-y-full border-t border-white/10" id="artist-modal-content">
-                <div class="w-10 h-1 bg-gray-700 rounded-full mx-auto mb-6"></div>
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="w-16 h-16 rounded-[20px] overflow-hidden shadow-sm border border-white/10 flex items-center justify-center bg-gray-900 relative">
-                        <i id="artist-modal-icon" class="fa-solid fa-user text-2xl text-gray-700 absolute"></i>
+        <div id="artist-modal" class="absolute inset-0 z-[80] bg-black/60 backdrop-blur-md hidden flex items-end justify-center transition-opacity duration-300">
+            <div class="bg-[#1C1C1E]/90 backdrop-blur-2xl w-full rounded-t-[32px] p-6 pb-10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] transform transition-transform duration-300 translate-y-full border-t border-white/10 relative overflow-hidden" id="artist-modal-content">
+                <!-- 앰비언트 라이트 효과 -->
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] bg-[#3182F6]/20 blur-[50px] rounded-full pointer-events-none"></div>
+
+                <div class="w-10 h-1.5 bg-white/20 rounded-full mx-auto mb-8"></div>
+                
+                <div class="flex items-center gap-5 mb-8 relative z-10 px-2">
+                    <div class="w-[72px] h-[72px] rounded-full overflow-hidden shadow-lg border-2 border-white/10 flex items-center justify-center bg-[#111111] relative shrink-0">
+                        <i id="artist-modal-icon" class="fa-solid fa-user text-3xl text-gray-500 absolute"></i>
                         <img id="artist-modal-img" src="" class="w-full h-full object-cover absolute hidden">
                     </div>
-                    <div>
-                        <h3 id="artist-modal-name" class="text-2xl font-bold text-white">Artist Name</h3>
-                        <p class="text-sm text-gray-400 mt-1">노래 목록</p>
+                    <div class="flex-1 min-w-0">
+                        <h3 id="artist-modal-name" class="text-[28px] font-black text-white tracking-tight leading-none mb-1.5 truncate">Artist Name</h3>
+                        <p class="text-[12px] text-[#3182F6] font-bold tracking-widest uppercase">Artist Tracks</p>
                     </div>
                 </div>
-                <div id="artist-song-list" class="flex flex-col gap-2 max-h-[50vh] overflow-y-auto scrollbar-hide"></div>
-                <button id="artist-modal-close" class="w-full bg-white/10 text-gray-300 font-bold py-3.5 rounded-xl mt-6 hover:bg-white/20 transition-colors active:scale-95">닫기</button>
+                
+                <div id="artist-song-list" class="flex flex-col gap-2 max-h-[50vh] overflow-y-auto scrollbar-hide px-1 relative z-10 pb-4"></div>
+                
+                <button id="artist-modal-close" class="w-full bg-white/[0.08] border border-white/[0.05] text-[15px] text-white font-bold py-4 rounded-[20px] mt-2 hover:bg-white/10 transition-all active:scale-[0.98] relative z-10">닫기</button>
             </div>
         </div>
 
@@ -184,22 +190,22 @@
 
         <!-- 전체 차트 뷰 -->
         <div id="full-chart-view" class="absolute inset-0 z-[120] bg-black transform translate-x-full transition-transform duration-300 flex flex-col h-full">
-            <div class="pt-safe px-5 pb-4 flex items-center gap-3 bg-black/90 backdrop-blur-md sticky top-0 z-10 border-b border-white/10">
-                <button id="btn-close-chart" class="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition-colors">
+            <div class="pt-safe px-5 pb-4 flex items-center gap-3 bg-black/80 backdrop-blur-xl sticky top-0 z-10 border-b border-white/[0.05]">
+                <button id="btn-close-chart" class="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-white hover:bg-white/10 active:scale-95 transition-all">
                     <i class="fa-solid fa-chevron-left text-lg"></i>
                 </button>
-                <h2 class="text-xl font-bold text-white">TOP 100</h2>
+                <h2 class="text-[22px] font-black text-white tracking-tight">실시간 차트</h2>
             </div>
             <div id="full-chart-list" class="flex-1 overflow-y-auto px-0 pb-32 pt-2"></div>
         </div>
 
         <!-- 주간 차트 전체 뷰 -->
         <div id="weekly-full-chart-view" class="absolute inset-0 z-[120] bg-black transform translate-x-full transition-transform duration-300 flex flex-col h-full">
-            <div class="pt-safe px-5 pb-4 flex items-center gap-3 bg-black/90 backdrop-blur-md sticky top-0 z-10 border-b border-white/10">
-                <button id="btn-close-weekly-chart" class="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition-colors">
+            <div class="pt-safe px-5 pb-4 flex items-center gap-3 bg-black/80 backdrop-blur-xl sticky top-0 z-10 border-b border-white/[0.05]">
+                <button id="btn-close-weekly-chart" class="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-white hover:bg-white/10 active:scale-95 transition-all">
                     <i class="fa-solid fa-chevron-left text-lg"></i>
                 </button>
-                <h2 class="text-xl font-bold text-white">주간 차트</h2>
+                <h2 class="text-[22px] font-black text-white tracking-tight">주간 차트</h2>
             </div>
             <div id="weekly-full-chart-list" class="flex-1 overflow-y-auto px-0 pb-32 pt-2"></div>
         </div>
@@ -224,35 +230,47 @@
                     <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-1 pb-4" id="new-album-list"></div>
                 </div>
 
-                <!-- Weekly Chart Section -->
+                <!-- Unified Chart Section (Tabs) -->
                 <div class="mb-12">
                     <div class="flex justify-between items-end mb-5 px-1">
-                        <div class="flex flex-col gap-1.5">
+                        <!-- 탭 메뉴 -->
+                        <div class="flex items-center gap-4">
+                            <button id="tab-realtime" class="text-[22px] font-black text-white tracking-tight leading-none transition-all">실시간 차트<span class="text-[#3182F6] transition-opacity duration-300">.</span></button>
+                            <button id="tab-weekly" class="text-[22px] font-black text-gray-600 tracking-tight leading-none transition-all hover:text-gray-400">주간 차트<span class="text-[#3182F6] opacity-0 hidden transition-opacity duration-300">.</span></button>
+                        </div>
+                        
+                        <!-- 실시간 차트 헤더 우측 -->
+                        <div id="header-realtime" class="flex flex-col items-end gap-1.5 transition-all">
+                            <span id="chart-time" class="text-[11px] font-bold text-[#3182F6] tracking-wider uppercase">--시 기준</span>
+                            <button id="btn-play-all" class="text-[11px] text-white font-bold bg-[#3182F6] px-3.5 py-1.5 rounded-full active:scale-95 transition-transform flex items-center gap-1.5 shadow-[0_4px_12px_rgba(49,130,246,0.3)] hover:bg-[#2563EB]">
+                                <i class="fa-solid fa-play text-[9px]"></i> 전체 재생
+                            </button>
+                        </div>
+                        
+                        <!-- 주간 차트 헤더 우측 -->
+                        <div id="header-weekly" class="flex flex-col items-end gap-1.5 hidden transition-all">
                             <span id="weekly-chart-time" class="text-[11px] font-bold text-[#3182F6] tracking-wider uppercase">--월 --주차</span>
-                            <h3 class="text-[22px] font-black text-white tracking-tight leading-none">주간 차트<span class="text-[#3182F6]">.</span></h3>
+                            <button id="btn-play-all-weekly" class="text-[11px] text-white font-bold bg-[#3182F6] px-3.5 py-1.5 rounded-full active:scale-95 transition-transform flex items-center gap-1.5 shadow-[0_4px_12px_rgba(49,130,246,0.3)] hover:bg-[#2563EB]">
+                                <i class="fa-solid fa-play text-[9px]"></i> 전체 재생
+                            </button>
                         </div>
                     </div>
-                    <div id="weekly-chart-slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3 px-1 pb-2"></div>
-                    <button id="btn-more-weekly-chart" class="w-full mt-4 py-3.5 text-[13px] text-white font-bold bg-white/[0.05] border border-white/[0.05] rounded-[18px] hover:bg-white/10 transition-colors">
-                        주간 차트 전체보기
-                    </button>
-                </div>
-                
-                <!-- Chart Section -->
-                <div class="mb-12">
-                    <div class="flex justify-between items-end mb-5 px-1">
-                        <div class="flex flex-col gap-1.5">
-                            <span id="chart-time" class="text-[11px] font-bold text-[#3182F6] tracking-wider uppercase">--시 기준</span>
-                            <h3 class="text-[22px] font-black text-white tracking-tight leading-none">실시간 차트<span class="text-[#3182F6]">.</span></h3>
-                        </div>
-                        <button id="btn-play-all" class="text-[11px] text-white font-bold bg-[#3182F6] px-3.5 py-2 rounded-full active:scale-95 transition-transform flex items-center gap-1.5 shadow-[0_4px_12px_rgba(49,130,246,0.3)] hover:bg-[#2563EB]">
-                            <i class="fa-solid fa-play text-[9px]"></i> 전체 재생
+
+                    <!-- 실시간 차트 패널 -->
+                    <div id="panel-realtime" class="block fade-in">
+                        <div id="chart-slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3 px-1 pb-2"></div>
+                        <button id="btn-more-chart" class="w-full mt-4 py-3.5 text-[13px] text-white font-bold bg-white/[0.05] border border-white/[0.05] rounded-[18px] hover:bg-white/10 transition-colors">
+                            실시간 차트 전체보기
                         </button>
                     </div>
-                    <div id="chart-slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3 px-1 pb-2"></div>
-                    <button id="btn-more-chart" class="w-full mt-4 py-3.5 text-[13px] text-white font-bold bg-white/[0.05] border border-white/[0.05] rounded-[18px] hover:bg-white/10 transition-colors">
-                        TOP 100 전체보기
-                    </button>
+
+                    <!-- 주간 차트 패널 -->
+                    <div id="panel-weekly" class="hidden fade-in">
+                        <div id="weekly-chart-slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3 px-1 pb-2"></div>
+                        <button id="btn-more-weekly-chart" class="w-full mt-4 py-3.5 text-[13px] text-white font-bold bg-white/[0.05] border border-white/[0.05] rounded-[18px] hover:bg-white/10 transition-colors">
+                            주간 차트 전체보기
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Artists Section -->
@@ -301,7 +319,7 @@
                 </button>
 
                 <!-- 음악 버튼 -->
-                <div class="w-[52px] h-[52px] rounded-full border border-white/40 bg-white/10 flex items-center justify-center shrink-0 shadow-inner">
+                <div class="w-[52px] h-[52px] rounded-full bg-white/10 flex items-center justify-center shrink-0 shadow-inner">
                     <button id="pill-toggle-btn" class="w-full h-full flex flex-col items-center justify-center nav-inactive gap-0.5 hover:opacity-80">
                         <div class="relative w-6 h-6 flex items-center justify-center">
                             <i id="pill-icon-music" class="fa-solid fa-headphones text-xl"></i>
@@ -515,7 +533,16 @@
         const btnMoreWeeklyChart = document.getElementById('btn-more-weekly-chart'); 
         const btnCloseWeeklyChart = document.getElementById('btn-close-weekly-chart'); 
         const btnPlayAll = document.getElementById('btn-play-all'); 
+        const btnPlayAllWeekly = document.getElementById('btn-play-all-weekly');
         const newAlbumList = document.getElementById('new-album-list');
+        
+        const tabRealtime = document.getElementById('tab-realtime');
+        const tabWeekly = document.getElementById('tab-weekly');
+        const headerRealtime = document.getElementById('header-realtime');
+        const headerWeekly = document.getElementById('header-weekly');
+        const panelRealtime = document.getElementById('panel-realtime');
+        const panelWeekly = document.getElementById('panel-weekly');
+
         const artistList = document.getElementById('artist-list');
         const artistModal = document.getElementById('artist-modal');
         const artistModalContent = document.getElementById('artist-modal-content');
@@ -652,24 +679,24 @@
                 artistSongs.forEach(song => {
                     const originalIndex = songs.findIndex(s => s.id === song.id);
                     const div = document.createElement('div');
-                    div.className = "flex items-center gap-4 p-3 rounded-2xl hover:bg-white/5 cursor-pointer transition-colors";
+                    div.className = "flex items-center gap-4 p-2.5 rounded-[20px] bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.02] active:scale-[0.98] transition-all cursor-pointer group";
                     div.innerHTML = `
-                        <div class="w-12 h-12 rounded-xl overflow-hidden bg-gray-900 flex-shrink-0 shadow-sm border border-white/10">
+                        <div class="w-[52px] h-[52px] rounded-[16px] bg-gray-900 overflow-hidden relative flex-shrink-0 shadow-md border border-white/10 group-hover:shadow-blue-500/20 transition-all">
                             <img src="${song.cover}" class="w-full h-full object-cover">
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-sm font-bold text-white truncate">${song.title}</h4>
-                            <p class="text-xs text-gray-400 truncate font-medium">${song.artist}</p>
+                        <div class="flex-1 min-w-0 pr-2">
+                            <h4 class="text-[15px] font-bold text-white truncate mb-0.5 group-hover:text-[#3182F6] transition-colors">${song.title}</h4>
+                            <p class="text-[12px] text-gray-400 truncate font-medium">${song.artist}</p>
                         </div>
-                        <button class="text-[#3182F6] active:scale-95 transition-transform">
-                            <i class="fa-solid fa-play"></i>
+                        <button class="w-8 h-8 flex items-center justify-center rounded-full bg-[#3182F6]/10 text-[#3182F6] group-hover:bg-[#3182F6] group-hover:text-white transition-colors mr-1 shrink-0">
+                            <i class="fa-solid fa-play text-xs pl-0.5"></i>
                         </button>
                     `;
                     div.onclick = () => { openPlayer(originalIndex); closeArtistModal(); };
                     artistSongList.appendChild(div);
                 });
             } else {
-                artistSongList.innerHTML = '<p class="text-gray-500 text-center py-8 text-sm">등록된 곡이 없습니다.</p>';
+                artistSongList.innerHTML = '<p class="text-gray-500 text-center py-10 text-[13px] font-medium">등록된 곡이 없습니다.</p>';
             }
             artistModal.classList.remove('hidden');
             setTimeout(() => { artistModalContent.classList.remove('translate-y-full'); }, 10);
@@ -953,22 +980,22 @@
                 const rank = index + 1;
                 const rankColorClass = rank <= 3 ? "text-white" : "text-gray-400";
                 const div = document.createElement('div');
-                div.className = "flex items-center gap-4 px-5 py-2.5 active:bg-white/10 transition-colors cursor-pointer";
+                div.className = "flex items-center gap-4 px-5 py-3 hover:bg-white/[0.04] active:bg-white/[0.06] transition-all cursor-pointer group";
                 div.innerHTML = `
-                    <div class="flex flex-col items-center justify-center w-6 mr-1 flex-shrink-0">
-                        <span class="${rankColorClass} text-base font-bold leading-none mb-1">${rank}</span>
-                        <div class="flex flex-col items-center gap-0.5 scale-90">
+                    <div class="flex flex-col items-center justify-center w-7 mr-0 flex-shrink-0">
+                        <span class="${rankColorClass} text-[17px] font-black leading-none mb-1 opacity-90">${rank}</span>
+                        <div class="flex flex-col items-center gap-0.5">
                             ${song.isNew ? '<span class="rank-badge-new">NEW</span>' : '<span class="text-gray-600 text-[10px]"><i class="fa-solid fa-minus"></i></span>'}
                         </div>
                     </div>
-                    <div class="w-12 h-12 rounded-[14px] bg-gray-900 overflow-hidden relative flex-shrink-0 border border-white/10">
+                    <div class="w-[52px] h-[52px] rounded-[16px] bg-gray-900 overflow-hidden relative flex-shrink-0 shadow-md border border-white/10 group-hover:shadow-blue-500/20 transition-all">
                         <img src="${song.cover}" class="w-full h-full object-cover">
                     </div>
-                    <div class="flex-1 min-w-0 flex flex-col justify-center">
-                        <h3 class="text-sm font-bold text-white leading-tight break-keep mb-0.5">${song.title}</h3>
-                        <p class="text-xs text-gray-400 break-keep font-medium">${song.artist}</p>
+                    <div class="flex-1 min-w-0 pr-2 flex flex-col justify-center">
+                        <h3 class="text-[15px] font-bold text-white truncate mb-0.5 group-hover:text-[#3182F6] transition-colors">${song.title}</h3>
+                        <p class="text-[12px] text-gray-400 truncate font-medium">${song.artist}</p>
                     </div>
-                    <span class="text-[10px] text-gray-500 font-medium whitespace-nowrap">${song.weeklyCount}회</span>
+                    <span class="text-[11px] text-gray-500 font-bold whitespace-nowrap">${song.weeklyCount}회</span>
                 `;
                 div.addEventListener('click', () => { openPlayer(originalIndex); weeklyFullChartView.classList.add('translate-x-full'); });
                 weeklyFullChartList.appendChild(div);
@@ -981,20 +1008,20 @@
                 const rank = index + 1;
                 const rankColorClass = rank <= 3 ? "text-white" : "text-gray-400";
                 const div = document.createElement('div');
-                div.className = "flex items-center gap-4 px-5 py-2.5 active:bg-white/10 transition-colors cursor-pointer";
+                div.className = "flex items-center gap-4 px-5 py-3 hover:bg-white/[0.04] active:bg-white/[0.06] transition-all cursor-pointer group";
                 div.innerHTML = `
-                    <div class="flex flex-col items-center justify-center w-6 mr-1 flex-shrink-0">
-                        <span class="${rankColorClass} text-base font-bold leading-none mb-1">${rank}</span>
-                        <div class="flex flex-col items-center gap-0.5 scale-90">${getRankHTML(song)}</div>
+                    <div class="flex flex-col items-center justify-center w-7 mr-0 flex-shrink-0">
+                        <span class="${rankColorClass} text-[17px] font-black leading-none mb-1 opacity-90">${rank}</span>
+                        <div class="flex flex-col items-center gap-0.5">${getRankHTML(song)}</div>
                     </div>
-                    <div class="w-12 h-12 rounded-[14px] bg-gray-900 overflow-hidden relative flex-shrink-0 border border-white/10">
+                    <div class="w-[52px] h-[52px] rounded-[16px] bg-gray-900 overflow-hidden relative flex-shrink-0 shadow-md border border-white/10 group-hover:shadow-blue-500/20 transition-all">
                         <img src="${song.cover}" class="w-full h-full object-cover">
                     </div>
-                    <div class="flex-1 min-w-0 flex flex-col justify-center">
-                        <h3 class="text-sm font-bold text-white leading-tight break-keep mb-0.5">${song.title}</h3>
-                        <p class="text-xs text-gray-400 break-keep font-medium">${song.artist}</p>
+                    <div class="flex-1 min-w-0 pr-2 flex flex-col justify-center">
+                        <h3 class="text-[15px] font-bold text-white truncate mb-0.5 group-hover:text-[#3182F6] transition-colors">${song.title}</h3>
+                        <p class="text-[12px] text-gray-400 truncate font-medium">${song.artist}</p>
                     </div>
-                    <span class="text-[10px] text-gray-500 font-medium whitespace-nowrap">${song.playCount}회</span>
+                    <span class="text-[11px] text-gray-500 font-bold whitespace-nowrap">${song.playCount}회</span>
                 `;
                 div.addEventListener('click', () => { openPlayer(index); fullChartView.classList.add('translate-x-full'); });
                 fullChartList.appendChild(div);
@@ -1257,6 +1284,52 @@
         if(btnMoreWeeklyChart) btnMoreWeeklyChart.onclick = () => weeklyFullChartView.classList.remove('translate-x-full');
         if(btnCloseWeeklyChart) btnCloseWeeklyChart.onclick = () => weeklyFullChartView.classList.add('translate-x-full');
         btnPlayAll.onclick = () => { openPlayer(0); };
+        if(btnPlayAllWeekly) {
+            btnPlayAllWeekly.onclick = () => {
+                const targetPrevWeekId = getPrevWeekId(); 
+                let weeklySongs = [...songs].map(s => {
+                    const data = latestWeeklyStats[s.id] || {};
+                    let displayCount = 0;
+                    if (data.lastWeekId === targetPrevWeekId) { displayCount = data.lastWeekCount || 0; }
+                    else if (data.thisWeekId === targetPrevWeekId) { displayCount = data.thisWeekCount || 0; }
+                    return { ...s, weeklyCount: displayCount };
+                });
+                weeklySongs.sort((a, b) => { if (a.isNew && !b.isNew) return -1; if (!a.isNew && b.isNew) return 1; return b.weeklyCount - a.weeklyCount; });
+                if(weeklySongs.length > 0) {
+                    const originalIndex = songs.findIndex(s => s.id === weeklySongs[0].id);
+                    openPlayer(originalIndex);
+                }
+            };
+        }
+
+        if(tabRealtime && tabWeekly) {
+            tabRealtime.onclick = () => {
+                tabRealtime.classList.replace('text-gray-600', 'text-white');
+                tabRealtime.querySelector('span').classList.remove('opacity-0', 'hidden');
+                tabWeekly.classList.replace('text-white', 'text-gray-600');
+                tabWeekly.querySelector('span').classList.add('opacity-0', 'hidden');
+                
+                headerRealtime.classList.remove('hidden');
+                headerWeekly.classList.add('hidden');
+                panelRealtime.classList.remove('hidden');
+                panelRealtime.classList.add('block');
+                panelWeekly.classList.remove('block');
+                panelWeekly.classList.add('hidden');
+            };
+            tabWeekly.onclick = () => {
+                tabWeekly.classList.replace('text-gray-600', 'text-white');
+                tabWeekly.querySelector('span').classList.remove('opacity-0', 'hidden');
+                tabRealtime.classList.replace('text-white', 'text-gray-600');
+                tabRealtime.querySelector('span').classList.add('opacity-0', 'hidden');
+                
+                headerWeekly.classList.remove('hidden');
+                headerRealtime.classList.add('hidden');
+                panelWeekly.classList.remove('hidden');
+                panelWeekly.classList.add('block');
+                panelRealtime.classList.remove('block');
+                panelRealtime.classList.add('hidden');
+            };
+        }
 
         function getClientX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
         function onScrub(e) {
