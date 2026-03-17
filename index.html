@@ -519,12 +519,15 @@
             if (saved) lastRanking = JSON.parse(saved);
         } catch(e) {}
 
-        let chartData = { lastUpdated: 0, currentRanking: [], prevRanking: [], playCounts: {} };
+        let chartData = { lastUpdated: 0, currentRanking: [], prevRanking: [], playCounts: {}, rankChanges: {} };
         try {
             const saved = localStorage.getItem('chart_snapshot_v2');
             if (saved) {
                 const parsed = JSON.parse(saved);
-                if (parsed.currentRanking && parsed.playCounts) chartData = parsed;
+                if (parsed.currentRanking && parsed.playCounts) {
+                    chartData = parsed;
+                    if (!chartData.rankChanges) chartData.rankChanges = {};
+                }
             }
         } catch(e) {}
 
@@ -847,9 +850,25 @@
                 const newRankingIds = tempSongs.map(s => s.id);
                 const newPlayCounts = {};
                 tempSongs.forEach(s => newPlayCounts[s.id] = s.playCount);
+                
+                if (!chartData.rankChanges) chartData.rankChanges = {};
+                const newChanges = {};
+                if (chartData.currentRanking.length > 0) {
+                    newRankingIds.forEach((id, newIndex) => {
+                        const oldIndex = chartData.currentRanking.indexOf(id);
+                        if (oldIndex === -1) newChanges[id] = 'new';
+                        else if (newIndex < oldIndex) newChanges[id] = 'up';
+                        else if (newIndex > oldIndex) newChanges[id] = 'down';
+                        else newChanges[id] = chartData.rankChanges[id] || '-';
+                    });
+                } else {
+                    newRankingIds.forEach(id => newChanges[id] = '-');
+                }
+
                 chartData.prevRanking = chartData.currentRanking;
                 chartData.currentRanking = newRankingIds;
                 chartData.playCounts = newPlayCounts;
+                chartData.rankChanges = newChanges;
                 chartData.lastUpdated = now.getTime();
                 localStorage.setItem('chart_snapshot_v2', JSON.stringify(chartData));
             }
@@ -862,13 +881,7 @@
                 song.playCount = chartData.playCounts[song.id] || 0;
                 const releaseTime = new Date(song.releaseDate).getTime();
                 song.isNew = (Date.now() - releaseTime) < ONE_DAY;
-                let change = '-';
-                if (chartData.prevRanking.length > 0) {
-                    const oldIndex = chartData.prevRanking.indexOf(song.id);
-                    if (oldIndex === -1) change = 'new'; 
-                    else { if (index < oldIndex) change = 'up'; else if (index > oldIndex) change = 'down'; }
-                }
-                song.rankChange = change;
+                song.rankChange = chartData.rankChanges ? (chartData.rankChanges[song.id] || '-') : '-';
             });
             if(chartTime) chartTime.innerText = `${new Date(chartData.lastUpdated).getHours()}시 기준`;
             renderAll();
