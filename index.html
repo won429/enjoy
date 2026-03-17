@@ -519,7 +519,7 @@
             if (saved) lastRanking = JSON.parse(saved);
         } catch(e) {}
 
-        let chartData = { lastUpdated: 0, currentRanking: [], prevRanking: [], playCounts: {}, rankChanges: {} };
+        let chartData = { lastUpdated: 0, currentRanking: [], prevRanking: [], playCounts: {}, rankChanges: {}, rankChangeTimes: {} };
         try {
             const saved = localStorage.getItem('chart_snapshot_v2');
             if (saved) {
@@ -527,6 +527,7 @@
                 if (parsed.currentRanking && parsed.playCounts) {
                     chartData = parsed;
                     if (!chartData.rankChanges) chartData.rankChanges = {};
+                    if (!chartData.rankChangeTimes) chartData.rankChangeTimes = {};
                 }
             }
         } catch(e) {}
@@ -852,23 +853,49 @@
                 tempSongs.forEach(s => newPlayCounts[s.id] = s.playCount);
                 
                 if (!chartData.rankChanges) chartData.rankChanges = {};
+                if (!chartData.rankChangeTimes) chartData.rankChangeTimes = {};
                 const newChanges = {};
+                const newChangeTimes = {};
+                const ONE_WEEK = 7 * 24 * 3600 * 1000;
+                
                 if (chartData.currentRanking.length > 0) {
                     newRankingIds.forEach((id, newIndex) => {
                         const oldIndex = chartData.currentRanking.indexOf(id);
-                        if (oldIndex === -1) newChanges[id] = 'new';
-                        else if (newIndex < oldIndex) newChanges[id] = 'up';
-                        else if (newIndex > oldIndex) newChanges[id] = 'down';
-                        else newChanges[id] = chartData.rankChanges[id] || '-';
+                        if (oldIndex === -1) {
+                            newChanges[id] = 'new';
+                            newChangeTimes[id] = now.getTime();
+                        }
+                        else if (newIndex < oldIndex) {
+                            newChanges[id] = 'up';
+                            newChangeTimes[id] = now.getTime();
+                        }
+                        else if (newIndex > oldIndex) {
+                            newChanges[id] = 'down';
+                            newChangeTimes[id] = now.getTime();
+                        }
+                        else {
+                            const lastChangeTime = chartData.rankChangeTimes[id] || now.getTime();
+                            if (now.getTime() - lastChangeTime >= ONE_WEEK) {
+                                newChanges[id] = '-';
+                                newChangeTimes[id] = now.getTime();
+                            } else {
+                                newChanges[id] = chartData.rankChanges[id] || '-';
+                                newChangeTimes[id] = lastChangeTime;
+                            }
+                        }
                     });
                 } else {
-                    newRankingIds.forEach(id => newChanges[id] = '-');
+                    newRankingIds.forEach(id => {
+                        newChanges[id] = '-';
+                        newChangeTimes[id] = now.getTime();
+                    });
                 }
 
                 chartData.prevRanking = chartData.currentRanking;
                 chartData.currentRanking = newRankingIds;
                 chartData.playCounts = newPlayCounts;
                 chartData.rankChanges = newChanges;
+                chartData.rankChangeTimes = newChangeTimes;
                 chartData.lastUpdated = now.getTime();
                 localStorage.setItem('chart_snapshot_v2', JSON.stringify(chartData));
             }
