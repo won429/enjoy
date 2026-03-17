@@ -489,6 +489,7 @@
         } catch (e) { console.error("Firebase init failed:", e); }
 
         let songs = [
+            { id: 17, title: "Cool On Replay", artist: "엔조이", src: "./music12.mp3", cover: "./cover16.jpg", lrc: "./music12.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2026-03-18' },
             { id: 8, title: "하이 스피드 러브", artist: "출장엔조이 OST", src: "./music11.mp3", cover: "./cover7.jpg", lrc: "./music11.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-01-26' },
             { id: 13, title: "똥을 싸고 손을 씻자", artist: "엔조이", src: "./music7.mp3", cover: "./cover12.jpg", lrc: "./music7.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-11-26' },
             { id: 14, title: "미친 밤", artist: "엔조이", src: "./music8.mp3", cover: "./cover13.jpg", lrc: "./music8.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-11-26' },
@@ -902,7 +903,14 @@
 
         function renderNewAlbumList() {
             newAlbumList.innerHTML = '';
-            const sortedByNewest = [...songs].sort((a, b) => {
+            
+            // 최신 앨범 칸에만 보여줄 곡 필터링 (명령한 4곡만)
+            const allowedInNewAlbum = ["Cool On Replay", "하이 스피드 러브", "우리는 엔조이", "너의 세상"];
+            const newAlbumSongs = songs.filter(s => allowedInNewAlbum.includes(s.title));
+            
+            const sortedByNewest = newAlbumSongs.sort((a, b) => {
+                if (a.title === 'Cool On Replay') return -1;
+                if (b.title === 'Cool On Replay') return 1;
                 if (a.title === '하이 스피드 러브') return -1;
                 if (b.title === '하이 스피드 러브') return 1;
                 return b.id - a.id;
