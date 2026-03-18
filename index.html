@@ -1857,12 +1857,14 @@
             tabs.forEach((item) => {
                 item.tab.onclick = () => {
                     tabs.forEach(t => {
-                        t.tab.classList.replace('text-white', 'text-gray-600');
+                        t.tab.classList.remove('text-white');
+                        t.tab.classList.add('text-gray-600', 'hover:text-gray-400');
                         t.tab.querySelector('span').classList.add('opacity-0', 'hidden');
                         t.header.classList.add('hidden');
                         t.panel.classList.replace('block', 'hidden');
                     });
-                    item.tab.classList.replace('text-gray-600', 'text-white');
+                    item.tab.classList.remove('text-gray-600', 'hover:text-gray-400');
+                    item.tab.classList.add('text-white');
                     item.tab.querySelector('span').classList.remove('opacity-0', 'hidden');
                     item.header.classList.remove('hidden');
                     item.panel.classList.replace('hidden', 'block');
