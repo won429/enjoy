@@ -188,7 +188,18 @@
             </div>
         </div>
 
-        <!-- 전체 차트 뷰 -->
+        <!-- 실시간 차트 전체 뷰 -->
+        <div id="hourly-full-chart-view" class="absolute inset-0 z-[120] bg-black transform translate-x-full transition-transform duration-300 flex flex-col h-full">
+            <div class="pt-safe px-5 pb-4 flex items-center gap-3 bg-black/80 backdrop-blur-xl sticky top-0 z-10 border-b border-white/[0.05]">
+                <button id="btn-close-hourly-chart" class="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-white hover:bg-white/10 active:scale-95 transition-all">
+                    <i class="fa-solid fa-chevron-left text-lg"></i>
+                </button>
+                <h2 class="text-[22px] font-black text-white tracking-tight">실시간 차트</h2>
+            </div>
+            <div id="hourly-full-chart-list" class="flex-1 overflow-y-auto px-0 pb-32 pt-2"></div>
+        </div>
+
+        <!-- 전체 인기 차트 뷰 -->
         <div id="full-chart-view" class="absolute inset-0 z-[120] bg-black transform translate-x-full transition-transform duration-300 flex flex-col h-full">
             <div class="pt-safe px-5 pb-4 flex items-center gap-3 bg-black/80 backdrop-blur-xl sticky top-0 z-10 border-b border-white/[0.05]">
                 <button id="btn-close-chart" class="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-white hover:bg-white/10 active:scale-95 transition-all">
@@ -245,14 +256,23 @@
                 <div class="mb-12">
                     <div class="flex justify-between items-end mb-5 px-1">
                         <!-- 탭 메뉴 -->
-                        <div class="flex items-center gap-4">
-                            <button id="tab-realtime" class="text-[22px] font-black text-white tracking-tight leading-none transition-all">인기 차트<span class="text-[#3182F6] transition-opacity duration-300">.</span></button>
-                            <button id="tab-weekly" class="text-[22px] font-black text-gray-600 tracking-tight leading-none transition-all hover:text-gray-400">주간 차트<span class="text-[#3182F6] opacity-0 hidden transition-opacity duration-300">.</span></button>
+                        <div class="flex items-center gap-4 overflow-x-auto scrollbar-hide shrink-0 max-w-[65%]">
+                            <button id="tab-hourly" class="text-[22px] font-black text-white tracking-tight leading-none transition-all whitespace-nowrap">실시간 차트<span class="text-[#3182F6] transition-opacity duration-300">.</span></button>
+                            <button id="tab-realtime" class="text-[22px] font-black text-gray-600 tracking-tight leading-none transition-all hover:text-gray-400 whitespace-nowrap">인기 차트<span class="text-[#3182F6] opacity-0 hidden transition-opacity duration-300">.</span></button>
+                            <button id="tab-weekly" class="text-[22px] font-black text-gray-600 tracking-tight leading-none transition-all hover:text-gray-400 whitespace-nowrap">주간 차트<span class="text-[#3182F6] opacity-0 hidden transition-opacity duration-300">.</span></button>
                         </div>
                         
                         <!-- 실시간 차트 헤더 우측 -->
-                        <div id="header-realtime" class="flex flex-col items-end gap-1.5 transition-all">
-                            <span id="chart-time" class="text-[11px] font-bold text-[#3182F6] tracking-wider uppercase">--시 기준</span>
+                        <div id="header-hourly" class="flex flex-col items-end gap-1.5 transition-all">
+                            <span id="hourly-chart-time" class="text-[11px] font-bold text-[#3182F6] tracking-wider uppercase">--시 기준</span>
+                            <button id="btn-play-all-hourly" class="text-[11px] text-white font-bold bg-[#3182F6] px-3.5 py-1.5 rounded-full active:scale-95 transition-transform flex items-center gap-1.5 shadow-[0_4px_12px_rgba(49,130,246,0.3)] hover:bg-[#2563EB]">
+                                <i class="fa-solid fa-play text-[9px]"></i> 전체 재생
+                            </button>
+                        </div>
+
+                        <!-- 인기 차트 헤더 우측 -->
+                        <div id="header-realtime" class="flex flex-col items-end gap-1.5 hidden transition-all">
+                            <span id="chart-time" class="text-[11px] font-bold text-[#3182F6] tracking-wider uppercase">--월 --일 기준</span>
                             <button id="btn-play-all" class="text-[11px] text-white font-bold bg-[#3182F6] px-3.5 py-1.5 rounded-full active:scale-95 transition-transform flex items-center gap-1.5 shadow-[0_4px_12px_rgba(49,130,246,0.3)] hover:bg-[#2563EB]">
                                 <i class="fa-solid fa-play text-[9px]"></i> 전체 재생
                             </button>
@@ -268,7 +288,15 @@
                     </div>
 
                     <!-- 실시간 차트 패널 -->
-                    <div id="panel-realtime" class="block fade-in">
+                    <div id="panel-hourly" class="block fade-in">
+                        <div id="hourly-chart-slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3 px-1 pb-2"></div>
+                        <button id="btn-more-hourly-chart" class="w-full mt-4 py-3.5 text-[13px] text-white font-bold bg-white/[0.05] border border-white/[0.05] rounded-[18px] hover:bg-white/10 transition-colors">
+                            실시간 차트 전체보기
+                        </button>
+                    </div>
+
+                    <!-- 인기 차트 패널 -->
+                    <div id="panel-realtime" class="hidden fade-in">
                         <div id="chart-slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3 px-1 pb-2"></div>
                         <button id="btn-more-chart" class="w-full mt-4 py-3.5 text-[13px] text-white font-bold bg-white/[0.05] border border-white/[0.05] rounded-[18px] hover:bg-white/10 transition-colors">
                             인기 차트 전체보기
@@ -510,7 +538,7 @@
             { name: "전시기", type: 'icon' },
             { name: "성심당", type: 'icon' },
             { name: "엔쪽이 OST", type: 'image', image: './cover.jpg' },
-            { name: "그날, 엔조이 이야기 OST", type: 'image', image: './cover3.jpg' }
+            { name: "그날, 전조이 이야기 OST", type: 'image', image: './cover3.jpg' }
         ];
 
         let lastRanking = [];
@@ -519,6 +547,7 @@
             if (saved) lastRanking = JSON.parse(saved);
         } catch(e) {}
 
+        // 인기 차트 (Daily) 데이터
         let chartData = { lastUpdated: 0, currentRanking: [], prevRanking: [], playCounts: {}, rankChanges: {}, rankChangeTimes: {} };
         try {
             const saved = localStorage.getItem('chart_snapshot_v2');
@@ -529,6 +558,16 @@
                     if (!chartData.rankChanges) chartData.rankChanges = {};
                     if (!chartData.rankChangeTimes) chartData.rankChangeTimes = {};
                 }
+            }
+        } catch(e) {}
+
+        // 실시간 차트 (Hourly) 데이터
+        let hourlyChartData = { lastUpdated: 0, currentRanking: [], prevRanking: [], playCounts: {}, rankChanges: {} };
+        try {
+            const saved = localStorage.getItem('hourly_chart_snapshot');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.currentRanking && parsed.playCounts) hourlyChartData = parsed;
             }
         } catch(e) {}
 
@@ -554,31 +593,50 @@
         let unsubscribeSnapshot = null;
         let latestSongStats = {};
         let latestWeeklyStats = {}; 
+        let latestDailyStats = {};
         
         let currentLyrics = [];
         let isLyricsOpen = false;
         let isPlayerVisible = false;
 
         const audio = document.getElementById('audio');
+        
+        // 차트 UI 요소
+        const hourlyChartSlider = document.getElementById('hourly-chart-slider');
+        const hourlyChartTime = document.getElementById('hourly-chart-time');
+        const hourlyFullChartView = document.getElementById('hourly-full-chart-view');
+        const hourlyFullChartList = document.getElementById('hourly-full-chart-list');
+        const btnMoreHourlyChart = document.getElementById('btn-more-hourly-chart');
+        const btnCloseHourlyChart = document.getElementById('btn-close-hourly-chart');
+        const btnPlayAllHourly = document.getElementById('btn-play-all-hourly');
+
         const chartSlider = document.getElementById('chart-slider');
-        const weeklyChartSlider = document.getElementById('weekly-chart-slider'); 
-        const weeklyChartTime = document.getElementById('weekly-chart-time'); 
+        const chartTime = document.getElementById('chart-time');
         const fullChartView = document.getElementById('full-chart-view');
         const fullChartList = document.getElementById('full-chart-list');
-        const weeklyFullChartView = document.getElementById('weekly-full-chart-view'); 
-        const weeklyFullChartList = document.getElementById('weekly-full-chart-list'); 
         const btnMoreChart = document.getElementById('btn-more-chart');
         const btnCloseChart = document.getElementById('btn-close-chart');
+        const btnPlayAll = document.getElementById('btn-play-all'); 
+
+        const weeklyChartSlider = document.getElementById('weekly-chart-slider'); 
+        const weeklyChartTime = document.getElementById('weekly-chart-time'); 
+        const weeklyFullChartView = document.getElementById('weekly-full-chart-view'); 
+        const weeklyFullChartList = document.getElementById('weekly-full-chart-list'); 
         const btnMoreWeeklyChart = document.getElementById('btn-more-weekly-chart'); 
         const btnCloseWeeklyChart = document.getElementById('btn-close-weekly-chart'); 
-        const btnPlayAll = document.getElementById('btn-play-all'); 
         const btnPlayAllWeekly = document.getElementById('btn-play-all-weekly');
+        
         const newAlbumList = document.getElementById('new-album-list');
         
+        const tabHourly = document.getElementById('tab-hourly');
         const tabRealtime = document.getElementById('tab-realtime');
         const tabWeekly = document.getElementById('tab-weekly');
+        
+        const headerHourly = document.getElementById('header-hourly');
         const headerRealtime = document.getElementById('header-realtime');
         const headerWeekly = document.getElementById('header-weekly');
+        
+        const panelHourly = document.getElementById('panel-hourly');
         const panelRealtime = document.getElementById('panel-realtime');
         const panelWeekly = document.getElementById('panel-weekly');
 
@@ -620,7 +678,6 @@
         const timeCurr = document.getElementById('player-time-current');
         const timeDur = document.getElementById('player-time-duration');
         const playerBgImage = document.getElementById('player-bg-image');
-        const chartTime = document.getElementById('chart-time');
         const lyricsOverlay = document.getElementById('lyrics-overlay');
         const lyricsContent = document.getElementById('lyrics-content');
         const lyricsCover = document.getElementById('lyrics-cover');
@@ -662,6 +719,11 @@
             const month = now.getMonth() + 1;
             const date = now.getDate();
             if (chartTime) chartTime.innerText = `${month}월 ${date}일 기준`;
+        }
+        
+        function getTodayId() {
+            const now = new Date();
+            return `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
         }
 
         function getWeekNumber(d) {
@@ -825,7 +887,7 @@
             if (unsubscribeSnapshot) unsubscribeSnapshot();
             const safeAppId = appId || 'default-app-id';
             
-            // 서버에 저장된 전체 유저 공통 차트 배지 기록 불러오기 (크로스 디바이스/캐시 초기화 완벽 방어)
+            // 인기 차트 (Daily) 상태 동기화
             const snapshotRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'config', 'chart_state');
             onSnapshot(snapshotRef, (docSnap) => {
                 if (docSnap.exists()) {
@@ -840,6 +902,21 @@
                 }
             }, (err) => console.warn(err));
 
+            // 실시간 차트 (Hourly) 상태 동기화
+            const hourlySnapshotRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'config', 'hourly_chart_state');
+            onSnapshot(hourlySnapshotRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.lastUpdated >= (hourlyChartData.lastUpdated || 0)) {
+                        hourlyChartData = data;
+                        if (!hourlyChartData.rankChanges) hourlyChartData.rankChanges = {};
+                        localStorage.setItem('hourly_chart_snapshot', JSON.stringify(hourlyChartData));
+                        renderAll();
+                    }
+                }
+            }, (err) => console.warn(err));
+
+            // 인기 차트 데이터 리스너
             const statsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'song_stats');
             unsubscribeSnapshot = onSnapshot(statsRef, (snapshot) => {
                 const isCache = snapshot.metadata.fromCache;
@@ -848,6 +925,7 @@
                 updateRankings(isCache);
             }, (error) => { console.warn("Snapshot error:", error); renderAll(); });
             
+            // 주간 차트 데이터 리스너
             const weeklyStatsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'weekly_stats');
             onSnapshot(weeklyStatsRef, (snapshot) => {
                 latestWeeklyStats = {};
@@ -855,20 +933,112 @@
                 renderWeeklyChart();
                 renderFullWeeklyChartList(); 
             });
+
+            // 실시간(Hourly) 차트 데일리 리셋 리스너
+            const dailyStatsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'daily_stats');
+            onSnapshot(dailyStatsRef, (snapshot) => {
+                const isCache = snapshot.metadata.fromCache;
+                latestDailyStats = {};
+                const todayId = getTodayId();
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.dateId === todayId) {
+                        latestDailyStats[doc.id] = data.count || 0;
+                    } else {
+                        latestDailyStats[doc.id] = 0;
+                    }
+                });
+                updateHourlyRankings(isCache);
+            });
         }
 
+        // --- 새롭게 추가된 실시간 차트(Hourly) 산정 로직 ---
+        function updateHourlyRankings(isCache = false) {
+            const now = new Date();
+            const todayId = getTodayId();
+            const lastUpdateDate = new Date(hourlyChartData.lastUpdated || 0);
+            
+            const dayChanged = now.getFullYear() !== lastUpdateDate.getFullYear() || 
+                               now.getMonth() !== lastUpdateDate.getMonth() || 
+                               now.getDate() !== lastUpdateDate.getDate();
+                               
+            const needsUpdate = dayChanged || now.getHours() !== lastUpdateDate.getHours() || hourlyChartData.currentRanking.length === 0;
+            
+            if (needsUpdate) {
+                if (isCache) return; 
+
+                const tempSongs = [...songs];
+                tempSongs.forEach(s => { s.hourlyCount = latestDailyStats[s.id] || 0; });
+                
+                // 순위 산정: 조회수가 같으면 (ex: 자정 리셋 시 0) 무조건 전 시간대 순위를 그대로 보존
+                tempSongs.sort((a, b) => { 
+                    if (b.hourlyCount !== a.hourlyCount) return b.hourlyCount - a.hourlyCount; 
+                    const idxA = hourlyChartData.currentRanking.indexOf(a.id);
+                    const idxB = hourlyChartData.currentRanking.indexOf(b.id);
+                    const validA = idxA !== -1 ? idxA : 999;
+                    const validB = idxB !== -1 ? idxB : 999;
+                    if (validA !== validB) return validA - validB;
+                    return a.id - b.id;
+                });
+                
+                const newRankingIds = tempSongs.map(s => s.id);
+                const newPlayCounts = {};
+                tempSongs.forEach(s => newPlayCounts[s.id] = s.hourlyCount);
+
+                if (!hourlyChartData.rankChanges) hourlyChartData.rankChanges = {};
+                const newChanges = {};
+
+                if (dayChanged) {
+                    // 하루가 지나면 조회수 초기화 + 배지 리셋
+                    newRankingIds.forEach(id => { newChanges[id] = '-'; });
+                } else if (hourlyChartData.currentRanking.length > 0) {
+                    const validOldRanking = hourlyChartData.currentRanking.filter(oldId => songs.some(s => s.id === oldId));
+                    newRankingIds.forEach((id, newIndex) => {
+                        const oldIndex = validOldRanking.indexOf(id);
+                        const prevChange = hourlyChartData.rankChanges[id] || '-';
+
+                        if (oldIndex === -1) newChanges[id] = 'new';
+                        else if (newIndex < oldIndex) newChanges[id] = 'up';
+                        else if (newIndex > oldIndex) newChanges[id] = 'down';
+                        else newChanges[id] = prevChange; // 변동 없으면 배지 그대로 유지
+                    });
+                } else {
+                    newRankingIds.forEach(id => { newChanges[id] = '-'; });
+                }
+
+                hourlyChartData.prevRanking = hourlyChartData.currentRanking;
+                hourlyChartData.currentRanking = newRankingIds;
+                hourlyChartData.playCounts = newPlayCounts;
+                hourlyChartData.rankChanges = newChanges;
+                hourlyChartData.lastUpdated = now.getTime();
+                
+                localStorage.setItem('hourly_chart_snapshot', JSON.stringify(hourlyChartData));
+                
+                if (auth && auth.currentUser) {
+                    const safeAppId = appId || 'default-app-id';
+                    const snapshotRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'config', 'hourly_chart_state');
+                    setDoc(snapshotRef, hourlyChartData, { merge: true }).catch(e => console.warn(e));
+                }
+            }
+            
+            const updatedDate = new Date(hourlyChartData.lastUpdated || now);
+            if(hourlyChartTime) hourlyChartTime.innerText = `${updatedDate.getHours()}시 기준`;
+            
+            renderAll();
+        }
+
+        // --- 기존 인기 차트 (Daily) 산정 로직 ---
         function updateRankings(isCache = false) {
             const now = new Date();
             const lastUpdateDate = new Date(chartData.lastUpdated || 0);
             
-            // 시간대별 업데이트 로직을 삭제하고 하루(일간) 기준으로만 순위 변동을 산정
             const needsUpdate = now.getFullYear() !== lastUpdateDate.getFullYear() || 
                                 now.getMonth() !== lastUpdateDate.getMonth() || 
                                 now.getDate() !== lastUpdateDate.getDate() || 
                                 chartData.currentRanking.length === 0;
             
             if (needsUpdate) {
-                if (isCache) return; // 불완전한 캐시 데이터로 순위를 잘못 계산하는 현상 방지 (서버 진짜 데이터 대기)
+                if (isCache) return; 
                 
                 const tempSongs = [...songs];
                 tempSongs.forEach(s => { s.playCount = latestSongStats[s.id] || 0; });
@@ -929,7 +1099,6 @@
                 
                 localStorage.setItem('chart_snapshot_v2', JSON.stringify(chartData));
                 
-                // 새로운 시간에 차트가 갱신되면 서버에 영구 동기화하여 모든 유저가 동일한 배지를 공유하도록 처리
                 if (auth && auth.currentUser) {
                     const safeAppId = appId || 'default-app-id';
                     const snapshotRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'config', 'chart_state');
@@ -957,16 +1126,31 @@
             if (!auth || !auth.currentUser) return;
             const safeAppId = appId || 'default-app-id';
             const currentWeekId = updateWeeklyChartTime();
+            
+            // 기존 조회수 통계 업데이트
             const docRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'song_stats', String(songId));
             const weeklyDocRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'weekly_stats', String(songId));
+            // 새로운 실시간(Daily Reset) 통계 업데이트
+            const dailyDocRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'daily_stats', String(songId));
+            const todayId = getTodayId();
+
             try { 
                 await setDoc(docRef, { count: increment(1) }, { merge: true }); 
+                
                 const weeklySnap = await getDoc(weeklyDocRef);
                 if (weeklySnap.exists()) {
                     const data = weeklySnap.data();
                     if (data.thisWeekId === currentWeekId) { await updateDoc(weeklyDocRef, { thisWeekCount: increment(1) }); }
                     else { await setDoc(weeklyDocRef, { thisWeekId: currentWeekId, thisWeekCount: 1, lastWeekId: data.thisWeekId || "", lastWeekCount: data.thisWeekCount || 0 }, { merge: true }); }
                 } else { await setDoc(weeklyDocRef, { thisWeekId: currentWeekId, thisWeekCount: 1, lastWeekId: "", lastWeekCount: 0 }); }
+
+                const dailySnap = await getDoc(dailyDocRef);
+                if (dailySnap.exists()) {
+                    const data = dailySnap.data();
+                    if (data.dateId === todayId) { await updateDoc(dailyDocRef, { count: increment(1) }); }
+                    else { await setDoc(dailyDocRef, { dateId: todayId, count: 1 }, { merge: true }); }
+                } else { await setDoc(dailyDocRef, { dateId: todayId, count: 1 }); }
+
             } catch (e) { console.error("Inc failed", e); }
         }
 
@@ -979,12 +1163,31 @@
             return html;
         }
 
-        function renderAll() { renderNewAlbumList(); renderWeeklyChart(); renderChartList(); renderFullChartList(); renderFullWeeklyChartList(); renderComingSoonList(); renderArtistList(); }
+        function getHourlyRankHTML(song) {
+            const change = hourlyChartData.rankChanges ? (hourlyChartData.rankChanges[song.id] || '-') : '-';
+            let html = '';
+            if (song.isNew) html += `<span class="rank-badge-new">NEW</span>`;
+            if (change === 'up') html += `<span class="rank-badge-up"><i class="fa-solid fa-caret-up"></i></span>`;
+            else if (change === 'down') html += `<span class="rank-badge-down"><i class="fa-solid fa-caret-down"></i></span>`;
+            else if (!song.isNew) html += `<span class="text-gray-600 text-[10px]"><i class="fa-solid fa-minus"></i></span>`;
+            return html;
+        }
+
+        function renderAll() { 
+            renderNewAlbumList(); 
+            renderHourlyChart();
+            renderWeeklyChart(); 
+            renderChartList(); 
+            renderFullHourlyChartList();
+            renderFullChartList(); 
+            renderFullWeeklyChartList(); 
+            renderComingSoonList(); 
+            renderArtistList(); 
+        }
 
         function renderNewAlbumList() {
             newAlbumList.innerHTML = '';
             
-            // 최신 앨범 칸에만 보여줄 곡 필터링
             const allowedInNewAlbum = ["번역 못 할 사이", "Cool On Replay", "하이 스피드 러브", "우리는 엔조이", "너의 세상"];
             const newAlbumSongs = songs.filter(s => allowedInNewAlbum.includes(s.title));
             
@@ -1012,6 +1215,46 @@
                 div.addEventListener('click', () => openPlayer(originalIndex));
                 newAlbumList.appendChild(div);
             });
+        }
+
+        function renderHourlyChart() {
+            if(!hourlyChartSlider) return;
+            hourlyChartSlider.innerHTML = '';
+            
+            let orderedSongs = [];
+            hourlyChartData.currentRanking.forEach(id => { const song = songs.find(s => s.id === id); if (song) orderedSongs.push(song); });
+            songs.forEach(s => { if (!hourlyChartData.currentRanking.includes(s.id)) orderedSongs.push(s); });
+            
+            const chunkSize = 3;
+            for (let i = 0; i < orderedSongs.length; i += chunkSize) {
+                const chunk = orderedSongs.slice(i, i + chunkSize);
+                const slide = document.createElement('div');
+                slide.className = "min-w-[90%] snap-start flex flex-col gap-2"; 
+                chunk.forEach((song, idx) => {
+                    const realIndex = i + idx;
+                    const rank = realIndex + 1;
+                    const rankColorClass = rank <= 3 ? "text-white" : "text-gray-400";
+                    const originalIndex = songs.findIndex(s => s.id === song.id);
+                    const item = document.createElement('div');
+                    item.className = "flex items-center gap-4 p-2.5 rounded-[20px] bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.02] active:scale-[0.98] transition-all cursor-pointer group";
+                    item.innerHTML = `
+                        <div class="flex flex-col items-center justify-center w-7 mr-0">
+                            <span class="${rankColorClass} text-[17px] font-black leading-none mb-1 opacity-90">${rank}</span>
+                            <div class="flex flex-col items-center gap-0.5">${getHourlyRankHTML(song)}</div>
+                        </div>
+                        <div class="w-[52px] h-[52px] rounded-[16px] bg-gray-900 overflow-hidden relative flex-shrink-0 shadow-md border border-white/10 group-hover:shadow-blue-500/20 transition-all">
+                            <img src="${song.cover}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 min-w-0 pr-2">
+                            <h3 class="text-[15px] font-bold text-white truncate mb-0.5 group-hover:text-[#3182F6] transition-colors">${song.title}</h3>
+                            <p class="text-[12px] text-gray-400 truncate font-medium">${song.artist}</p>
+                        </div>
+                    `;
+                    item.addEventListener('click', () => openPlayer(originalIndex));
+                    slide.appendChild(item);
+                });
+                hourlyChartSlider.appendChild(slide);
+            }
         }
 
         function renderChartList() {
@@ -1088,6 +1331,40 @@
                 });
                 weeklyChartSlider.appendChild(slide);
             }
+        }
+
+        function renderFullHourlyChartList() {
+            if(!hourlyFullChartList) return;
+            hourlyFullChartList.innerHTML = '';
+            
+            let orderedSongs = [];
+            hourlyChartData.currentRanking.forEach(id => { const song = songs.find(s => s.id === id); if (song) orderedSongs.push(song); });
+            songs.forEach(s => { if (!hourlyChartData.currentRanking.includes(s.id)) orderedSongs.push(s); });
+            
+            orderedSongs.forEach((song, index) => {
+                const originalIndex = songs.findIndex(s => s.id === song.id);
+                const rank = index + 1;
+                const rankColorClass = rank <= 3 ? "text-white" : "text-gray-400";
+                const hourlyCount = latestDailyStats[song.id] || 0;
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-4 px-5 py-3 hover:bg-white/[0.04] active:bg-white/[0.06] transition-all cursor-pointer group";
+                div.innerHTML = `
+                    <div class="flex flex-col items-center justify-center w-7 mr-0 flex-shrink-0">
+                        <span class="${rankColorClass} text-[17px] font-black leading-none mb-1 opacity-90">${rank}</span>
+                        <div class="flex flex-col items-center gap-0.5">${getHourlyRankHTML(song)}</div>
+                    </div>
+                    <div class="w-[52px] h-[52px] rounded-[16px] bg-gray-900 overflow-hidden relative flex-shrink-0 shadow-md border border-white/10 group-hover:shadow-blue-500/20 transition-all">
+                        <img src="${song.cover}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 min-w-0 pr-2 flex flex-col justify-center">
+                        <h3 class="text-[15px] font-bold text-white truncate mb-0.5 group-hover:text-[#3182F6] transition-colors">${song.title}</h3>
+                        <p class="text-[12px] text-gray-400 truncate font-medium">${song.artist}</p>
+                    </div>
+                    <span class="text-[11px] text-gray-500 font-bold whitespace-nowrap">${hourlyCount}회</span>
+                `;
+                div.addEventListener('click', () => { openPlayer(originalIndex); hourlyFullChartView.classList.add('translate-x-full'); });
+                hourlyFullChartList.appendChild(div);
+            });
         }
 
         function renderFullWeeklyChartList() {
@@ -1407,15 +1684,13 @@
             updatePillState(); 
         };
         
-        // 클릭(터치)으로도 닫을 수 있게 유지하되, 쓸어내리기 방해 요소 제거
         document.getElementById('btn-minimize').onclick = closePlayerScreen;
         
-        // 터치 및 마우스 드래그를 완벽하게 감지하는 향상된 쓸어내리기 로직
         let swipeStartY = 0;
         let isSwiping = false;
 
         const onSwipeStart = (e) => { 
-            if (e.target.tagName.toLowerCase() === 'input') return; // 진행바 드래그 시 닫힘 방지
+            if (e.target.tagName.toLowerCase() === 'input') return; 
             isSwiping = true;
             swipeStartY = e.type.includes('touch') ? e.touches[0].screenY : e.clientY; 
         };
@@ -1424,7 +1699,7 @@
             if (!isSwiping) return;
             isSwiping = false;
             const endY = e.type.includes('touch') ? e.changedTouches[0].screenY : e.clientY;
-            if (endY - swipeStartY > 40 && isPlayerVisible) { // 40px 이상 내리면 닫힘
+            if (endY - swipeStartY > 40 && isPlayerVisible) { 
                 closePlayerScreen();
             }
         };
@@ -1444,11 +1719,29 @@
 
         audio.addEventListener('ended', () => { if (isRepeat) { audio.currentTime = 0; audio.play(); } else { let nextIdx = currentIdx + 1; if (nextIdx < songs.length) openPlayer(nextIdx); else { togglePlay(false); audio.currentTime = 0; } } });
 
+        // 실시간 차트 전체보기
+        btnMoreHourlyChart.onclick = () => hourlyFullChartView.classList.remove('translate-x-full');
+        btnCloseHourlyChart.onclick = () => hourlyFullChartView.classList.add('translate-x-full');
+        
         btnMoreChart.onclick = () => fullChartView.classList.remove('translate-x-full');
         btnCloseChart.onclick = () => fullChartView.classList.add('translate-x-full');
+        
         if(btnMoreWeeklyChart) btnMoreWeeklyChart.onclick = () => weeklyFullChartView.classList.remove('translate-x-full');
         if(btnCloseWeeklyChart) btnCloseWeeklyChart.onclick = () => weeklyFullChartView.classList.add('translate-x-full');
+        
         btnPlayAll.onclick = () => { openPlayer(0); };
+        
+        if(btnPlayAllHourly) {
+            btnPlayAllHourly.onclick = () => {
+                let orderedSongs = [];
+                hourlyChartData.currentRanking.forEach(id => { const song = songs.find(s => s.id === id); if (song) orderedSongs.push(song); });
+                if(orderedSongs.length > 0) {
+                    const originalIndex = songs.findIndex(s => s.id === orderedSongs[0].id);
+                    openPlayer(originalIndex);
+                }
+            };
+        }
+
         if(btnPlayAllWeekly) {
             btnPlayAllWeekly.onclick = () => {
                 const targetPrevWeekId = getPrevWeekId(); 
@@ -1467,33 +1760,28 @@
             };
         }
 
-        if(tabRealtime && tabWeekly) {
-            tabRealtime.onclick = () => {
-                tabRealtime.classList.replace('text-gray-600', 'text-white');
-                tabRealtime.querySelector('span').classList.remove('opacity-0', 'hidden');
-                tabWeekly.classList.replace('text-white', 'text-gray-600');
-                tabWeekly.querySelector('span').classList.add('opacity-0', 'hidden');
-                
-                headerRealtime.classList.remove('hidden');
-                headerWeekly.classList.add('hidden');
-                panelRealtime.classList.remove('hidden');
-                panelRealtime.classList.add('block');
-                panelWeekly.classList.remove('block');
-                panelWeekly.classList.add('hidden');
-            };
-            tabWeekly.onclick = () => {
-                tabWeekly.classList.replace('text-gray-600', 'text-white');
-                tabWeekly.querySelector('span').classList.remove('opacity-0', 'hidden');
-                tabRealtime.classList.replace('text-white', 'text-gray-600');
-                tabRealtime.querySelector('span').classList.add('opacity-0', 'hidden');
-                
-                headerWeekly.classList.remove('hidden');
-                headerRealtime.classList.add('hidden');
-                panelWeekly.classList.remove('hidden');
-                panelWeekly.classList.add('block');
-                panelRealtime.classList.remove('block');
-                panelRealtime.classList.add('hidden');
-            };
+        // 탭 메뉴 컨트롤 로직 (실시간/인기/주간)
+        if(tabHourly && tabRealtime && tabWeekly) {
+            const tabs = [
+                { tab: tabHourly, header: headerHourly, panel: panelHourly },
+                { tab: tabRealtime, header: headerRealtime, panel: panelRealtime },
+                { tab: tabWeekly, header: headerWeekly, panel: panelWeekly }
+            ];
+
+            tabs.forEach((item) => {
+                item.tab.onclick = () => {
+                    tabs.forEach(t => {
+                        t.tab.classList.replace('text-white', 'text-gray-600');
+                        t.tab.querySelector('span').classList.add('opacity-0', 'hidden');
+                        t.header.classList.add('hidden');
+                        t.panel.classList.replace('block', 'hidden');
+                    });
+                    item.tab.classList.replace('text-gray-600', 'text-white');
+                    item.tab.querySelector('span').classList.remove('opacity-0', 'hidden');
+                    item.header.classList.remove('hidden');
+                    item.panel.classList.replace('hidden', 'block');
+                };
+            });
         }
 
         function getClientX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
