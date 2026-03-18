@@ -823,12 +823,30 @@
         function setupRealtimeListener() {
             if (unsubscribeSnapshot) unsubscribeSnapshot();
             const safeAppId = appId || 'default-app-id';
+            
+            // 서버에 저장된 전체 유저 공통 차트 배지 기록 불러오기 (크로스 디바이스/캐시 초기화 완벽 방어)
+            const snapshotRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'config', 'chart_state');
+            onSnapshot(snapshotRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.lastUpdated >= (chartData.lastUpdated || 0)) {
+                        chartData = data;
+                        if (!chartData.rankChanges) chartData.rankChanges = {};
+                        if (!chartData.rankChangeTimes) chartData.rankChangeTimes = {};
+                        localStorage.setItem('chart_snapshot_v2', JSON.stringify(chartData));
+                        renderAll();
+                    }
+                }
+            }, (err) => console.warn(err));
+
             const statsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'song_stats');
             unsubscribeSnapshot = onSnapshot(statsRef, (snapshot) => {
+                const isCache = snapshot.metadata.fromCache;
                 latestSongStats = {};
                 snapshot.forEach(doc => { latestSongStats[doc.id] = doc.data().count || 0; });
-                updateRankings();
+                updateRankings(isCache);
             }, (error) => { console.warn("Snapshot error:", error); renderAll(); });
+            
             const weeklyStatsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'weekly_stats');
             onSnapshot(weeklyStatsRef, (snapshot) => {
                 latestWeeklyStats = {};
@@ -838,13 +856,16 @@
             });
         }
 
-        function updateRankings() {
+        function updateRankings(isCache = false) {
             const now = new Date();
             const currentHour = now.getHours();
             const lastUpdateDate = new Date(chartData.lastUpdated || 0);
             const lastUpdateHour = lastUpdateDate.getHours();
             const needsUpdate = now.getDate() !== lastUpdateDate.getDate() || currentHour !== lastUpdateHour || chartData.currentRanking.length === 0;
+            
             if (needsUpdate) {
+                if (isCache) return; // 불완전한 캐시 데이터로 순위를 잘못 계산하는 현상 방지 (서버 진짜 데이터 대기)
+                
                 const tempSongs = [...songs];
                 tempSongs.forEach(s => { s.playCount = latestSongStats[s.id] || 0; });
                 tempSongs.sort((a, b) => { if (b.playCount !== a.playCount) return b.playCount - a.playCount; return a.id - b.id; });
@@ -859,8 +880,13 @@
                 const ONE_WEEK = 7 * 24 * 3600 * 1000;
                 
                 if (chartData.currentRanking.length > 0) {
+                    const validOldRanking = chartData.currentRanking.filter(oldId => songs.some(s => s.id === oldId));
+                    
                     newRankingIds.forEach((id, newIndex) => {
-                        const oldIndex = chartData.currentRanking.indexOf(id);
+                        const oldIndex = validOldRanking.indexOf(id);
+                        const prevChange = chartData.rankChanges[id] || '-';
+                        const prevTime = chartData.rankChangeTimes[id] || now.getTime();
+
                         if (oldIndex === -1) {
                             newChanges[id] = 'new';
                             newChangeTimes[id] = now.getTime();
@@ -874,13 +900,12 @@
                             newChangeTimes[id] = now.getTime();
                         }
                         else {
-                            const lastChangeTime = chartData.rankChangeTimes[id] || now.getTime();
-                            if (now.getTime() - lastChangeTime >= ONE_WEEK) {
+                            if (now.getTime() - prevTime >= ONE_WEEK) {
                                 newChanges[id] = '-';
                                 newChangeTimes[id] = now.getTime();
                             } else {
-                                newChanges[id] = chartData.rankChanges[id] || '-';
-                                newChangeTimes[id] = lastChangeTime;
+                                newChanges[id] = prevChange;
+                                newChangeTimes[id] = prevTime;
                             }
                         }
                     });
@@ -897,7 +922,15 @@
                 chartData.rankChanges = newChanges;
                 chartData.rankChangeTimes = newChangeTimes;
                 chartData.lastUpdated = now.getTime();
+                
                 localStorage.setItem('chart_snapshot_v2', JSON.stringify(chartData));
+                
+                // 새로운 시간에 차트가 갱신되면 서버에 영구 동기화하여 모든 유저가 동일한 배지를 공유하도록 처리
+                if (auth && auth.currentUser) {
+                    const safeAppId = appId || 'default-app-id';
+                    const snapshotRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'config', 'chart_state');
+                    setDoc(snapshotRef, chartData, { merge: true }).catch(e => console.warn(e));
+                }
             }
             const orderedSongs = [];
             chartData.currentRanking.forEach(id => { const song = songs.find(s => s.id === id); if (song) orderedSongs.push(song); });
@@ -910,7 +943,7 @@
                 song.isNew = (Date.now() - releaseTime) < ONE_DAY;
                 song.rankChange = chartData.rankChanges ? (chartData.rankChanges[song.id] || '-') : '-';
             });
-            if(chartTime) chartTime.innerText = `${new Date(chartData.lastUpdated).getHours()}시 기준`;
+            if(chartTime) chartTime.innerText = `${new Date(chartData.lastUpdated || now).getHours()}시 기준`;
             renderAll();
         }
 
