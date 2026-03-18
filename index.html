@@ -546,6 +546,9 @@
             { id: 6, title: "털어", artist: "엔조이", src: "./music6.mp3", cover: "./cover5.jpg", lrc: "./music6.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
             { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", lrc: "./music3.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" } 
         ];
+        
+        // 현재 선택된 재생목록
+        let currentPlaylist = songs;
 
         const artists = [
             { name: "출장엔조이 OST", type: 'image', image: './cover7.jpg' },
@@ -801,8 +804,7 @@
                 return s.artist.includes(artist.name);
             });
             if (artistSongs.length > 0) {
-                artistSongs.forEach(song => {
-                    const originalIndex = songs.findIndex(s => s.id === song.id);
+                artistSongs.forEach((song, idx) => {
                     const div = document.createElement('div');
                     div.className = "flex items-center gap-4 p-2.5 rounded-[20px] bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.02] active:scale-[0.98] transition-all cursor-pointer group";
                     div.innerHTML = `
@@ -817,7 +819,7 @@
                             <i class="fa-solid fa-play text-xs pl-0.5"></i>
                         </button>
                     `;
-                    div.onclick = () => { openPlayer(originalIndex); closeArtistModal(); };
+                    div.onclick = () => { openPlayer(idx, artistSongs); closeArtistModal(); };
                     artistSongList.appendChild(div);
                 });
             } else {
@@ -891,17 +893,17 @@
                 navigator.mediaSession.setActionHandler('pause', () => togglePlay(false));
                 navigator.mediaSession.setActionHandler('previoustrack', () => {
                      let prevIdx = currentIdx - 1;
-                     if (prevIdx < 0) prevIdx = songs.length - 1;
+                     if (prevIdx < 0) prevIdx = currentPlaylist.length - 1;
                      openPlayer(prevIdx);
                 });
                 navigator.mediaSession.setActionHandler('nexttrack', () => {
                     let nextIdx;
                     if (isShuffle) {
-                        nextIdx = Math.floor(Math.random() * songs.length);
-                        if (nextIdx === currentIdx && songs.length > 1) nextIdx = (nextIdx + 1) % songs.length;
+                        nextIdx = Math.floor(Math.random() * currentPlaylist.length);
+                        if (nextIdx === currentIdx && currentPlaylist.length > 1) nextIdx = (nextIdx + 1) % currentPlaylist.length;
                     } else {
                         nextIdx = currentIdx + 1;
-                        if (nextIdx >= songs.length) nextIdx = 0;
+                        if (nextIdx >= currentPlaylist.length) nextIdx = 0;
                     }
                     openPlayer(nextIdx);
                 });
@@ -1226,8 +1228,7 @@
                 if (b.title === '하이 스피드 러브') return 1;
                 return b.id - a.id;
             }); 
-            sortedByNewest.forEach((song) => {
-                const originalIndex = songs.findIndex(s => s.id === song.id);
+            sortedByNewest.forEach((song, idx) => {
                 const div = document.createElement('div');
                 div.className = "flex-shrink-0 w-[140px] group cursor-pointer snap-start";
                 div.innerHTML = `
@@ -1238,7 +1239,7 @@
                     <h3 class="text-[15px] font-bold text-white truncate px-1">${song.title}</h3>
                     <p class="text-[12px] text-gray-400 truncate font-medium mt-1 px-1">${song.artist}</p>
                 `;
-                div.addEventListener('click', () => openPlayer(originalIndex));
+                div.addEventListener('click', () => openPlayer(idx, sortedByNewest));
                 newAlbumList.appendChild(div);
             });
         }
@@ -1260,7 +1261,6 @@
                     const realIndex = i + idx;
                     const rank = realIndex + 1;
                     const rankColorClass = rank <= 3 ? "text-white" : "text-gray-400";
-                    const originalIndex = songs.findIndex(s => s.id === song.id);
                     const item = document.createElement('div');
                     item.className = "flex items-center gap-4 p-2.5 rounded-[20px] bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.02] active:scale-[0.98] transition-all cursor-pointer group";
                     item.innerHTML = `
@@ -1276,7 +1276,7 @@
                             <p class="text-[12px] text-gray-400 truncate font-medium">${song.artist}</p>
                         </div>
                     `;
-                    item.addEventListener('click', () => openPlayer(originalIndex));
+                    item.addEventListener('click', () => openPlayer(realIndex, orderedSongs));
                     slide.appendChild(item);
                 });
                 hourlyChartSlider.appendChild(slide);
@@ -1309,7 +1309,7 @@
                             <p class="text-[12px] text-gray-400 truncate font-medium">${song.artist}</p>
                         </div>
                     `;
-                    item.addEventListener('click', () => openPlayer(realIndex));
+                    item.addEventListener('click', () => openPlayer(realIndex, songs));
                     slide.appendChild(item);
                 });
                 chartSlider.appendChild(slide);
@@ -1333,8 +1333,8 @@
                 const slide = document.createElement('div');
                 slide.className = "min-w-[90%] snap-start flex flex-col gap-2"; 
                 chunk.forEach((song, idx) => {
-                    const originalIndex = songs.findIndex(s => s.id === song.id);
-                    const rank = i + idx + 1;
+                    const realIndex = i + idx;
+                    const rank = realIndex + 1;
                     const rankColorClass = rank <= 3 ? "text-white" : "text-gray-400";
                     const item = document.createElement('div');
                     item.className = "flex items-center gap-4 p-2.5 rounded-[20px] bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.02] active:scale-[0.98] transition-all cursor-pointer group";
@@ -1352,7 +1352,7 @@
                         </div>
                         <span class="text-[11px] text-gray-500 font-bold whitespace-nowrap pl-2">${song.weeklyCount}회</span>
                     `;
-                    item.addEventListener('click', () => openPlayer(originalIndex));
+                    item.addEventListener('click', () => openPlayer(realIndex, weeklySongs));
                     slide.appendChild(item);
                 });
                 weeklyChartSlider.appendChild(slide);
@@ -1368,7 +1368,6 @@
             songs.forEach(s => { if (!hourlyChartData.currentRanking.includes(s.id)) orderedSongs.push(s); });
             
             orderedSongs.forEach((song, index) => {
-                const originalIndex = songs.findIndex(s => s.id === song.id);
                 const rank = index + 1;
                 const rankColorClass = rank <= 3 ? "text-white" : "text-gray-400";
                 const hourlyCount = latestDailyStats[song.id] || 0;
@@ -1388,7 +1387,7 @@
                     </div>
                     <span class="text-[11px] text-gray-500 font-bold whitespace-nowrap">${hourlyCount}회</span>
                 `;
-                div.addEventListener('click', () => { openPlayer(originalIndex); hourlyFullChartView.classList.add('translate-x-full'); });
+                div.addEventListener('click', () => { openPlayer(index, orderedSongs); hourlyFullChartView.classList.add('translate-x-full'); });
                 hourlyFullChartList.appendChild(div);
             });
         }
@@ -1405,7 +1404,6 @@
             });
             weeklySongs.sort((a, b) => { if (a.isNew && !b.isNew) return -1; if (!a.isNew && b.isNew) return 1; return b.weeklyCount - a.weeklyCount; });
             weeklySongs.forEach((song, index) => {
-                const originalIndex = songs.findIndex(s => s.id === song.id);
                 const rank = index + 1;
                 const rankColorClass = rank <= 3 ? "text-white" : "text-gray-400";
                 const div = document.createElement('div');
@@ -1426,7 +1424,7 @@
                     </div>
                     <span class="text-[11px] text-gray-500 font-bold whitespace-nowrap">${song.weeklyCount}회</span>
                 `;
-                div.addEventListener('click', () => { openPlayer(originalIndex); weeklyFullChartView.classList.add('translate-x-full'); });
+                div.addEventListener('click', () => { openPlayer(index, weeklySongs); weeklyFullChartView.classList.add('translate-x-full'); });
                 weeklyFullChartList.appendChild(div);
             });
         }
@@ -1452,7 +1450,7 @@
                     </div>
                     <span class="text-[11px] text-gray-500 font-bold whitespace-nowrap">${song.playCount}회</span>
                 `;
-                div.addEventListener('click', () => { openPlayer(index); fullChartView.classList.add('translate-x-full'); });
+                div.addEventListener('click', () => { openPlayer(index, songs); fullChartView.classList.add('translate-x-full'); });
                 fullChartList.appendChild(div);
             });
         }
@@ -1634,7 +1632,7 @@
         });
 
         const loadSongData = async (index) => {
-            const song = songs[index];
+            const song = currentPlaylist[index];
             if (!song) return;
             audio.src = song.src;
             audio.dataset.songId = song.id; 
@@ -1665,7 +1663,10 @@
             } else lyricsContent.innerHTML = '<p class="text-gray-500 text-sm mt-20 text-center w-full">가사가 등록되지 않았습니다.</p>';
         };
 
-        const openPlayer = (index) => {
+        const openPlayer = (index, newPlaylist = null) => {
+            if (newPlaylist) {
+                currentPlaylist = newPlaylist;
+            }
             isPlayerVisible = true;
             activeTab = 'music';
             isPillOpen = false; 
@@ -1681,8 +1682,16 @@
                 miniPlayer.classList.remove('translate-y-[150%]'); 
                 updatePillState();
             });
-            if (currentIdx === index && !audio.paused) { playerScreen.classList.remove('translate-y-full'); return; }
-            const songToPlay = songs[index];
+            
+            if (!currentPlaylist[index]) return;
+            const songToPlay = currentPlaylist[index];
+            
+            if (audio.dataset.songId == songToPlay.id && !audio.paused && playerScreen.classList.contains('translate-y-full')) {
+                currentIdx = index;
+                playerScreen.classList.remove('translate-y-full'); 
+                return; 
+            }
+            
             incrementPlayCount(songToPlay.id);
             currentIdx = index;
             loadSongData(index);
@@ -1743,27 +1752,27 @@
         document.getElementById('btn-next').addEventListener('click', () => { 
             let nextIdx;
             if (isShuffle) {
-                nextIdx = Math.floor(Math.random() * songs.length);
-                if (nextIdx === currentIdx && songs.length > 1) nextIdx = (nextIdx + 1) % songs.length;
+                nextIdx = Math.floor(Math.random() * currentPlaylist.length);
+                if (nextIdx === currentIdx && currentPlaylist.length > 1) nextIdx = (nextIdx + 1) % currentPlaylist.length;
             } else {
                 nextIdx = currentIdx + 1;
-                if (nextIdx >= songs.length) nextIdx = 0;
+                if (nextIdx >= currentPlaylist.length) nextIdx = 0;
             }
             openPlayer(nextIdx); 
         });
-        document.getElementById('btn-prev').addEventListener('click', () => { let prevIdx = currentIdx - 1; if (prevIdx < 0) prevIdx = songs.length - 1; openPlayer(prevIdx); });
+        document.getElementById('btn-prev').addEventListener('click', () => { let prevIdx = currentIdx - 1; if (prevIdx < 0) prevIdx = currentPlaylist.length - 1; openPlayer(prevIdx); });
 
         audio.addEventListener('ended', () => { 
             if (isRepeat) { 
                 audio.currentTime = 0; audio.play(); 
             } else { 
                 if (isShuffle) {
-                    let nextIdx = Math.floor(Math.random() * songs.length);
-                    if (nextIdx === currentIdx && songs.length > 1) nextIdx = (nextIdx + 1) % songs.length;
+                    let nextIdx = Math.floor(Math.random() * currentPlaylist.length);
+                    if (nextIdx === currentIdx && currentPlaylist.length > 1) nextIdx = (nextIdx + 1) % currentPlaylist.length;
                     openPlayer(nextIdx);
                 } else {
                     let nextIdx = currentIdx + 1; 
-                    if (nextIdx < songs.length) openPlayer(nextIdx); 
+                    if (nextIdx < currentPlaylist.length) openPlayer(nextIdx); 
                     else { togglePlay(false); audio.currentTime = 0; } 
                 }
             } 
@@ -1779,16 +1788,16 @@
         if(btnMoreWeeklyChart) btnMoreWeeklyChart.onclick = () => weeklyFullChartView.classList.remove('translate-x-full');
         if(btnCloseWeeklyChart) btnCloseWeeklyChart.onclick = () => weeklyFullChartView.classList.add('translate-x-full');
         
-        btnPlayAll.onclick = () => { isShuffle = false; openPlayer(0); };
+        btnPlayAll.onclick = () => { isShuffle = false; openPlayer(0, songs); };
         
         if(btnPlayAllHourly) {
             btnPlayAllHourly.onclick = () => {
                 isShuffle = false;
                 let orderedSongs = [];
                 hourlyChartData.currentRanking.forEach(id => { const song = songs.find(s => s.id === id); if (song) orderedSongs.push(song); });
+                songs.forEach(s => { if (!hourlyChartData.currentRanking.includes(s.id)) orderedSongs.push(s); });
                 if(orderedSongs.length > 0) {
-                    const originalIndex = songs.findIndex(s => s.id === orderedSongs[0].id);
-                    openPlayer(originalIndex);
+                    openPlayer(0, orderedSongs);
                 }
             };
         }
@@ -1806,21 +1815,36 @@
                 });
                 weeklySongs.sort((a, b) => { if (a.isNew && !b.isNew) return -1; if (!a.isNew && b.isNew) return 1; return b.weeklyCount - a.weeklyCount; });
                 if(weeklySongs.length > 0) {
-                    const originalIndex = songs.findIndex(s => s.id === weeklySongs[0].id);
-                    openPlayer(originalIndex);
+                    openPlayer(0, weeklySongs);
                 }
             };
         }
 
-        const startAIPlay = () => {
+        const startAIPlay = (list) => {
             isShuffle = true;
-            let randomIdx = Math.floor(Math.random() * songs.length);
-            openPlayer(randomIdx);
+            let randomIdx = Math.floor(Math.random() * list.length);
+            openPlayer(randomIdx, list);
         };
 
-        if(btnShuffleHourly) btnShuffleHourly.onclick = startAIPlay;
-        if(btnShuffleRealtime) btnShuffleRealtime.onclick = startAIPlay;
-        if(btnShuffleWeekly) btnShuffleWeekly.onclick = startAIPlay;
+        if(btnShuffleHourly) btnShuffleHourly.onclick = () => {
+            let orderedSongs = [];
+            hourlyChartData.currentRanking.forEach(id => { const song = songs.find(s => s.id === id); if (song) orderedSongs.push(song); });
+            songs.forEach(s => { if (!hourlyChartData.currentRanking.includes(s.id)) orderedSongs.push(s); });
+            startAIPlay(orderedSongs);
+        };
+        if(btnShuffleRealtime) btnShuffleRealtime.onclick = () => startAIPlay(songs);
+        if(btnShuffleWeekly) btnShuffleWeekly.onclick = () => {
+            const targetPrevWeekId = getPrevWeekId(); 
+            let weeklySongs = [...songs].map(s => {
+                const data = latestWeeklyStats[s.id] || {};
+                let displayCount = 0;
+                if (data.lastWeekId === targetPrevWeekId) { displayCount = data.lastWeekCount || 0; }
+                else if (data.thisWeekId === targetPrevWeekId) { displayCount = data.thisWeekCount || 0; }
+                return { ...s, weeklyCount: displayCount };
+            });
+            weeklySongs.sort((a, b) => { if (a.isNew && !b.isNew) return -1; if (!a.isNew && b.isNew) return 1; return b.weeklyCount - a.weeklyCount; });
+            startAIPlay(weeklySongs);
+        };
 
         // 탭 메뉴 컨트롤 로직 (실시간/인기/주간)
         if(tabHourly && tabRealtime && tabWeekly) {
@@ -1890,7 +1914,7 @@
             const listEl = document.getElementById('current-playlist-list');
             if(!listEl) return;
             listEl.innerHTML = '';
-            songs.forEach((song, index) => {
+            currentPlaylist.forEach((song, index) => {
                 const div = document.createElement('div');
                 div.className = "flex items-center gap-4 px-5 py-3 hover:bg-white/[0.04] active:bg-white/[0.06] transition-all cursor-pointer group";
                 div.innerHTML = `
