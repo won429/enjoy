@@ -608,7 +608,6 @@
         let isDragging = false; 
         let isLiked = false; 
         let isRepeat = false;
-        let isShuffle = false;
         let songStats = {};
         let unsubscribeSnapshot = null;
         let latestSongStats = {};
@@ -897,14 +896,8 @@
                      openPlayer(prevIdx);
                 });
                 navigator.mediaSession.setActionHandler('nexttrack', () => {
-                    let nextIdx;
-                    if (isShuffle) {
-                        nextIdx = Math.floor(Math.random() * currentPlaylist.length);
-                        if (nextIdx === currentIdx && currentPlaylist.length > 1) nextIdx = (nextIdx + 1) % currentPlaylist.length;
-                    } else {
-                        nextIdx = currentIdx + 1;
-                        if (nextIdx >= currentPlaylist.length) nextIdx = 0;
-                    }
+                    let nextIdx = currentIdx + 1;
+                    if (nextIdx >= currentPlaylist.length) nextIdx = 0;
                     openPlayer(nextIdx);
                 });
             }
@@ -1751,14 +1744,8 @@
         btnPlay.addEventListener('click', () => togglePlay());
         miniPlayBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
         document.getElementById('btn-next').addEventListener('click', () => { 
-            let nextIdx;
-            if (isShuffle) {
-                nextIdx = Math.floor(Math.random() * currentPlaylist.length);
-                if (nextIdx === currentIdx && currentPlaylist.length > 1) nextIdx = (nextIdx + 1) % currentPlaylist.length;
-            } else {
-                nextIdx = currentIdx + 1;
-                if (nextIdx >= currentPlaylist.length) nextIdx = 0;
-            }
+            let nextIdx = currentIdx + 1;
+            if (nextIdx >= currentPlaylist.length) nextIdx = 0;
             openPlayer(nextIdx); 
         });
         document.getElementById('btn-prev').addEventListener('click', () => { let prevIdx = currentIdx - 1; if (prevIdx < 0) prevIdx = currentPlaylist.length - 1; openPlayer(prevIdx); });
@@ -1767,15 +1754,9 @@
             if (isRepeat) { 
                 audio.currentTime = 0; audio.play(); 
             } else { 
-                if (isShuffle) {
-                    let nextIdx = Math.floor(Math.random() * currentPlaylist.length);
-                    if (nextIdx === currentIdx && currentPlaylist.length > 1) nextIdx = (nextIdx + 1) % currentPlaylist.length;
-                    openPlayer(nextIdx);
-                } else {
-                    let nextIdx = currentIdx + 1; 
-                    if (nextIdx < currentPlaylist.length) openPlayer(nextIdx); 
-                    else { togglePlay(false); audio.currentTime = 0; } 
-                }
+                let nextIdx = currentIdx + 1; 
+                if (nextIdx < currentPlaylist.length) openPlayer(nextIdx); 
+                else { togglePlay(false); audio.currentTime = 0; } 
             } 
         });
 
@@ -1789,11 +1770,10 @@
         if(btnMoreWeeklyChart) btnMoreWeeklyChart.onclick = () => weeklyFullChartView.classList.remove('translate-x-full');
         if(btnCloseWeeklyChart) btnCloseWeeklyChart.onclick = () => weeklyFullChartView.classList.add('translate-x-full');
         
-        btnPlayAll.onclick = () => { isShuffle = false; openPlayer(0, songs); };
+        btnPlayAll.onclick = () => { openPlayer(0, songs); };
         
         if(btnPlayAllHourly) {
             btnPlayAllHourly.onclick = () => {
-                isShuffle = false;
                 let orderedSongs = [];
                 hourlyChartData.currentRanking.forEach(id => { const song = songs.find(s => s.id === id); if (song) orderedSongs.push(song); });
                 songs.forEach(s => { if (!hourlyChartData.currentRanking.includes(s.id)) orderedSongs.push(s); });
@@ -1805,7 +1785,6 @@
 
         if(btnPlayAllWeekly) {
             btnPlayAllWeekly.onclick = () => {
-                isShuffle = false;
                 const targetPrevWeekId = getPrevWeekId(); 
                 let weeklySongs = [...songs].map(s => {
                     const data = latestWeeklyStats[s.id] || {};
@@ -1822,9 +1801,13 @@
         }
 
         const startAIPlay = (list) => {
-            isShuffle = true;
-            let randomIdx = Math.floor(Math.random() * list.length);
-            openPlayer(randomIdx, list);
+            // 전달받은 차트 리스트를 통째로 랜덤하게 섞어서 새로운 플레이리스트로 만듦
+            let shuffledList = [...list];
+            for (let i = shuffledList.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledList[i], shuffledList[j]] = [shuffledList[j], shuffledList[i]];
+            }
+            openPlayer(0, shuffledList);
         };
 
         if(btnShuffleHourly) btnShuffleHourly.onclick = () => {
