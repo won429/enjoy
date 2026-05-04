@@ -514,6 +514,7 @@
     </div>
 
     <audio id="audio" playsinline webkit-playsinline></audio>
+    <audio id="silent-audio" loop playsinline webkit-playsinline src="data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gSWxsaXF1aWRTb3VuZHMuY29t//MUxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -665,9 +666,12 @@
                         if (currentAudioType !== 'youtube') return;
                         if (event.data === YT.PlayerState.PLAYING) {
                             updateUI(true);
+                            document.getElementById('silent-audio').play().catch(e => {});
                         } else if (event.data === YT.PlayerState.PAUSED) {
                             updateUI(false);
+                            document.getElementById('silent-audio').pause();
                         } else if (event.data === YT.PlayerState.ENDED) {
+                            document.getElementById('silent-audio').pause();
                             if (isRepeat) {
                                 ytPlayer.seekTo(0);
                                 ytPlayer.playVideo();
@@ -687,6 +691,7 @@
         };
 
         const audio = document.getElementById('audio');
+        const silentAudio = document.getElementById('silent-audio');
         
         // 차트 UI 요소
         const hourlyChartSlider = document.getElementById('hourly-chart-slider');
@@ -1815,13 +1820,16 @@
             if (shouldPlay) { 
                 if (currentAudioType === 'youtube') {
                     if (isYtReady) ytPlayer.playVideo();
+                    silentAudio.play().catch(e => console.warn("Silent audio play failed:", e));
                 } else {
                     audio.play().then(() => updateUI(true)).catch(e => { console.error(e); errorBox.classList.remove('hidden'); updateUI(false); }); 
+                    silentAudio.pause();
                 }
                 updateUI(true); // 즉각적인 UI 반응
             } else { 
                 if (currentAudioType === 'youtube') {
                     if (isYtReady) ytPlayer.pauseVideo();
+                    silentAudio.pause();
                 } else {
                     audio.pause(); 
                 }
