@@ -509,7 +509,7 @@
     </main>
 
     <!-- 유튜브 플레이어 컨테이너 (화면에서 완벽하게 숨김 처리) -->
-    <div class="fixed top-[-9999px] left-[-9999px] w-0 h-0 opacity-0 pointer-events-none z-[-9999]">
+    <div class="fixed top-[-9999px] left-[-9999px] w-10 h-10 opacity-0 pointer-events-none z-[-9999]">
         <div id="yt-player-container"></div>
     </div>
 
@@ -649,10 +649,10 @@
 
         window.onYouTubeIframeAPIReady = function() {
             ytPlayer = new YT.Player('yt-player-container', {
-                height: '0',
-                width: '0',
+                height: '10',
+                width: '10',
                 videoId: '',
-                playerVars: { 'autoplay': 0, 'controls': 0, 'disablekb': 1, 'fs': 0, 'rel': 0, 'playsinline': 1 },
+                playerVars: { 'autoplay': 1, 'controls': 0, 'disablekb': 1, 'fs': 0, 'rel': 0, 'playsinline': 1 },
                 events: {
                     'onReady': (event) => {
                         isYtReady = true;
@@ -675,6 +675,10 @@
                                 let nextIdx = currentIdx + 1;
                                 if (nextIdx < currentPlaylist.length) openPlayer(nextIdx);
                                 else { togglePlay(false); ytPlayer.seekTo(0); ytPlayer.stopVideo(); }
+                            }
+                        } else if (event.data === -1 || event.data === 5) {
+                            if (isPlaying) {
+                                ytPlayer.playVideo();
                             }
                         }
                     }
