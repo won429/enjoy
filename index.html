@@ -1,0 +1,2102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Play Enjoy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 폰트 및 아이콘 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" type="text/css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Toss Style Design System 적용 */
+        body { 
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+            background-color: #000000;
+            color: #FFFFFF;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none;
+            touch-action: pan-y;
+            overflow: hidden;
+        }
+
+        /* 공통 유틸리티 */
+        .text-main { color: #FFFFFF; }
+        .text-sub { color: #9CA3AF; }
+        .text-blue { color: #3182F6; }
+        
+        /* 토스 스타일 카드 (검정 배경용 다크 글래스) */
+        .toss-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px) saturate(180%);
+            -webkit-backdrop-filter: blur(12px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.1s;
+        }
+        .toss-card:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 스크롤바 숨김 */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* 애니메이션 */
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* Safe Area */
+        .pt-safe { padding-top: max(20px, env(safe-area-inset-top)); }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+
+        /* 가사 스타일 */
+        .lyric-line {
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), 
+                        opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                        filter 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                        color 0.3s ease-in-out; 
+            opacity: 0.4; 
+            transform: scale(0.95) translateX(0);
+            transform-origin: left center;
+            filter: blur(0.5px); 
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #6B7684; 
+            margin-bottom: 2rem;
+            line-height: 1.5;
+            cursor: pointer;
+            will-change: transform, opacity, filter, color;
+            white-space: pre-wrap;       
+            word-break: keep-all;        
+            width: fit-content;
+            max-width: 90%;             
+        }
+        .lyric-line.active {
+            opacity: 1 !important;
+            transform: scale(1.05) translateX(0); 
+            filter: blur(0);
+            color: #3182F6 !important; /* Toss Blue */
+            text-shadow: 0 4px 12px rgba(49, 130, 246, 0.1);
+        }
+        .lyrics-mask {
+            mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+        }
+        
+        /* 가사 오버레이 상태 클래스 */
+        .lyrics-closed { transform: translateY(100%); }
+        .lyrics-open { transform: translateY(0); }
+
+        /* 다이나믹 아일랜드 & 미니 플레이어 스타일 (불투명) */
+        .dynamic-glass {
+            background: #1C1C1E; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); 
+        }
+
+        /* Range Slider Customization */
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; box-shadow: none; border: none; }
+        
+        /* 랭킹 뱃지 스타일 */
+        .rank-badge-new { color: #EAB308; font-size: 8px; font-weight: 800; }
+        .rank-badge-up { color: #F04452; font-size: 10px; font-weight: 800; }
+        .rank-badge-down { color: #3182F6; font-size: 10px; font-weight: 800; }
+        
+        /* 메뉴 활성화 상태 스타일 */
+        .nav-active { color: #FFFFFF !important; }
+        .nav-inactive { color: #6B7684 !important; }
+    </style>
+</head>
+<body class="h-[100dvh] w-screen fixed bg-black">
+
+    <!-- 메인 컨테이너 -->
+    <main class="w-full h-full relative bg-black overflow-hidden">
+
+        <!-- Coming Soon 팝업 -->
+        <div id="popup-modal" class="absolute inset-0 z-[70] bg-black/50 backdrop-blur-md hidden flex items-center justify-center px-6 transition-all duration-300">
+            <div class="bg-[#1C1C1E]/80 backdrop-blur-2xl rounded-[32px] p-8 w-full max-w-[300px] text-center shadow-[0_16px_40px_rgba(0,0,0,0.5)] scale-in border border-white/10 relative overflow-hidden">
+                <!-- 은은한 상단 라이팅 효과 -->
+                <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-[160px] h-[160px] bg-[#3182F6]/30 blur-[50px] rounded-full pointer-events-none"></div>
+                
+                <div class="relative z-10">
+                    <div class="w-16 h-16 bg-white/5 rounded-[20px] flex items-center justify-center mx-auto mb-5 border border-white/10 shadow-inner">
+                        <i class="fa-solid fa-lock text-2xl text-white/90"></i>
+                    </div>
+                    <h3 class="text-[22px] font-bold text-white mb-2 tracking-tight">Coming Soon</h3>
+                    <p class="text-[#9CA3AF] text-[13px] mb-8 leading-relaxed font-medium break-keep">아직 공개되지 않은 트랙입니다.<br>조금만 더 기다려주세요!</p>
+                    <button id="popup-close" class="w-full bg-[#3182F6] text-[15px] text-white font-bold py-3.5 rounded-[18px] hover:bg-[#2563EB] active:scale-[0.97] transition-all">확인</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 아티스트 노래 목록 모달 -->
+        <div id="artist-modal" class="absolute inset-0 z-[80] bg-black/60 backdrop-blur-md hidden flex items-end justify-center transition-opacity duration-300">
+            <div class="bg-[#1C1C1E]/90 backdrop-blur-2xl w-full rounded-t-[32px] p-6 pb-10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] transform transition-transform duration-300 translate-y-full border-t border-white/10 relative overflow-hidden" id="artist-modal-content">
+                <!-- 앰비언트 라이트 효과 -->
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] bg-[#3182F6]/20 blur-[50px] rounded-full pointer-events-none"></div>
+
+                <div class="w-10 h-1.5 bg-white/20 rounded-full mx-auto mb-8"></div>
+                
+                <div class="flex items-center gap-5 mb-8 relative z-10 px-2">
+                    <div class="w-[72px] h-[72px] rounded-full overflow-hidden shadow-lg border-2 border-white/10 flex items-center justify-center bg-[#111111] relative shrink-0">
+                        <i id="artist-modal-icon" class="fa-solid fa-user text-3xl text-gray-500 absolute"></i>
+                        <img id="artist-modal-img" src="" class="w-full h-full object-cover absolute hidden">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 id="artist-modal-name" class="text-[28px] font-black text-white tracking-tight leading-none mb-1.5 truncate">Artist Name</h3>
+                        <p class="text-[12px] text-[#3182F6] font-bold tracking-widest uppercase">Artist Tracks</p>
+                    </div>
+                </div>
+                
+                <div id="artist-song-list" class="flex flex-col gap-2 max-h-[50vh] overflow-y-auto scrollbar-hide px-1 relative z-10 pb-4"></div>
+                
+                <button id="artist-modal-close" class="w-full bg-white/[0.08] border border-white/[0.05] text-[15px] text-white font-bold py-4 rounded-[20px] mt-2 hover:bg-white/10 transition-all active:scale-[0.98] relative z-10">닫기</button>
+            </div>
+        </div>
+
+        <!-- 관리자 로그인 모달 -->
+        <div id="admin-login-modal" class="absolute inset-0 z-[90] bg-black/60 backdrop-blur-sm hidden flex items-center justify-center px-6">
+            <div class="bg-[#1C1C1E] rounded-[24px] p-6 w-full max-w-xs text-center shadow-2xl scale-in border border-white/10">
+                <h3 class="text-lg font-bold text-white mb-4">관리자 로그인</h3>
+                <input type="password" id="admin-pw-input" placeholder="비밀번호" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 mb-4 text-center text-lg text-white focus:ring-2 focus:ring-[#3182F6] outline-none">
+                <div class="flex gap-2">
+                    <button id="admin-login-cancel" class="flex-1 bg-white/10 text-gray-300 font-bold py-3.5 rounded-xl active:scale-95 transition-transform">취소</button>
+                    <button id="admin-login-submit" class="flex-1 bg-[#3182F6] text-white font-bold py-3.5 rounded-xl active:scale-95 transition-transform shadow-lg shadow-blue-500/20">로그인</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 관리자 수정 모달 -->
+        <div id="admin-edit-modal" class="absolute inset-0 z-[95] bg-black/60 backdrop-blur-sm hidden flex items-center justify-center px-6">
+            <div class="bg-[#1C1C1E] rounded-[24px] p-6 w-full max-w-sm shadow-2xl scale-in max-h-[90vh] overflow-y-auto border border-white/10">
+                <h3 class="text-lg font-bold text-white mb-4 text-center">공지사항 수정</h3>
+                <label class="block text-xs font-bold text-gray-400 mb-1.5">업데이트 내용</label>
+                <textarea id="edit-update-content" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 mb-4 h-24 text-sm text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#3182F6] leading-relaxed"></textarea>
+                <label class="block text-xs font-bold text-gray-400 mb-1.5">신곡 안내</label>
+                <textarea id="edit-new-song-content" class="w-full bg-blue-900/20 border border-blue-800/30 rounded-xl px-4 py-3 mb-6 h-24 text-sm text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#3182F6] leading-relaxed"></textarea>
+                <div class="flex gap-2">
+                    <button id="admin-edit-cancel" class="flex-1 bg-white/10 text-gray-300 font-bold py-3.5 rounded-xl active:scale-95">취소</button>
+                    <button id="admin-edit-save" class="flex-1 bg-[#3182F6] text-white font-bold py-3.5 rounded-xl active:scale-95 shadow-lg shadow-blue-500/20">저장</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 실시간 차트 전체 뷰 -->
+        <div id="hourly-full-chart-view" class="absolute inset-0 z-[120] bg-black transform translate-x-full transition-transform duration-300 flex flex-col h-full">
+            <div class="pt-safe px-5 pb-4 flex items-center gap-3 bg-black/80 backdrop-blur-xl sticky top-0 z-10 border-b border-white/[0.05]">
+                <button id="btn-close-hourly-chart" class="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-white hover:bg-white/10 active:scale-95 transition-all">
+                    <i class="fa-solid fa-chevron-left text-lg"></i>
+                </button>
+                <h2 class="text-[22px] font-black text-white tracking-tight">실시간 차트</h2>
+            </div>
+            <div id="hourly-full-chart-list" class="flex-1 overflow-y-auto px-0 pb-32 pt-2"></div>
+        </div>
+
+        <!-- 전체 인기 차트 뷰 -->
+        <div id="full-chart-view" class="absolute inset-0 z-[120] bg-black transform translate-x-full transition-transform duration-300 flex flex-col h-full">
+            <div class="pt-safe px-5 pb-4 flex items-center gap-3 bg-black/80 backdrop-blur-xl sticky top-0 z-10 border-b border-white/[0.05]">
+                <button id="btn-close-chart" class="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-white hover:bg-white/10 active:scale-95 transition-all">
+                    <i class="fa-solid fa-chevron-left text-lg"></i>
+                </button>
+                <h2 class="text-[22px] font-black text-white tracking-tight">인기 차트</h2>
+            </div>
+            <div id="full-chart-list" class="flex-1 overflow-y-auto px-0 pb-32 pt-2"></div>
+        </div>
+
+        <!-- 주간 차트 전체 뷰 -->
+        <div id="weekly-full-chart-view" class="absolute inset-0 z-[120] bg-black transform translate-x-full transition-transform duration-300 flex flex-col h-full">
+            <div class="pt-safe px-5 pb-4 flex items-center gap-3 bg-black/80 backdrop-blur-xl sticky top-0 z-10 border-b border-white/[0.05]">
+                <button id="btn-close-weekly-chart" class="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-white hover:bg-white/10 active:scale-95 transition-all">
+                    <i class="fa-solid fa-chevron-left text-lg"></i>
+                </button>
+                <h2 class="text-[22px] font-black text-white tracking-tight">주간 차트</h2>
+            </div>
+            <div id="weekly-full-chart-list" class="flex-1 overflow-y-auto px-0 pb-32 pt-2"></div>
+        </div>
+
+        <!-- 현재 재생목록 뷰 -->
+        <div id="current-playlist-view" class="absolute inset-0 z-[120] bg-black transform translate-x-full transition-transform duration-300 flex flex-col h-full">
+            <div class="pt-safe px-5 pb-4 flex items-center gap-3 bg-black/80 backdrop-blur-xl sticky top-0 z-10 border-b border-white/[0.05]">
+                <button id="btn-close-playlist" class="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-white hover:bg-white/10 active:scale-95 transition-all">
+                    <i class="fa-solid fa-chevron-down text-lg"></i>
+                </button>
+                <h2 class="text-[22px] font-black text-white tracking-tight">현재 재생목록</h2>
+            </div>
+            <div id="current-playlist-list" class="flex-1 overflow-y-auto px-0 pb-32 pt-2"></div>
+        </div>
+
+        <!-- 1. 홈 화면 -->
+        <div id="home-screen" class="relative z-10 h-full flex flex-col">
+            
+            <!-- 상단 앰비언트 라이트 효과 -->
+            <div class="absolute top-0 left-0 right-0 h-[40vh] bg-gradient-to-b from-[#3182F6]/15 via-black/50 to-transparent pointer-events-none -z-10"></div>
+
+            <button id="btn-admin-login" class="absolute top-safe right-4 w-10 h-10 z-50 opacity-0"></button>
+
+            <!-- 스크롤 영역 -->
+            <div class="flex-1 overflow-y-auto scrollbar-hide pb-32 pt-safe px-5 relative z-10">
+                <div class="h-8"></div>
+
+                <!-- New Album Section -->
+                <div class="mb-12"> 
+                    <div class="flex justify-between items-end mb-5 px-1">
+                        <h2 class="text-[28px] font-black text-white tracking-tight leading-none">최신 음악<span class="text-[#3182F6]">.</span></h2>
+                    </div>
+                    <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-1 pb-4" id="new-album-list"></div>
+                </div>
+
+                <!-- YouTube Music Section -->
+                <div class="mb-12"> 
+                    <div class="flex justify-between items-end mb-5 px-1">
+                        <h2 class="text-[28px] font-black text-white tracking-tight leading-none">YouTube Music<span class="text-[#FF0000]">.</span></h2>
+                    </div>
+                    <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-1 pb-4" id="youtube-music-list"></div>
+                </div>
+
+                <!-- Unified Chart Section (Tabs) -->
+                <div class="mb-12 relative">
+                    <div class="flex items-end mb-4 px-1">
+                        <!-- 탭 메뉴 -->
+                        <div class="flex items-center gap-4 overflow-x-auto scrollbar-hide shrink-0 max-w-[70%]">
+                            <button id="tab-hourly" class="text-[18px] font-black text-white tracking-tight leading-none transition-all whitespace-nowrap">실시간 차트<span class="text-[#3182F6] transition-opacity duration-300">.</span></button>
+                            <button id="tab-realtime" class="text-[18px] font-black text-gray-600 tracking-tight leading-none transition-all hover:text-gray-400 whitespace-nowrap">인기 차트<span class="text-[#3182F6] opacity-0 hidden transition-opacity duration-300">.</span></button>
+                            <button id="tab-weekly" class="text-[18px] font-black text-gray-600 tracking-tight leading-none transition-all hover:text-gray-400 whitespace-nowrap">주간 차트<span class="text-[#3182F6] opacity-0 hidden transition-opacity duration-300">.</span></button>
+                        </div>
+                    </div>
+                    
+                    <!-- 실시간 차트 헤더 우측 -->
+                    <div id="header-hourly" class="flex flex-col gap-3 transition-all mb-4 px-1">
+                        <span id="hourly-chart-time" class="absolute top-1 right-1 text-[11px] font-bold text-[#3182F6] tracking-wider uppercase">--시 기준</span>
+                        <div class="flex items-center justify-start gap-2 w-full">
+                            <button id="btn-shuffle-hourly" class="text-[11px] text-[#3182F6] font-bold bg-[#3182F6]/20 px-3.5 py-1.5 rounded-full active:scale-95 transition-all flex items-center justify-center gap-1.5 hover:bg-[#3182F6]/30">
+                                <i class="fa-solid fa-shuffle text-[9px]"></i> AI 마음대로
+                            </button>
+                            <button id="btn-play-all-hourly" class="text-[11px] text-white font-bold bg-[#3182F6] px-3.5 py-1.5 rounded-full active:scale-95 transition-transform flex items-center justify-center gap-1.5 shadow-[0_4px_12px_rgba(49,130,246,0.3)] hover:bg-[#2563EB]">
+                                <i class="fa-solid fa-play text-[9px]"></i> 전체 재생
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 인기 차트 헤더 우측 -->
+                    <div id="header-realtime" class="flex flex-col gap-3 hidden transition-all mb-4 px-1">
+                        <span id="chart-time" class="absolute top-1 right-1 text-[11px] font-bold text-[#3182F6] tracking-wider uppercase">--월 --일 기준</span>
+                        <div class="flex items-center justify-start gap-2 w-full">
+                            <button id="btn-shuffle-realtime" class="text-[11px] text-[#3182F6] font-bold bg-[#3182F6]/20 px-3.5 py-1.5 rounded-full active:scale-95 transition-all flex items-center justify-center gap-1.5 hover:bg-[#3182F6]/30">
+                                <i class="fa-solid fa-shuffle text-[9px]"></i> AI 마음대로
+                            </button>
+                            <button id="btn-play-all" class="text-[11px] text-white font-bold bg-[#3182F6] px-3.5 py-1.5 rounded-full active:scale-95 transition-transform flex items-center justify-center gap-1.5 shadow-[0_4px_12px_rgba(49,130,246,0.3)] hover:bg-[#2563EB]">
+                                <i class="fa-solid fa-play text-[9px]"></i> 전체 재생
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 주간 차트 헤더 우측 -->
+                    <div id="header-weekly" class="flex flex-col gap-3 hidden transition-all mb-4 px-1">
+                        <span id="weekly-chart-time" class="absolute top-1 right-1 text-[11px] font-bold text-[#3182F6] tracking-wider uppercase">--월 --주차</span>
+                        <div class="flex items-center justify-start gap-2 w-full">
+                            <button id="btn-shuffle-weekly" class="text-[11px] text-[#3182F6] font-bold bg-[#3182F6]/20 px-3.5 py-1.5 rounded-full active:scale-95 transition-all flex items-center justify-center gap-1.5 hover:bg-[#3182F6]/30">
+                                <i class="fa-solid fa-shuffle text-[9px]"></i> AI 마음대로
+                            </button>
+                            <button id="btn-play-all-weekly" class="text-[11px] text-white font-bold bg-[#3182F6] px-3.5 py-1.5 rounded-full active:scale-95 transition-transform flex items-center justify-center gap-1.5 shadow-[0_4px_12px_rgba(49,130,246,0.3)] hover:bg-[#2563EB]">
+                                <i class="fa-solid fa-play text-[9px]"></i> 전체 재생
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 실시간 차트 패널 -->
+                    <div id="panel-hourly" class="block fade-in">
+                        <div id="hourly-chart-slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3 px-1 pb-2"></div>
+                        <button id="btn-more-hourly-chart" class="w-full mt-4 py-3.5 text-[13px] text-white font-bold bg-white/[0.05] border border-white/[0.05] rounded-[18px] hover:bg-white/10 transition-colors">
+                            실시간 차트 전체보기
+                        </button>
+                    </div>
+
+                    <!-- 인기 차트 패널 -->
+                    <div id="panel-realtime" class="hidden fade-in">
+                        <div id="chart-slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3 px-1 pb-2"></div>
+                        <button id="btn-more-chart" class="w-full mt-4 py-3.5 text-[13px] text-white font-bold bg-white/[0.05] border border-white/[0.05] rounded-[18px] hover:bg-white/10 transition-colors">
+                            인기 차트 전체보기
+                        </button>
+                    </div>
+
+                    <!-- 주간 차트 패널 -->
+                    <div id="panel-weekly" class="hidden fade-in">
+                        <div id="weekly-chart-slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3 px-1 pb-2"></div>
+                        <button id="btn-more-weekly-chart" class="w-full mt-4 py-3.5 text-[13px] text-white font-bold bg-white/[0.05] border border-white/[0.05] rounded-[18px] hover:bg-white/10 transition-colors">
+                            주간 차트 전체보기
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Artists Section -->
+                <div class="mb-12">
+                    <h3 class="text-[22px] font-black text-white tracking-tight leading-none mb-5 px-1">아티스트<span class="text-[#3182F6]">.</span></h3>
+                    <div class="flex gap-4 overflow-x-auto scrollbar-hide px-1 pb-2" id="artist-list"></div>
+                </div>
+
+                <!-- Coming Soon Section -->
+                <div class="mb-12">
+                    <h3 class="text-[22px] font-black text-white tracking-tight leading-none mb-5 px-1">Coming Soon<span class="text-[#3182F6]">.</span></h3>
+                    <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x px-1 pb-4" id="coming-soon-list"></div>
+                </div>
+            </div>
+
+            <!-- 미니 플레이어 (Dynamic Island Style) -->
+            <div id="mini-player" class="absolute bottom-[env(safe-area-inset-bottom)] left-5 right-[5.5rem] h-[60px] dynamic-glass rounded-[30px] px-2 flex items-center justify-between z-[50] overflow-hidden translate-y-[150%] invisible transition-all duration-500 cursor-pointer active:scale-[0.98]">
+                <div class="flex items-center gap-3 w-full overflow-hidden pl-1">
+                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-900 relative shadow-inner shrink-0 border border-white/50" id="mini-cover-container">
+                        <img id="mini-cover" src="" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex flex-col justify-center min-w-0 pr-2">
+                        <h4 id="mini-title" class="text-sm font-bold text-white truncate leading-tight">Title</h4>
+                        <p id="mini-artist" class="text-[11px] text-gray-400 truncate font-medium">Artist</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0 pr-1"> 
+                    <button id="mini-play-btn" class="w-10 h-10 flex items-center justify-center text-white hover:scale-110 transition-transform">
+                        <i id="mini-icon-play" class="fa-solid fa-play text-lg"></i>
+                        <i id="mini-icon-pause" class="fa-solid fa-pause text-lg hidden"></i>
+                    </button>
+                </div>
+                <!-- 진행바 (하단) -->
+                <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-transparent">
+                    <div id="mini-progress" class="h-full bg-[#3182F6]/50 w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+
+            <!-- 우측 하단 플로팅 메뉴 (Dynamic Pill) -->
+            <div id="dynamic-pill" class="absolute right-1/2 translate-x-1/2 bottom-[env(safe-area-inset-bottom)] z-[50] h-[60px] dynamic-glass rounded-full flex items-center justify-end p-1 w-[130px] overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-95 shadow-lg box-border">
+                
+                <!-- 홈 버튼 -->
+                <button id="pill-home-btn" onclick="window.location.href='https://won429.github.io/enjoysite/'" class="w-[4.5rem] opacity-100 h-full flex flex-col items-center justify-center nav-active transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] gap-0.5 hover:opacity-80 overflow-hidden whitespace-nowrap mr-2">
+                    <i class="fa-solid fa-house text-lg"></i>
+                    <span class="text-[9px] font-bold">홈</span>
+                </button>
+
+                <!-- 음악 버튼 -->
+                <div class="w-[52px] h-[52px] rounded-full bg-white/10 flex items-center justify-center shrink-0 shadow-inner">
+                    <button id="pill-toggle-btn" class="w-full h-full flex flex-col items-center justify-center nav-inactive gap-0.5 hover:opacity-80">
+                        <div class="relative w-6 h-6 flex items-center justify-center">
+                            <i id="pill-icon-music" class="fa-solid fa-headphones text-xl"></i>
+                        </div>
+                        <span class="text-[9px] font-bold">음악</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 전체 플레이어 화면 -->
+        <div id="player-screen" class="absolute inset-0 z-[100] bg-[#111111] transform translate-y-full transition-transform duration-500 flex flex-col h-full rounded-t-[32px] overflow-hidden shadow-[0_-10px_60px_-15px_rgba(0,0,0,0.8)] border-t border-white/5">
+            
+            <!-- 가사 오버레이 -->
+            <div id="lyrics-overlay" class="absolute inset-0 z-[120] flex flex-col lyrics-closed bg-[#111111]/90 backdrop-blur-3xl transition-transform duration-500 rounded-t-[32px] border-t border-white/5">
+                <!-- 앰비언트 효과 -->
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-[#3182F6]/15 blur-[80px] rounded-full pointer-events-none"></div>
+
+                 <div class="relative z-10 flex justify-between items-center px-6 pt-8 pb-4">
+                     <div class="w-11"></div> 
+                     <div class="flex flex-col items-center justify-center">
+                         <span class="text-[11px] font-black tracking-[0.2em] text-[#3182F6] uppercase opacity-90">Lyrics</span>
+                     </div>
+                     <button id="btn-close-lyrics" class="w-11 h-11 rounded-full bg-white/[0.03] border border-white/[0.05] backdrop-blur-2xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/[0.08] transition-all active:scale-90 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+                        <i class="fa-solid fa-xmark text-[18px]"></i>
+                     </button>
+                 </div>
+                 
+                 <div class="relative z-10 px-8 pb-5 pt-4 shrink-0 flex items-center gap-4">
+                     <div class="w-14 h-14 rounded-[14px] overflow-hidden bg-[#1C1C1E] shadow-lg shrink-0 border border-white/10">
+                         <img id="lyrics-cover" src="" class="w-full h-full object-cover">
+                     </div>
+                     <div class="flex flex-col text-left min-w-0">
+                         <h4 id="lyrics-title" class="text-[18px] font-black text-white truncate tracking-tight">Title</h4>
+                         <p id="lyrics-artist" class="text-[13px] text-[#3182F6] font-bold truncate">Artist</p>
+                     </div>
+                 </div>
+
+                 <div class="flex-1 overflow-hidden w-full relative z-10">
+                     <div id="lyrics-content" class="w-full h-full overflow-y-auto scrollbar-hide px-8 pb-40 text-left pt-8 lyrics-mask">
+                         <p class="text-gray-500 text-sm font-medium animate-pulse mt-20 text-center w-full">가사를 불러오는 중...</p>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- 블러 배경 -->
+            <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-black">
+                 <img id="player-bg-image" src="" class="w-full h-full object-cover opacity-30 blur-[60px] scale-150 transform transition-all duration-1000">
+                 <div class="absolute inset-0 bg-gradient-to-b from-black/10 via-[#111111]/80 to-[#111111]"></div>
+            </div>
+
+            <!-- 헤더 (쓸어내리기 핸들) -->
+            <div class="relative z-10 w-full flex justify-center pt-5 pb-0 h-10 items-start shrink-0">
+                <div id="btn-minimize" class="w-full max-w-[100px] h-10 flex justify-center items-start pt-2 cursor-grab active:cursor-grabbing opacity-50 hover:opacity-100 transition-opacity">
+                    <div class="w-10 h-1.5 bg-white/40 rounded-full shadow-sm pointer-events-none"></div>
+                </div>
+            </div>
+
+            <!-- 메인 컨텐츠 -->
+            <div class="relative z-10 flex-1 flex flex-col items-center justify-center px-8 pb-16 pt-2">
+                 <div id="error-box" class="hidden bg-red-900/30 text-red-500 text-xs p-3 rounded-xl mb-6 text-center w-full border border-red-900/50">
+                    <p class="font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> 재생 오류</p>
+                    <p class="mt-1 opacity-75">오디오 파일을 확인해주세요</p>
+                </div>
+                
+                <div class="relative w-full max-w-[288px] aspect-square mb-10 group shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[32px] transition-transform duration-500 mt-0"> 
+                    <div class="w-full h-full rounded-[32px] overflow-hidden bg-[#1C1C1E] relative border border-white/10">
+                        <img id="cover-image" src="" class="w-full h-full object-cover rounded-[32px]">
+                        <div class="absolute inset-0 rounded-[32px] shadow-inner border border-white/5 pointer-events-none"></div>
+                    </div>
+                </div>
+
+                <div class="w-full mb-10 text-left px-1">
+                    <h2 id="song-title" class="text-[28px] font-black text-white mb-1.5 truncate leading-tight tracking-tight">Title</h2>
+                    <p id="song-artist" class="text-[#3182F6] text-[15px] font-bold tracking-wide truncate opacity-90">Artist</p>
+                </div>
+                
+                <div class="w-full mb-2 relative h-6 flex items-center justify-center group px-1" id="progress-container">
+                    <div class="absolute left-1 right-1 h-1.5 bg-white/10 rounded-full overflow-hidden"> 
+                        <div id="progress-fill" class="absolute top-0 left-0 h-full bg-white rounded-full" style="width: 0%"></div>
+                    </div>
+                    <div id="progress-handle" class="absolute h-4 w-4 bg-white rounded-full opacity-100 shadow-[0_0_12px_rgba(255,255,255,0.8)] transition-transform transform scale-75 group-hover:scale-110 left-0 -ml-2 top-1 pointer-events-none"></div>
+                    <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30">
+                </div>
+                <div class="w-full flex justify-between text-[11px] text-gray-500 font-bold font-mono px-2">
+                    <span id="player-time-current">00:00</span>
+                    <span id="player-time-duration">00:00</span>
+                </div>
+                
+                <div class="w-full flex flex-col mt-8 pb-4">
+                    <!-- 재생 컨트롤 -->
+                    <div class="w-full flex justify-center items-center gap-12 mb-10">
+                        <button id="btn-prev" class="text-white hover:text-gray-300 active:scale-90 transition-all p-3">
+                            <i class="fa-solid fa-backward text-[36px]"></i>
+                        </button>
+                        <button id="btn-play" class="text-white hover:text-gray-300 active:scale-95 transition-all p-3 flex items-center justify-center">
+                            <i id="icon-play" class="fa-solid fa-play text-[52px] pl-1.5"></i>
+                            <i id="icon-pause" class="fa-solid fa-pause text-[52px] hidden"></i>
+                        </button>
+                        <button id="btn-next" class="text-white hover:text-gray-300 active:scale-90 transition-all p-3">
+                            <i class="fa-solid fa-forward text-[36px]"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- 하단 서브 메뉴 (가사, 재생목록) -->
+                    <div class="w-full flex justify-between items-center px-2">
+                        <!-- 가사 버튼 (사진과 동일한 말풍선+따옴표 조합) -->
+                        <button id="btn-lyrics" class="relative w-12 h-12 flex items-center justify-center text-gray-400 hover:text-[#3182F6] transition-colors active:scale-90">
+                            <i class="fa-regular fa-message text-[26px]" style="-webkit-text-stroke: 1px currentColor;"></i>
+                            <i class="fa-solid fa-quote-right absolute text-[12px] -mt-[3px] ml-[1px]"></i>
+                        </button>
+                        
+                        <!-- 빈 공간 (가운데) -->
+                        <div class="flex-1"></div>
+                        
+                        <!-- 재생목록 버튼 -->
+                        <button id="btn-playlist" class="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-white transition-colors active:scale-90">
+                            <i class="fa-solid fa-list-ul text-[20px]"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 유튜브 플레이어 컨테이너 (화면에서 완벽하게 숨김 처리) -->
+    <div class="fixed top-[-9999px] left-[-9999px] w-10 h-10 opacity-0 pointer-events-none z-[-9999]">
+        <div id="yt-player-container"></div>
+    </div>
+
+    <audio id="audio" playsinline webkit-playsinline></audio>
+    <audio id="silent-audio" loop playsinline webkit-playsinline src="data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gSWxsaXF1aWRTb3VuZHMuY29t//MUxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"></audio>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const yourFirebaseConfig = {
+            apiKey: "AIzaSyC-ufNqntX7Yf3gbu11FNUgSRwWN2bfvWc",
+            authDomain: "play-enjoy-music.firebaseapp.com",
+            projectId: "play-enjoy-music",
+            storageBucket: "play-enjoy-music.firebasestorage.app",
+            messagingSenderId: "678631946072",
+            appId: "1:678631946072:web:ee72c229360599aa00172d"
+        };
+
+        let firebaseConfig, appId;
+        let app, auth, db;
+
+        try {
+            if (typeof __firebase_config !== 'undefined') {
+                firebaseConfig = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
+            } else {
+                firebaseConfig = yourFirebaseConfig;
+            }
+            appId = (typeof __app_id !== 'undefined') ? __app_id : 'play-enjoy-music-app';
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (e) { console.error("Firebase init failed:", e); }
+
+        let songs = [
+            { id: 18, title: "번역 못 할 사이", artist: "엔조이", src: "./music13.mp3", cover: "./cover17.jpg", lrc: "./music13.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2026-03-18' },
+            { id: 17, title: "Cool On Replay", artist: "엔조이", src: "./music12.mp3", cover: "./cover16.jpg", lrc: "./music12.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2026-03-18' },
+            { id: 8, title: "하이 스피드 러브", artist: "출장엔조이 OST", src: "./music11.mp3", cover: "./cover7.jpg", lrc: "./music11.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-01-26' },
+            { id: 13, title: "똥을 싸고 손을 씻자", artist: "엔조이", src: "./music7.mp3", cover: "./cover12.jpg", lrc: "./music7.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-11-26' },
+            { id: 14, title: "미친 밤", artist: "엔조이", src: "./music8.mp3", cover: "./cover13.jpg", lrc: "./music8.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-11-26' },
+            { id: 15, title: "우리는 엔조이", artist: "오스틴", src: "./music9.mp3", cover: "./cover14.jpg", lrc: "./music9.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-11-26' },
+            { id: 16, title: "너의 세상", artist: "전시기", src: "./music10.mp3", cover: "./cover15.jpg", lrc: "./music10.lrc", playCount: 0, rankStatus: 'new', releaseDate: '2025-11-26' },
+            { id: 1, title: "빛", artist: "엔쪽이 OST Part.2", src: "./music.mp3", cover: "./cover.jpg", lrc: "./music.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
+            { id: 2, title: "힘내라", artist: "엔쪽이 OST Part.1", src: "./music2.mp3", cover: "./cover.jpg", lrc: "./music2.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
+            { id: 4, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", src: "./music4.mp3", cover: "./cover3.jpg", lrc: "./music4.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
+            { id: 5, title: "행복을 꿈꾸며 울다", artist: "엔조이", src: "./music5.mp3", cover: "./cover4.jpg", lrc: "./music5.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
+            { id: 6, title: "털어", artist: "엔조이", src: "./music6.mp3", cover: "./cover5.jpg", lrc: "./music6.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
+            { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", lrc: "./music3.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" },
+            { id: 19, title: "MOON", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "8cFKPrxrrJM", cover: "./cover18.jpg", playCount: 0, rankStatus: 'new', releaseDate: '2026-05-05' },
+            { id: 20, title: "춤(CHOOM)", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "QmJbHPYx97M", cover: "./cover18.jpg", playCount: 0, rankStatus: 'new', releaseDate: '2026-05-05' },
+            { id: 21, title: "I LIKE IT", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "QmJbHPYx97M", cover: "./cover18.jpg", playCount: 0, rankStatus: 'new', releaseDate: '2026-05-05' },
+            { id: 22, title: "LOCKED IN", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "PDs_wgMaG48", cover: "./cover18.jpg", playCount: 0, rankStatus: 'new', releaseDate: '2026-05-05' }
+        ];
+
+        // 현재 선택된 재생목록
+        let currentPlaylist = songs;
+
+        const artists = [
+            { name: "출장엔조이 OST", type: 'image', image: './cover7.jpg' },
+            { name: "엔조이", type: 'icon' },
+            { name: "오스틴", type: 'image', image: './austin.jpg' },
+            { name: "전시기", type: 'image', image: './jeonsigi.jpg' },
+            { name: "성심당", type: 'icon' },
+            { name: "엔쪽이 OST", type: 'image', image: './cover.jpg' },
+            { name: "그날, 전조이 이야기 OST", type: 'image', image: './cover3.jpg' }
+        ];
+
+        let lastRanking = [];
+        try {
+            const saved = localStorage.getItem('last_ranking_ids');
+            if (saved) lastRanking = JSON.parse(saved);
+        } catch(e) {}
+
+        // 인기 차트 (Daily) 데이터
+        let chartData = { lastUpdated: 0, currentRanking: [], prevRanking: [], playCounts: {}, rankChanges: {}, rankChangeTimes: {} };
+        try {
+            const saved = localStorage.getItem('chart_snapshot_v2');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.currentRanking && parsed.playCounts) {
+                    chartData = parsed;
+                    if (!chartData.rankChanges) chartData.rankChanges = {};
+                    if (!chartData.rankChangeTimes) chartData.rankChangeTimes = {};
+                }
+            }
+        } catch(e) {}
+
+        // 실시간 차트 (Hourly) 데이터
+        let hourlyChartData = { lastUpdated: 0, currentRanking: [], prevRanking: [], playCounts: {}, rankChanges: {} };
+        try {
+            const saved = localStorage.getItem('hourly_chart_snapshot');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.currentRanking && parsed.playCounts) hourlyChartData = parsed;
+            }
+        } catch(e) {}
+
+        const comingSoonSongs = [
+            { id: 12, title: "너의 모든 순간", artist: "현식", cover: "./cover11.jpg" }, 
+            { id: 9, title: "소주한잔", artist: "이상훈&류래완", cover: "./cover8.jpg" },
+            { id: 10, title: "노래방에서", artist: "홍준호", cover: "./cover9.jpg" },
+            { id: 11, title: "나팔바지", artist: "이상훈, 이진호, 류래완", cover: "./cover10.jpg" },
+            { id: 7, title: "미정", artist: "엔조이 숙려 캠프 OST", cover: "./cover6.jpg" }
+        ];
+
+        const DEFAULT_NOTICE = {
+            update: "📊 엔조이 차트 집계 시작!<br>(노래를 재생하면 순위가 올라갑니다)",
+            newSong: "🔥 <strong>4곡</strong> 신규 등록 🔥<br>'똥을 싸고 손을 씻자', '미친 밤'<br>'우리는 엔조이', '너의 세상'"
+        };
+
+        let currentIdx = 0;
+        let isPlaying = false;
+        let isDragging = false; 
+        let isLiked = false; 
+        let isRepeat = false;
+        let songStats = {};
+        let unsubscribeSnapshot = null;
+        let latestSongStats = {};
+        let latestWeeklyStats = {}; 
+        let latestDailyStats = {};
+        
+        let currentLyrics = [];
+        let isLyricsOpen = false;
+        let isPlayerVisible = false;
+
+        let ytPlayer = null;
+        let isYtReady = false;
+        let pendingYtVideo = null;
+        let currentAudioType = 'html5'; // 'html5' or 'youtube'
+        let ytTimer = null;
+
+        // YouTube IFrame API 백그라운드 로드
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        window.onYouTubeIframeAPIReady = function() {
+            ytPlayer = new YT.Player('yt-player-container', {
+                height: '10',
+                width: '10',
+                videoId: '',
+                playerVars: { 'autoplay': 1, 'controls': 0, 'disablekb': 1, 'fs': 0, 'rel': 0, 'playsinline': 1 },
+                events: {
+                    'onReady': (event) => {
+                        isYtReady = true;
+                        if(pendingYtVideo) {
+                            ytPlayer.loadVideoById(pendingYtVideo);
+                            pendingYtVideo = null;
+                        }
+                    },
+                    'onStateChange': (event) => {
+                        if (currentAudioType !== 'youtube') return;
+                        if (event.data === YT.PlayerState.PLAYING) {
+                            updateUI(true);
+                            document.getElementById('silent-audio').play().then(() => {
+                                if (currentPlaylist[currentIdx]) updateMediaSessionMetadata(currentPlaylist[currentIdx]);
+                            }).catch(e => {});
+                        } else if (event.data === YT.PlayerState.PAUSED) {
+                            updateUI(false);
+                            document.getElementById('silent-audio').pause();
+                        } else if (event.data === YT.PlayerState.ENDED) {
+                            document.getElementById('silent-audio').pause();
+                            if (isRepeat) {
+                                ytPlayer.seekTo(0);
+                                ytPlayer.playVideo();
+                            } else {
+                                let nextIdx = currentIdx + 1;
+                                if (nextIdx < currentPlaylist.length) openPlayer(nextIdx);
+                                else { togglePlay(false); ytPlayer.seekTo(0); ytPlayer.stopVideo(); }
+                            }
+                        } else if (event.data === -1 || event.data === 5) {
+                            if (isPlaying) {
+                                ytPlayer.playVideo();
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
+        const audio = document.getElementById('audio');
+        const silentAudio = document.getElementById('silent-audio');
+        
+        // 차트 UI 요소
+        const hourlyChartSlider = document.getElementById('hourly-chart-slider');
+        const hourlyChartTime = document.getElementById('hourly-chart-time');
+        const hourlyFullChartView = document.getElementById('hourly-full-chart-view');
+        const hourlyFullChartList = document.getElementById('hourly-full-chart-list');
+        const btnMoreHourlyChart = document.getElementById('btn-more-hourly-chart');
+        const btnCloseHourlyChart = document.getElementById('btn-close-hourly-chart');
+        const btnPlayAllHourly = document.getElementById('btn-play-all-hourly');
+        const btnShuffleHourly = document.getElementById('btn-shuffle-hourly');
+
+        const chartSlider = document.getElementById('chart-slider');
+        const chartTime = document.getElementById('chart-time');
+        const fullChartView = document.getElementById('full-chart-view');
+        const fullChartList = document.getElementById('full-chart-list');
+        const btnMoreChart = document.getElementById('btn-more-chart');
+        const btnCloseChart = document.getElementById('btn-close-chart');
+        const btnPlayAll = document.getElementById('btn-play-all'); 
+        const btnShuffleRealtime = document.getElementById('btn-shuffle-realtime');
+
+        const weeklyChartSlider = document.getElementById('weekly-chart-slider'); 
+        const weeklyChartTime = document.getElementById('weekly-chart-time'); 
+        const weeklyFullChartView = document.getElementById('weekly-full-chart-view'); 
+        const weeklyFullChartList = document.getElementById('weekly-full-chart-list'); 
+        const btnMoreWeeklyChart = document.getElementById('btn-more-weekly-chart'); 
+        const btnCloseWeeklyChart = document.getElementById('btn-close-weekly-chart'); 
+        const btnPlayAllWeekly = document.getElementById('btn-play-all-weekly');
+        const btnShuffleWeekly = document.getElementById('btn-shuffle-weekly');
+        
+        const newAlbumList = document.getElementById('new-album-list');
+        
+        const tabHourly = document.getElementById('tab-hourly');
+        const tabRealtime = document.getElementById('tab-realtime');
+        const tabWeekly = document.getElementById('tab-weekly');
+        
+        const headerHourly = document.getElementById('header-hourly');
+        const headerRealtime = document.getElementById('header-realtime');
+        const headerWeekly = document.getElementById('header-weekly');
+        
+        const panelHourly = document.getElementById('panel-hourly');
+        const panelRealtime = document.getElementById('panel-realtime');
+        const panelWeekly = document.getElementById('panel-weekly');
+
+        const artistList = document.getElementById('artist-list');
+        const artistModal = document.getElementById('artist-modal');
+        const artistModalContent = document.getElementById('artist-modal-content');
+        const artistModalClose = document.getElementById('artist-modal-close');
+        const artistModalName = document.getElementById('artist-modal-name');
+        const artistModalImg = document.getElementById('artist-modal-img');
+        const artistModalIcon = document.getElementById('artist-modal-icon');
+        const artistSongList = document.getElementById('artist-song-list');
+        const comingSoonList = document.getElementById('coming-soon-list');
+        const playerScreen = document.getElementById('player-screen');
+        const miniPlayer = document.getElementById('mini-player');
+        const miniPlayBtn = document.getElementById('mini-play-btn');
+        const errorBox = document.getElementById('error-box');
+        const homeScreen = document.getElementById('home-screen');
+        const popupModal = document.getElementById('popup-modal');
+        const popupClose = document.getElementById('popup-close');
+        
+        const btnLyrics = document.getElementById('btn-lyrics'); 
+        const btnCloseLyrics = document.getElementById('btn-close-lyrics'); 
+        
+        const miniCover = document.getElementById('mini-cover');
+        const miniTitle = document.getElementById('mini-title');
+        const miniArtist = document.getElementById('mini-artist');
+        const miniIconPlay = document.getElementById('mini-icon-play');
+        const miniIconPause = document.getElementById('mini-icon-pause');
+        
+        const btnPlay = document.getElementById('btn-play');
+        const iconPlay = document.getElementById('icon-play');
+        const iconPause = document.getElementById('icon-pause');
+        const progressFill = document.getElementById('progress-fill');
+        const progressHandle = document.getElementById('progress-handle');
+        const seekSlider = document.getElementById('seek-slider');
+        const btnPlaylist = document.getElementById('btn-playlist');
+        const currentPlaylistView = document.getElementById('current-playlist-view');
+        const btnClosePlaylist = document.getElementById('btn-close-playlist');
+        const timeCurr = document.getElementById('player-time-current');
+        const timeDur = document.getElementById('player-time-duration');
+        const playerBgImage = document.getElementById('player-bg-image');
+        const lyricsOverlay = document.getElementById('lyrics-overlay');
+        const lyricsContent = document.getElementById('lyrics-content');
+        const lyricsCover = document.getElementById('lyrics-cover');
+        const lyricsTitle = document.getElementById('lyrics-title');
+        const lyricsArtist = document.getElementById('lyrics-artist');
+
+        const btnAdminLogin = document.getElementById('btn-admin-login');
+        const adminLoginModal = document.getElementById('admin-login-modal');
+        const adminPwInput = document.getElementById('admin-pw-input');
+        const adminLoginCancel = document.getElementById('admin-login-cancel');
+        const adminLoginSubmit = document.getElementById('admin-login-submit');
+        const adminEditModal = document.getElementById('admin-edit-modal');
+        const editUpdateContent = document.getElementById('edit-update-content');
+        const editNewSongContent = document.getElementById('edit-new-song-content');
+        const adminEditCancel = document.getElementById('admin-edit-cancel');
+        const adminEditSave = document.getElementById('admin-edit-save');
+        
+        const dynamicPill = document.getElementById('dynamic-pill');
+        const pillHomeBtn = document.getElementById('pill-home-btn');
+        const pillToggleBtn = document.getElementById('pill-toggle-btn');
+        
+        let isPillOpen = true; 
+        let activeTab = 'home'; 
+
+        let rafId = null;
+
+        let hasEntered = false;
+        function initApp() {
+            if (hasEntered) return;
+            hasEntered = true;
+            updateChartTime();
+            updateWeeklyChartTime(); 
+            updatePillState();
+        }
+        initApp();
+
+        function updateChartTime() {
+            const now = new Date();
+            const month = now.getMonth() + 1;
+            const date = now.getDate();
+            if (chartTime) chartTime.innerText = `${month}월 ${date}일 기준`;
+        }
+        
+        function getTodayId() {
+            const now = new Date();
+            return `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
+        }
+
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return { year: d.getUTCFullYear(), week: weekNo };
+        }
+
+        function getWeekId(date) {
+            const info = getWeekNumber(date);
+            return `${info.year}-W${info.week}`;
+        }
+
+        function updateWeeklyChartTime() {
+            const now = new Date();
+            const month = now.getMonth() + 1;
+            const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const weekOfMonth = Math.ceil((now.getDate() + firstDayOfMonth.getDay()) / 7);
+            if (weeklyChartTime) weeklyChartTime.innerText = `${month}월 ${weekOfMonth}주차`;
+            return getWeekId(now); 
+        }
+
+        function getPrevWeekId() {
+            const now = new Date();
+            const prevDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+            return getWeekId(prevDate);
+        }
+
+        popupClose.onclick = () => popupModal.classList.add('hidden');
+        popupModal.onclick = (e) => { if (e.target === popupModal) popupModal.classList.add('hidden'); };
+
+        artistModalClose.onclick = closeArtistModal;
+        artistModal.onclick = (e) => { if (e.target === artistModal) closeArtistModal(); };
+
+        function closeArtistModal() {
+            artistModalContent.classList.add('translate-y-full');
+            setTimeout(() => { artistModal.classList.add('hidden'); }, 300);
+        }
+
+        function openArtistModal(artist) {
+            artistModalName.innerText = artist.name;
+            artistSongList.innerHTML = '';
+            if (artist.type === 'image') {
+                artistModalImg.src = artist.image;
+                artistModalImg.classList.remove('hidden');
+                artistModalIcon.classList.add('hidden');
+            } else {
+                artistModalImg.classList.add('hidden');
+                artistModalIcon.classList.remove('hidden');
+            }
+            const artistSongs = songs.filter(s => {
+                if (artist.name === '엔조이') { if (s.artist.includes('OST')) return false; }
+                return s.artist.includes(artist.name);
+            });
+            if (artistSongs.length > 0) {
+                artistSongs.forEach((song, idx) => {
+                    const div = document.createElement('div');
+                    div.className = "flex items-center gap-4 p-2.5 rounded-[20px] bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.02] active:scale-[0.98] transition-all cursor-pointer group";
+                    div.innerHTML = `
+                        <div class="w-[52px] h-[52px] rounded-[16px] bg-gray-900 overflow-hidden relative flex-shrink-0 shadow-md border border-white/10 group-hover:shadow-blue-500/20 transition-all">
+                            <img src="${song.cover}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 min-w-0 pr-2">
+                            <h4 class="text-[15px] font-bold text-white truncate mb-0.5 group-hover:text-[#3182F6] transition-colors">${song.title}</h4>
+                            <p class="text-[12px] text-gray-400 truncate font-medium">${song.artist}</p>
+                        </div>
+                        <button class="w-8 h-8 flex items-center justify-center rounded-full bg-[#3182F6]/10 text-[#3182F6] group-hover:bg-[#3182F6] group-hover:text-white transition-colors mr-1 shrink-0">
+                            <i class="fa-solid fa-play text-xs pl-0.5"></i>
+                        </button>
+                    `;
+                    div.onclick = () => { openPlayer(idx, artistSongs); closeArtistModal(); };
+                    artistSongList.appendChild(div);
+                });
+            } else {
+                artistSongList.innerHTML = '<p class="text-gray-500 text-center py-10 text-[13px] font-medium">등록된 곡이 없습니다.</p>';
+            }
+            artistModal.classList.remove('hidden');
+            setTimeout(() => { artistModalContent.classList.remove('translate-y-full'); }, 10);
+        }
+
+        if (btnAdminLogin) {
+            btnAdminLogin.onclick = () => { adminPwInput.value = ""; adminLoginModal.classList.remove('hidden'); };
+        }
+        adminLoginCancel.onclick = () => adminLoginModal.classList.add('hidden');
+        adminLoginModal.onclick = (e) => { if (e.target === adminLoginModal) adminLoginModal.classList.add('hidden'); };
+        adminLoginSubmit.onclick = () => {
+            if (adminPwInput.value === '0920') { adminLoginModal.classList.add('hidden'); openAdminEdit(); }
+            else { alert('비밀번호가 틀렸습니다.'); }
+        };
+
+        async function openAdminEdit() {
+            let currentNotice = DEFAULT_NOTICE;
+            if (auth && db) {
+                const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice_v2'); 
+                try {
+                    const snap = await getDoc(noticeRef);
+                    if (snap.exists()) currentNotice = snap.data();
+                } catch (e) { console.error("Load notice fail:", e); }
+            }
+            editUpdateContent.value = currentNotice.update.replace(/<br\s*\/?>/gi, "\n");
+            editNewSongContent.value = currentNotice.newSong.replace(/<br\s*\/?>/gi, "\n");
+            adminEditModal.classList.remove('hidden');
+        }
+
+        adminEditCancel.onclick = () => adminEditModal.classList.add('hidden');
+        adminEditSave.onclick = async () => {
+            const newUpdate = editUpdateContent.value.replace(/\n/g, "<br>");
+            const newNewSong = editNewSongContent.value.replace(/\n/g, "<br>");
+            if (!auth || !db) { alert("DB 연결 실패"); return; }
+            const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice_v2');
+            try {
+                await setDoc(noticeRef, { update: newUpdate, newSong: newNewSong }, { merge: true });
+                alert("공지사항이 수정되었습니다.");
+                adminEditModal.classList.add('hidden');
+            } catch (e) { alert("저장 실패: " + e.message); }
+        };
+
+        function setupNoticeListener() {
+            if (!auth || !db) return;
+            const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main_notice_v2');
+            onSnapshot(noticeRef, (doc) => { });
+        }
+
+        function updateMediaSessionMetadata(song) {
+            if ('mediaSession' in navigator) {
+                try {
+                    const getAbsoluteUrl = (url) => { try { return new URL(url, document.baseURI).href; } catch(e) { return url; } };
+                    const artworkSrc = getAbsoluteUrl(song.cover);
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: song.title,
+                        artist: song.artist,
+                        album: "Play enjoy Album",
+                        artwork: [ { src: artworkSrc, sizes: '512x512', type: 'image/jpeg' } ]
+                    });
+                } catch (e) { console.warn("Media Session update failed:", e); }
+            }
+        }
+
+        function setupMediaSessionActionHandlers() {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.setActionHandler('play', () => togglePlay(true));
+                navigator.mediaSession.setActionHandler('pause', () => togglePlay(false));
+                navigator.mediaSession.setActionHandler('previoustrack', () => {
+                     let prevIdx = currentIdx - 1;
+                     if (prevIdx < 0) prevIdx = currentPlaylist.length - 1;
+                     openPlayer(prevIdx);
+                });
+                navigator.mediaSession.setActionHandler('nexttrack', () => {
+                    let nextIdx = currentIdx + 1;
+                    if (nextIdx >= currentPlaylist.length) nextIdx = 0;
+                    openPlayer(nextIdx);
+                });
+            }
+        }
+        setupMediaSessionActionHandlers();
+
+        function setupRealtimeListener() {
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+            const safeAppId = appId || 'default-app-id';
+            
+            // 인기 차트 (Daily) 상태 동기화
+            const snapshotRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'config', 'chart_state');
+            onSnapshot(snapshotRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.lastUpdated >= (chartData.lastUpdated || 0)) {
+                        chartData = data;
+                        if (!chartData.rankChanges) chartData.rankChanges = {};
+                        if (!chartData.rankChangeTimes) chartData.rankChangeTimes = {};
+                        localStorage.setItem('chart_snapshot_v2', JSON.stringify(chartData));
+                        renderAll();
+                    }
+                }
+            }, (err) => console.warn(err));
+
+            // 실시간 차트 (Hourly) 상태 동기화
+            const hourlySnapshotRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'config', 'hourly_chart_state');
+            onSnapshot(hourlySnapshotRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.lastUpdated >= (hourlyChartData.lastUpdated || 0)) {
+                        hourlyChartData = data;
+                        if (!hourlyChartData.rankChanges) hourlyChartData.rankChanges = {};
+                        localStorage.setItem('hourly_chart_snapshot', JSON.stringify(hourlyChartData));
+                        renderAll();
+                    }
+                }
+            }, (err) => console.warn(err));
+
+            // 인기 차트 데이터 리스너
+            const statsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'song_stats');
+            unsubscribeSnapshot = onSnapshot(statsRef, (snapshot) => {
+                const isCache = snapshot.metadata.fromCache;
+                latestSongStats = {};
+                snapshot.forEach(doc => { latestSongStats[doc.id] = doc.data().count || 0; });
+                updateRankings(isCache);
+            }, (error) => { console.warn("Snapshot error:", error); renderAll(); });
+            
+            // 주간 차트 데이터 리스너
+            const weeklyStatsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'weekly_stats');
+            onSnapshot(weeklyStatsRef, (snapshot) => {
+                latestWeeklyStats = {};
+                snapshot.forEach(doc => { latestWeeklyStats[doc.id] = doc.data(); });
+                renderWeeklyChart();
+                renderFullWeeklyChartList(); 
+            });
+
+            // 실시간(Hourly) 차트 데일리 리셋 리스너
+            const dailyStatsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'daily_stats');
+            onSnapshot(dailyStatsRef, (snapshot) => {
+                const isCache = snapshot.metadata.fromCache;
+                latestDailyStats = {};
+                const todayId = getTodayId();
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.dateId === todayId) {
+                        latestDailyStats[doc.id] = data.count || 0;
+                    } else {
+                        latestDailyStats[doc.id] = 0;
+                    }
+                });
+                updateHourlyRankings(isCache);
+            });
+        }
+
+        // --- 새롭게 추가된 실시간 차트(Hourly) 산정 로직 ---
+        function updateHourlyRankings(isCache = false) {
+            const now = new Date();
+            const todayId = getTodayId();
+            const lastUpdateDate = new Date(hourlyChartData.lastUpdated || 0);
+            
+            const dayChanged = now.getFullYear() !== lastUpdateDate.getFullYear() || 
+                               now.getMonth() !== lastUpdateDate.getMonth() || 
+                               now.getDate() !== lastUpdateDate.getDate();
+                               
+            const needsUpdate = dayChanged || now.getHours() !== lastUpdateDate.getHours() || hourlyChartData.currentRanking.length === 0;
+            
+            if (needsUpdate) {
+                if (isCache) return; 
+
+                const tempSongs = [...songs];
+                tempSongs.forEach(s => { s.hourlyCount = latestDailyStats[s.id] || 0; });
+                
+                // 순위 산정: 조회수가 같으면 (ex: 자정 리셋 시 0) 무조건 전 시간대 순위를 그대로 보존
+                tempSongs.sort((a, b) => { 
+                    if (b.hourlyCount !== a.hourlyCount) return b.hourlyCount - a.hourlyCount; 
+                    const idxA = hourlyChartData.currentRanking.indexOf(a.id);
+                    const idxB = hourlyChartData.currentRanking.indexOf(b.id);
+                    const validA = idxA !== -1 ? idxA : 999;
+                    const validB = idxB !== -1 ? idxB : 999;
+                    if (validA !== validB) return validA - validB;
+                    return a.id - b.id;
+                });
+                
+                const newRankingIds = tempSongs.map(s => s.id);
+                const newPlayCounts = {};
+                tempSongs.forEach(s => newPlayCounts[s.id] = s.hourlyCount);
+
+                if (!hourlyChartData.rankChanges) hourlyChartData.rankChanges = {};
+                const newChanges = {};
+
+                if (dayChanged) {
+                    // 하루가 지나면 조회수 초기화 + 배지 리셋
+                    newRankingIds.forEach(id => { newChanges[id] = '-'; });
+                } else if (hourlyChartData.currentRanking.length > 0) {
+                    const validOldRanking = hourlyChartData.currentRanking.filter(oldId => songs.some(s => s.id === oldId));
+                    newRankingIds.forEach((id, newIndex) => {
+                        const oldIndex = validOldRanking.indexOf(id);
+                        const prevChange = hourlyChartData.rankChanges[id] || '-';
+
+                        if (oldIndex === -1) newChanges[id] = 'new';
+                        else if (newIndex < oldIndex) newChanges[id] = 'up';
+                        else if (newIndex > oldIndex) newChanges[id] = 'down';
+                        else newChanges[id] = prevChange; // 변동 없으면 배지 그대로 유지
+                    });
+                } else {
+                    newRankingIds.forEach(id => { newChanges[id] = '-'; });
+                }
+
+                hourlyChartData.prevRanking = hourlyChartData.currentRanking;
+                hourlyChartData.currentRanking = newRankingIds;
+                hourlyChartData.playCounts = newPlayCounts;
+                hourlyChartData.rankChanges = newChanges;
+                hourlyChartData.lastUpdated = now.getTime();
+                
+                localStorage.setItem('hourly_chart_snapshot', JSON.stringify(hourlyChartData));
+                
+                if (auth && auth.currentUser) {
+                    const safeAppId = appId || 'default-app-id';
+                    const snapshotRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'config', 'hourly_chart_state');
+                    setDoc(snapshotRef, hourlyChartData, { merge: true }).catch(e => console.warn(e));
+                }
+            }
+            
+            const updatedDate = new Date(hourlyChartData.lastUpdated || now);
+            if(hourlyChartTime) hourlyChartTime.innerText = `${updatedDate.getHours()}시 기준`;
+            
+            renderAll();
+        }
+
+        // --- 기존 인기 차트 (Daily) 산정 로직 ---
+        function updateRankings(isCache = false) {
+            const now = new Date();
+            const lastUpdateDate = new Date(chartData.lastUpdated || 0);
+            
+            const needsUpdate = now.getFullYear() !== lastUpdateDate.getFullYear() || 
+                                now.getMonth() !== lastUpdateDate.getMonth() || 
+                                now.getDate() !== lastUpdateDate.getDate() || 
+                                chartData.currentRanking.length === 0;
+            
+            if (needsUpdate) {
+                if (isCache) return; 
+                
+                const tempSongs = [...songs];
+                tempSongs.forEach(s => { s.playCount = latestSongStats[s.id] || 0; });
+                tempSongs.sort((a, b) => { if (b.playCount !== a.playCount) return b.playCount - a.playCount; return a.id - b.id; });
+                const newRankingIds = tempSongs.map(s => s.id);
+                const newPlayCounts = {};
+                tempSongs.forEach(s => newPlayCounts[s.id] = s.playCount);
+                
+                if (!chartData.rankChanges) chartData.rankChanges = {};
+                if (!chartData.rankChangeTimes) chartData.rankChangeTimes = {};
+                const newChanges = {};
+                const newChangeTimes = {};
+                const ONE_WEEK = 7 * 24 * 3600 * 1000;
+                
+                if (chartData.currentRanking.length > 0) {
+                    const validOldRanking = chartData.currentRanking.filter(oldId => songs.some(s => s.id === oldId));
+                    
+                    newRankingIds.forEach((id, newIndex) => {
+                        const oldIndex = validOldRanking.indexOf(id);
+                        const prevChange = chartData.rankChanges[id] || '-';
+                        const prevTime = chartData.rankChangeTimes[id] || now.getTime();
+
+                        if (oldIndex === -1) {
+                            newChanges[id] = 'new';
+                            newChangeTimes[id] = now.getTime();
+                        }
+                        else if (newIndex < oldIndex) {
+                            newChanges[id] = 'up';
+                            newChangeTimes[id] = now.getTime();
+                        }
+                        else if (newIndex > oldIndex) {
+                            newChanges[id] = 'down';
+                            newChangeTimes[id] = now.getTime();
+                        }
+                        else {
+                            if (now.getTime() - prevTime >= ONE_WEEK) {
+                                newChanges[id] = '-';
+                                newChangeTimes[id] = now.getTime();
+                            } else {
+                                newChanges[id] = prevChange;
+                                newChangeTimes[id] = prevTime;
+                            }
+                        }
+                    });
+                } else {
+                    newRankingIds.forEach(id => {
+                        newChanges[id] = '-';
+                        newChangeTimes[id] = now.getTime();
+                    });
+                }
+
+                chartData.prevRanking = chartData.currentRanking;
+                chartData.currentRanking = newRankingIds;
+                chartData.playCounts = newPlayCounts;
+                chartData.rankChanges = newChanges;
+                chartData.rankChangeTimes = newChangeTimes;
+                chartData.lastUpdated = now.getTime();
+                
+                localStorage.setItem('chart_snapshot_v2', JSON.stringify(chartData));
+                
+                if (auth && auth.currentUser) {
+                    const safeAppId = appId || 'default-app-id';
+                    const snapshotRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'config', 'chart_state');
+                    setDoc(snapshotRef, chartData, { merge: true }).catch(e => console.warn(e));
+                }
+            }
+            const orderedSongs = [];
+            chartData.currentRanking.forEach(id => { const song = songs.find(s => s.id === id); if (song) orderedSongs.push(song); });
+            songs.forEach(s => { if (!chartData.currentRanking.includes(s.id)) orderedSongs.push(s); });
+            songs = orderedSongs;
+            const ONE_DAY = 24 * 3600 * 1000;
+            songs.forEach((song, index) => {
+                song.playCount = chartData.playCounts[song.id] || 0;
+                const releaseTime = new Date(song.releaseDate).getTime();
+                song.isNew = (Date.now() - releaseTime) < ONE_DAY;
+                song.rankChange = chartData.rankChanges ? (chartData.rankChanges[song.id] || '-') : '-';
+            });
+            
+            const updatedDate = new Date(chartData.lastUpdated || now);
+            if(chartTime) chartTime.innerText = `${updatedDate.getMonth() + 1}월 ${updatedDate.getDate()}일 기준`;
+            renderAll();
+        }
+
+        async function incrementPlayCount(songId) {
+            if (!auth || !auth.currentUser) return;
+            const safeAppId = appId || 'default-app-id';
+            const currentWeekId = updateWeeklyChartTime();
+            
+            // 기존 조회수 통계 업데이트
+            const docRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'song_stats', String(songId));
+            const weeklyDocRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'weekly_stats', String(songId));
+            // 새로운 실시간(Daily Reset) 통계 업데이트
+            const dailyDocRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'daily_stats', String(songId));
+            const todayId = getTodayId();
+
+            try { 
+                await setDoc(docRef, { count: increment(1) }, { merge: true }); 
+                
+                const weeklySnap = await getDoc(weeklyDocRef);
+                if (weeklySnap.exists()) {
+                    const data = weeklySnap.data();
+                    if (data.thisWeekId === currentWeekId) { await updateDoc(weeklyDocRef, { thisWeekCount: increment(1) }); }
+                    else { await setDoc(weeklyDocRef, { thisWeekId: currentWeekId, thisWeekCount: 1, lastWeekId: data.thisWeekId || "", lastWeekCount: data.thisWeekCount || 0 }, { merge: true }); }
+                } else { await setDoc(weeklyDocRef, { thisWeekId: currentWeekId, thisWeekCount: 1, lastWeekId: "", lastWeekCount: 0 }); }
+
+                const dailySnap = await getDoc(dailyDocRef);
+                if (dailySnap.exists()) {
+                    const data = dailySnap.data();
+                    if (data.dateId === todayId) { await updateDoc(dailyDocRef, { count: increment(1) }); }
+                    else { await setDoc(dailyDocRef, { dateId: todayId, count: 1 }, { merge: true }); }
+                } else { await setDoc(dailyDocRef, { dateId: todayId, count: 1 }); }
+
+            } catch (e) { console.error("Inc failed", e); }
+        }
+
+        function getRankHTML(song) {
+            let html = '';
+            if (song.isNew) html += `<span class="rank-badge-new">NEW</span>`;
+            if (song.rankChange === 'up') html += `<span class="rank-badge-up"><i class="fa-solid fa-caret-up"></i></span>`;
+            else if (song.rankChange === 'down') html += `<span class="rank-badge-down"><i class="fa-solid fa-caret-down"></i></span>`;
+            else if (!song.isNew) html += `<span class="text-gray-600 text-[10px]"><i class="fa-solid fa-minus"></i></span>`;
+            return html;
+        }
+
+        function getHourlyRankHTML(song) {
+            const change = hourlyChartData.rankChanges ? (hourlyChartData.rankChanges[song.id] || '-') : '-';
+            let html = '';
+            if (song.isNew) html += `<span class="rank-badge-new">NEW</span>`;
+            if (change === 'up') html += `<span class="rank-badge-up"><i class="fa-solid fa-caret-up"></i></span>`;
+            else if (change === 'down') html += `<span class="rank-badge-down"><i class="fa-solid fa-caret-down"></i></span>`;
+            else if (!song.isNew) html += `<span class="text-gray-600 text-[10px]"><i class="fa-solid fa-minus"></i></span>`;
+            return html;
+        }
+
+        function renderAll() { 
+            renderNewAlbumList(); 
+            renderYoutubeList();
+            renderHourlyChart();
+            renderWeeklyChart(); 
+            renderChartList(); 
+            renderFullHourlyChartList();
+            renderFullChartList(); 
+            renderFullWeeklyChartList(); 
+            renderComingSoonList(); 
+            renderArtistList(); 
+        }
+
+        function renderNewAlbumList() {
+            newAlbumList.innerHTML = '';
+            
+            const allowedInNewAlbum = ["번역 못 할 사이", "Cool On Replay", "하이 스피드 러브", "우리는 엔조이", "너의 세상"];
+            const newAlbumSongs = songs.filter(s => allowedInNewAlbum.includes(s.title));
+            
+            const sortedByNewest = newAlbumSongs.sort((a, b) => {
+                if (a.title === '번역 못 할 사이') return -1;
+                if (b.title === '번역 못 할 사이') return 1;
+                if (a.title === 'Cool On Replay') return -1;
+                if (b.title === 'Cool On Replay') return 1;
+                if (a.title === '하이 스피드 러브') return -1;
+                if (b.title === '하이 스피드 러브') return 1;
+                return b.id - a.id;
+            }); 
+            sortedByNewest.forEach((song, idx) => {
+                const div = document.createElement('div');
+                div.className = "flex-shrink-0 w-[140px] group cursor-pointer snap-start";
+                div.innerHTML = `
+                    <div class="w-[140px] h-[140px] rounded-[24px] overflow-hidden bg-[#1C1C1E] mb-3.5 shadow-[0_8px_24px_rgba(0,0,0,0.4)] border border-white/5 relative group-hover:shadow-[0_12px_32px_rgba(49,130,246,0.2)] transition-all duration-500">
+                        <img src="${song.cover}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500"></div>
+                    </div>
+                    <h3 class="text-[15px] font-bold text-white truncate px-1">${song.title}</h3>
+                    <p class="text-[12px] text-gray-400 truncate font-medium mt-1 px-1">${song.artist}</p>
+                `;
+                div.addEventListener('click', () => openPlayer(idx, sortedByNewest));
+                newAlbumList.appendChild(div);
+            });
+        }
+
+        function renderYoutubeList() {
+            const container = document.getElementById('youtube-music-list');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            const ytSongs = songs.filter(s => s.type === 'youtube');
+            
+            ytSongs.forEach((song, idx) => {
+                const div = document.createElement('div');
+                div.className = "flex-shrink-0 w-[140px] group cursor-pointer snap-start";
+                div.innerHTML = `
+                    <div class="w-[140px] h-[140px] rounded-[24px] overflow-hidden bg-[#1C1C1E] mb-3.5 shadow-[0_8px_24px_rgba(0,0,0,0.4)] border border-white/5 relative group-hover:shadow-[0_12px_32px_rgba(49,130,246,0.2)] transition-all duration-500">
+                        <img src="${song.cover}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500"></div>
+                    </div>
+                    <h3 class="text-[15px] font-bold text-white truncate px-1">${song.title}</h3>
+                    <p class="text-[12px] text-gray-400 truncate font-medium mt-1 px-1">${song.artist}</p>
+                `;
+                div.addEventListener('click', () => openPlayer(idx, ytSongs));
+                container.appendChild(div);
+            });
+        }
+
+        function renderHourlyChart() {
+            if(!hourlyChartSlider) return;
+            hourlyChartSlider.innerHTML = '';
+            
+            let orderedSongs = [];
+            hourlyChartData.currentRanking.forEach(id => { const song = songs.find(s => s.id === id); if (song) orderedSongs.push(song); });
+            songs.forEach(s => { if (!hourlyChartData.currentRanking.includes(s.id)) orderedSongs.push(s); });
+            
+            const chunkSize = 3;
+            for (let i = 0; i < orderedSongs.length; i += chunkSize) {
+                const chunk = orderedSongs.slice(i, i + chunkSize);
+                const slide = document.createElement('div');
+                slide.className = "min-w-[90%] snap-start flex flex-col gap-2"; 
+                chunk.forEach((song, idx) => {
+                    const realIndex = i + idx;
+                    const rank = realIndex + 1;
+                    const rankColorClass = rank <= 3 ? "text-white" : "text-gray-400";
+                    const item = document.createElement('div');
+                    item.className = "flex items-center gap-4 p-2.5 rounded-[20px] bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.02] active:scale-[0.98] transition-all cursor-pointer group";
+                    item.innerHTML = `
+                        <div class="flex flex-col items-center justify-center w-7 mr-0">
+                            <span class="${rankColorClass} text-[17px] font-black leading-none mb-1 opacity-90">${rank}</span>
+                            <div class="flex flex-col items-center gap-0.5">${getHourlyRankHTML(song)}</div>
+                        </div>
+                        <div class="w-[52px] h-[52px] rounded-[16px] bg-gray-900 overflow-hidden relative flex-shrink-0 shadow-md border border-white/10 group-hover:shadow-blue-500/20 transition-all">
+                            <img src="${song.cover}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 min-w-0 pr-2">
+                            <h3 class="text-[15px] font-bold text-white truncate mb-0.5 group-hover:text-[#3182F6] transition-colors">${song.title}</h3>
+                            <p class="text-[12px] text-gray-400 truncate font-medium">${song.artist}</p>
+                        </div>
+                    `;
+                    item.addEventListener('click', () => openPlayer(realIndex, orderedSongs));
+                    slide.appendChild(item);
+                });
+                hourlyChartSlider.appendChild(slide);
+            }
+        }
+
+        function renderChartList() {
+            chartSlider.innerHTML = '';
+            const chunkSize = 3;
+            for (let i = 0; i < songs.length; i += chunkSize) {
+                const chunk = songs.slice(i, i + chunkSize);
+                const slide = document.createElement('div');
+                slide.className = "min-w-[90%] snap-start flex flex-col gap-2"; 
+                chunk.forEach((song, idx) => {
+                    const realIndex = i + idx;
+                    const rank = realIndex + 1;
+                    const rankColorClass = rank <= 3 ? "text-white" : "text-gray-400";
+                    const item = document.createElement('div');
+                    item.className = "flex items-center gap-4 p-2.5 rounded-[20px] bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.02] active:scale-[0.98] transition-all cursor-pointer group";
+                    item.innerHTML = `
+                        <div class="flex flex-col items-center justify-center w-7 mr-0">
+                            <span class="${rankColorClass} text-[17px] font-black leading-none mb-1 opacity-90">${rank}</span>
+                            <div class="flex flex-col items-center gap-0.5">${getRankHTML(song)}</div>
+                        </div>
+                        <div class="w-[52px] h-[52px] rounded-[16px] bg-gray-900 overflow-hidden relative flex-shrink-0 shadow-md border border-white/10 group-hover:shadow-blue-500/20 transition-all">
+                            <img src="${song.cover}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 min-w-0 pr-2">
+                            <h3 class="text-[15px] font-bold text-white truncate mb-0.5 group-hover:text-[#3182F6] transition-colors">${song.title}</h3>
+                            <p class="text-[12px] text-gray-400 truncate font-medium">${song.artist}</p>
+                        </div>
+                    `;
+                    item.addEventListener('click', () => openPlayer(realIndex, songs));
+                    slide.appendChild(item);
+                });
+                chartSlider.appendChild(slide);
+            }
+        }
+
+        function renderWeeklyChart() {
+            weeklyChartSlider.innerHTML = '';
+            const targetPrevWeekId = getPrevWeekId(); 
+            let weeklySongs = [...songs].map(s => {
+                const data = latestWeeklyStats[s.id] || {};
+                let displayCount = 0;
+                if (data.lastWeekId === targetPrevWeekId) { displayCount = data.lastWeekCount || 0; }
+                else if (data.thisWeekId === targetPrevWeekId) { displayCount = data.thisWeekCount || 0; }
+                return { ...s, weeklyCount: displayCount };
+            });
+            weeklySongs.sort((a, b) => { if (a.isNew && !b.isNew) return -1; if (!a.isNew && b.isNew) return 1; return b.weeklyCount - a.weeklyCount; });
+            const chunkSize = 3;
+            for (let i = 0; i < weeklySongs.length; i += chunkSize) {
+                const chunk = weeklySongs.slice(i, i + chunkSize);
+                const slide = document.createElement('div');
+                slide.className = "min-w-[90%] snap-start flex flex-col gap-2"; 
+                chunk.forEach((song, idx) => {
+                    const realIndex = i + idx;
+                    const rank = realIndex + 1;
+                    const rankColorClass = rank <= 3 ? "text-white" : "text-gray-400";
+                    const item = document.createElement('div');
+                    item.className = "flex items-center gap-4 p-2.5 rounded-[20px] bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.02] active:scale-[0.98] transition-all cursor-pointer group";
+                    item.innerHTML = `
+                        <div class="flex flex-col items-center justify-center w-7 mr-0">
+                            <span class="${rankColorClass} text-[17px] font-black leading-none mb-1 opacity-90">${rank}</span>
+                            ${song.isNew ? '<span class="rank-badge-new">NEW</span>' : '<span class="text-gray-600 text-[10px]"><i class="fa-solid fa-minus"></i></span>'}
+                        </div>
+                        <div class="w-[52px] h-[52px] rounded-[16px] bg-gray-900 overflow-hidden relative flex-shrink-0 shadow-md border border-white/10 group-hover:shadow-blue-500/20 transition-all">
+                            <img src="${song.cover}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 min-w-0 pr-2">
+                            <h3 class="text-[15px] font-bold text-white truncate mb-0.5 group-hover:text-[#3182F6] transition-colors">${song.title}</h3>
+                            <p class="text-[12px] text-gray-400 truncate font-medium">${song.artist}</p>
+                        </div>
+                        <span class="text-[11px] text-gray-500 font-bold whitespace-nowrap pl-2">${song.weeklyCount}회</span>
+                    `;
+                    item.addEventListener('click', () => openPlayer(realIndex, weeklySongs));
+                    slide.appendChild(item);
+                });
+                weeklyChartSlider.appendChild(slide);
+            }
+        }
+
+        function renderFullHourlyChartList() {
+            if(!hourlyFullChartList) return;
+            hourlyFullChartList.innerHTML = '';
+            
+            let orderedSongs = [];
+            hourlyChartData.currentRanking.forEach(id => { const song = songs.find(s => s.id === id); if (song) orderedSongs.push(song); });
+            songs.forEach(s => { if (!hourlyChartData.currentRanking.includes(s.id)) orderedSongs.push(s); });
+            
+            orderedSongs.forEach((song, index) => {
+                const rank = index + 1;
+                const rankColorClass = rank <= 3 ? "text-white" : "text-gray-400";
+                // 실시간으로 변동되는 latestDailyStats 대신 정산된 시간대의 고정된 조회수를 가져오도록 수정
+                const hourlyCount = hourlyChartData.playCounts ? (hourlyChartData.playCounts[song.id] || 0) : 0;
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-4 px-5 py-3 hover:bg-white/[0.04] active:bg-white/[0.06] transition-all cursor-pointer group";
+                div.innerHTML = `
+                    <div class="flex flex-col items-center justify-center w-7 mr-0 flex-shrink-0">
+                        <span class="${rankColorClass} text-[17px] font-black leading-none mb-1 opacity-90">${rank}</span>
+                        <div class="flex flex-col items-center gap-0.5">${getHourlyRankHTML(song)}</div>
+                    </div>
+                    <div class="w-[52px] h-[52px] rounded-[16px] bg-gray-900 overflow-hidden relative flex-shrink-0 shadow-md border border-white/10 group-hover:shadow-blue-500/20 transition-all">
+                        <img src="${song.cover}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 min-w-0 pr-2 flex flex-col justify-center">
+                        <h3 class="text-[15px] font-bold text-white truncate mb-0.5 group-hover:text-[#3182F6] transition-colors">${song.title}</h3>
+                        <p class="text-[12px] text-gray-400 truncate font-medium">${song.artist}</p>
+                    </div>
+                    <span class="text-[11px] text-gray-500 font-bold whitespace-nowrap">${hourlyCount}회</span>
+                `;
+                div.addEventListener('click', () => { openPlayer(index, orderedSongs); hourlyFullChartView.classList.add('translate-x-full'); });
+                hourlyFullChartList.appendChild(div);
+            });
+        }
+
+        function renderFullWeeklyChartList() {
+            weeklyFullChartList.innerHTML = '';
+            const targetPrevWeekId = getPrevWeekId(); 
+            let weeklySongs = [...songs].map(s => {
+                const data = latestWeeklyStats[s.id] || {};
+                let displayCount = 0;
+                if (data.lastWeekId === targetPrevWeekId) { displayCount = data.lastWeekCount || 0; }
+                else if (data.thisWeekId === targetPrevWeekId) { displayCount = data.thisWeekCount || 0; }
+                return { ...s, weeklyCount: displayCount };
+            });
+            weeklySongs.sort((a, b) => { if (a.isNew && !b.isNew) return -1; if (!a.isNew && b.isNew) return 1; return b.weeklyCount - a.weeklyCount; });
+            weeklySongs.forEach((song, index) => {
+                const rank = index + 1;
+                const rankColorClass = rank <= 3 ? "text-white" : "text-gray-400";
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-4 px-5 py-3 hover:bg-white/[0.04] active:bg-white/[0.06] transition-all cursor-pointer group";
+                div.innerHTML = `
+                    <div class="flex flex-col items-center justify-center w-7 mr-0 flex-shrink-0">
+                        <span class="${rankColorClass} text-[17px] font-black leading-none mb-1 opacity-90">${rank}</span>
+                        <div class="flex flex-col items-center gap-0.5">
+                            ${song.isNew ? '<span class="rank-badge-new">NEW</span>' : '<span class="text-gray-600 text-[10px]"><i class="fa-solid fa-minus"></i></span>'}
+                        </div>
+                    </div>
+                    <div class="w-[52px] h-[52px] rounded-[16px] bg-gray-900 overflow-hidden relative flex-shrink-0 shadow-md border border-white/10 group-hover:shadow-blue-500/20 transition-all">
+                        <img src="${song.cover}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 min-w-0 pr-2 flex flex-col justify-center">
+                        <h3 class="text-[15px] font-bold text-white truncate mb-0.5 group-hover:text-[#3182F6] transition-colors">${song.title}</h3>
+                        <p class="text-[12px] text-gray-400 truncate font-medium">${song.artist}</p>
+                    </div>
+                    <span class="text-[11px] text-gray-500 font-bold whitespace-nowrap">${song.weeklyCount}회</span>
+                `;
+                div.addEventListener('click', () => { openPlayer(index, weeklySongs); weeklyFullChartView.classList.add('translate-x-full'); });
+                weeklyFullChartList.appendChild(div);
+            });
+        }
+
+        function renderFullChartList() {
+            fullChartList.innerHTML = '';
+            songs.forEach((song, index) => {
+                const rank = index + 1;
+                const rankColorClass = rank <= 3 ? "text-white" : "text-gray-400";
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-4 px-5 py-3 hover:bg-white/[0.04] active:bg-white/[0.06] transition-all cursor-pointer group";
+                div.innerHTML = `
+                    <div class="flex flex-col items-center justify-center w-7 mr-0 flex-shrink-0">
+                        <span class="${rankColorClass} text-[17px] font-black leading-none mb-1 opacity-90">${rank}</span>
+                        <div class="flex flex-col items-center gap-0.5">${getRankHTML(song)}</div>
+                    </div>
+                    <div class="w-[52px] h-[52px] rounded-[16px] bg-gray-900 overflow-hidden relative flex-shrink-0 shadow-md border border-white/10 group-hover:shadow-blue-500/20 transition-all">
+                        <img src="${song.cover}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 min-w-0 pr-2 flex flex-col justify-center">
+                        <h3 class="text-[15px] font-bold text-white truncate mb-0.5 group-hover:text-[#3182F6] transition-colors">${song.title}</h3>
+                        <p class="text-[12px] text-gray-400 truncate font-medium">${song.artist}</p>
+                    </div>
+                    <span class="text-[11px] text-gray-500 font-bold whitespace-nowrap">${song.playCount}회</span>
+                `;
+                div.addEventListener('click', () => { openPlayer(index, songs); fullChartView.classList.add('translate-x-full'); });
+                fullChartList.appendChild(div);
+            });
+        }
+
+        function renderComingSoonList() {
+            comingSoonList.innerHTML = '';
+            comingSoonSongs.forEach((song) => {
+                const div = document.createElement('div');
+                div.className = "flex-shrink-0 w-[120px] group cursor-pointer snap-start";
+                div.innerHTML = `
+                    <div class="w-[120px] h-[120px] rounded-[24px] overflow-hidden bg-[#1C1C1E] mb-3.5 shadow-[0_8px_24px_rgba(0,0,0,0.4)] relative border border-white/5 group-hover:border-white/20 transition-all">
+                        <img src="${song.cover}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-30 grayscale blur-[1px]">
+                        <div class="absolute inset-0 flex flex-col items-center justify-center bg-black/20">
+                            <i class="fa-solid fa-lock text-white/50 text-xl mb-2"></i>
+                            <span class="text-[10px] font-black text-white/50 tracking-widest mt-1">SOON</span>
+                        </div>
+                    </div>
+                    <h3 class="text-[14px] font-bold text-gray-400 truncate px-1">${song.title}</h3>
+                    <p class="text-[11px] text-gray-500 truncate font-medium mt-1 px-1">${song.artist}</p>
+                `;
+                div.addEventListener('click', () => popupModal.classList.remove('hidden'));
+                comingSoonList.appendChild(div);
+            });
+        }
+
+        function renderArtistList() {
+            artistList.innerHTML = '';
+            artists.forEach(artist => {
+                const div = document.createElement('div');
+                div.className = "flex-shrink-0 flex flex-col items-center cursor-pointer group w-[76px]";
+                let innerContent = '';
+                if (artist.type === 'image') { innerContent = `<img src="${artist.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">`; }
+                else { innerContent = `<i class="fa-solid fa-user text-[28px] text-gray-600 group-hover:text-white transition-colors"></i>`; }
+                div.innerHTML = `
+                    <div class="w-[76px] h-[76px] rounded-full overflow-hidden border-[3px] border-transparent group-hover:border-[#3182F6] transition-all duration-300 shadow-lg mb-3 bg-[#1C1C1E] flex items-center justify-center relative">
+                        <div class="absolute inset-0 rounded-full border border-white/10"></div>
+                        ${innerContent}
+                    </div>
+                    <span class="text-[12px] font-bold text-gray-400 group-hover:text-white transition-colors text-center w-full break-keep leading-tight">${artist.name}</span>
+                `;
+                div.onclick = () => openArtistModal(artist);
+                artistList.appendChild(div);
+            });
+        }
+
+        async function fetchLrc(url) { try { const response = await fetch(url); if (!response.ok) return null; const text = await response.text(); return parseLrc(text); } catch (e) { return null; } }
+
+        function parseLrc(lrcText) {
+            const lines = lrcText.split('\n');
+            const result = [];
+            const timeReg = /\[(\d{2}):(\d{2})[.:](\d{2,3})\]/;
+            lines.forEach(line => {
+                const match = timeReg.exec(line);
+                if (match) {
+                    const min = parseInt(match[1]);
+                    const sec = parseInt(match[2]);
+                    let ms = parseInt(match[3]);
+                    if (match[3].length === 3) ms = ms / 10;
+                    const time = min * 60 + sec + ms / 100;
+                    const text = line.replace(timeReg, '').trim();
+                    if (text) result.push({ time, text });
+                }
+            });
+            return result;
+        }
+
+        function scrollToActiveLyricImmediate() {
+            if (!isLyricsOpen || currentLyrics.length === 0) return;
+            const currentTime = (currentAudioType === 'youtube' && isYtReady && ytPlayer.getCurrentTime) ? ytPlayer.getCurrentTime() : audio.currentTime;
+            let activeIdx = -1;
+            for (let i = 0; i < currentLyrics.length; i++) { if (currentTime >= currentLyrics[i].time) activeIdx = i; else break; }
+            if (activeIdx === -1) activeIdx = 0; 
+            const lines = lyricsContent.getElementsByClassName('lyric-line');
+            if (lines[activeIdx]) {
+                const offset = lines[activeIdx].offsetTop - (lyricsContent.clientHeight * 0.2);
+                lyricsContent.scrollTo({ top: offset, behavior: 'auto' });
+                for (let i = 0; i < lines.length; i++) { if (i === activeIdx) lines[i].classList.add('active'); else lines[i].classList.remove('active'); }
+            }
+        }
+
+        function syncLyrics() {
+            if (!isLyricsOpen || currentLyrics.length === 0) return;
+            const currentTime = (currentAudioType === 'youtube' && isYtReady && ytPlayer.getCurrentTime) ? ytPlayer.getCurrentTime() : audio.currentTime;
+            let activeIdx = -1;
+            for (let i = 0; i < currentLyrics.length; i++) { if (currentTime >= currentLyrics[i].time) activeIdx = i; else break; }
+            const lines = lyricsContent.getElementsByClassName('lyric-line');
+            for (let i = 0; i < lines.length; i++) {
+                if (i === activeIdx) {
+                    if (!lines[i].classList.contains('active')) {
+                        lines[i].classList.add('active');
+                        const offset = lines[i].offsetTop - (lyricsContent.clientHeight * 0.2);
+                        lyricsContent.scrollTo({ top: offset, behavior: 'smooth' });
+                    }
+                } else lines[i].classList.remove('active');
+            }
+        }
+        
+        function animateLyrics() { if (isLyricsOpen && isPlaying) { syncLyrics(); rafId = requestAnimationFrame(animateLyrics); } }
+        function startLyricsSync() { if (rafId) cancelAnimationFrame(rafId); animateLyrics(); }
+        function stopLyricsSync() { if (rafId) cancelAnimationFrame(rafId); rafId = null; }
+        
+        if(btnLyrics) {
+            btnLyrics.addEventListener('click', () => {
+                if (!isLyricsOpen) {
+                    isLyricsOpen = true;
+                    lyricsOverlay.classList.remove('lyrics-closed');
+                    lyricsOverlay.classList.add('lyrics-open');
+                    btnLyrics.classList.add('text-[#3182F6]');
+                    btnLyrics.classList.remove('text-gray-400');
+                    scrollToActiveLyricImmediate();
+                    startLyricsSync();
+                } else {
+                    isLyricsOpen = false;
+                    lyricsOverlay.classList.remove('lyrics-open');
+                    lyricsOverlay.classList.add('lyrics-closed');
+                    btnLyrics.classList.remove('text-[#3182F6]');
+                    btnLyrics.classList.add('text-gray-400');
+                    stopLyricsSync();
+                }
+            });
+        }
+
+        if (btnCloseLyrics) {
+            btnCloseLyrics.addEventListener('click', () => {
+                isLyricsOpen = false;
+                lyricsOverlay.classList.remove('lyrics-open');
+                lyricsOverlay.classList.add('lyrics-closed');
+                btnLyrics.classList.remove('text-[#3182F6]');
+                btnLyrics.classList.add('text-gray-400');
+                stopLyricsSync();
+            });
+        }
+
+        function updatePillState() {
+            const hasMiniPlayer = !miniPlayer.classList.contains('translate-y-[150%]');
+            
+            if (isPlayerVisible || hasMiniPlayer) {
+                dynamicPill.classList.remove('right-1/2', 'translate-x-1/2');
+                dynamicPill.classList.add('right-5', 'translate-x-0');
+                if (isPillOpen) {
+                    dynamicPill.classList.remove('w-[60px]');
+                    dynamicPill.classList.add('w-[130px]'); 
+                    pillHomeBtn.classList.remove('w-0', 'opacity-0', 'mr-0', 'px-0');
+                    pillHomeBtn.classList.add('w-[4.5rem]', 'opacity-100', 'mr-2');
+                    miniPlayer.classList.remove('right-[5.5rem]');
+                    miniPlayer.classList.add('right-[9.5rem]');
+                } else {
+                    dynamicPill.classList.remove('w-[130px]');
+                    dynamicPill.classList.add('w-[60px]');
+                    pillHomeBtn.classList.remove('w-[4.5rem]', 'opacity-100', 'mr-2');
+                    pillHomeBtn.classList.add('w-0', 'opacity-0', 'mr-0', 'px-0');
+                    miniPlayer.classList.remove('right-[9.5rem]');
+                    miniPlayer.classList.add('right-[5.5rem]');
+                }
+            } else {
+                dynamicPill.classList.remove('right-5', 'translate-x-0');
+                dynamicPill.classList.add('right-1/2', 'translate-x-1/2');
+                dynamicPill.classList.remove('w-[60px]');
+                dynamicPill.classList.add('w-[130px]');
+                pillHomeBtn.classList.remove('w-0', 'opacity-0', 'mr-0', 'px-0');
+                pillHomeBtn.classList.add('w-[4.5rem]', 'opacity-100', 'mr-2');
+            }
+            if (activeTab === 'home') {
+                pillHomeBtn.classList.add('nav-active');
+                pillHomeBtn.classList.remove('nav-inactive');
+                pillToggleBtn.classList.remove('nav-active');
+                pillToggleBtn.classList.add('nav-inactive');
+            } else {
+                pillHomeBtn.classList.remove('nav-active');
+                pillHomeBtn.classList.add('nav-inactive');
+                pillToggleBtn.classList.add('nav-active');
+                pillToggleBtn.classList.remove('nav-inactive');
+            }
+        }
+
+        pillToggleBtn.addEventListener('click', () => {
+            isPillOpen = !isPillOpen;
+            updatePillState();
+        });
+
+        const loadSongData = async (index) => {
+            const song = currentPlaylist[index];
+            if (!song) return;
+
+            // 기존 재생 모두 중지
+            audio.pause();
+            if (isYtReady && ytPlayer.stopVideo) ytPlayer.stopVideo();
+
+            currentAudioType = song.type === 'youtube' ? 'youtube' : 'html5';
+
+            if (currentAudioType === 'youtube') {
+                if (isYtReady) {
+                    ytPlayer.loadVideoById(song.videoId);
+                } else {
+                    pendingYtVideo = song.videoId;
+                }
+            } else {
+                audio.src = song.src;
+                audio.dataset.songId = song.id; 
+            }
+
+            document.getElementById('song-title').innerText = song.title;
+            document.getElementById('song-artist').innerText = song.artist;
+            document.getElementById('cover-image').src = song.cover;
+            playerBgImage.src = song.cover;
+            miniTitle.innerText = song.title;
+            miniArtist.innerText = song.artist;
+            miniCover.src = song.cover;
+            errorBox.classList.add('hidden');
+            timeCurr.innerText = "00:00";
+            timeDur.innerText = "00:00";
+            updateMediaSessionMetadata(song);
+            lyricsCover.src = song.cover;
+            lyricsTitle.innerText = song.title;
+            lyricsArtist.innerText = song.artist;
+            currentLyrics = [];
+            lyricsContent.innerHTML = '<p class="text-gray-500 text-sm mt-20 font-medium animate-pulse text-center w-full">가사를 불러오는 중...</p>';
+            if (song.lrc) {
+                const parsed = await fetchLrc(song.lrc);
+                if (parsed && parsed.length > 0) {
+                    currentLyrics = parsed;
+                    lyricsContent.innerHTML = parsed.map(line => `<p class="lyric-line py-2 cursor-pointer hover:text-white transition-colors">${line.text}</p>`).join('');
+                    const lineElements = lyricsContent.getElementsByClassName('lyric-line');
+                    Array.from(lineElements).forEach((el, idx) => { 
+                        el.addEventListener('click', () => { 
+                            if (currentAudioType === 'youtube' && isYtReady) ytPlayer.seekTo(currentLyrics[idx].time, true);
+                            else audio.currentTime = currentLyrics[idx].time; 
+                        }); 
+                    });
+                } else lyricsContent.innerHTML = '<p class="text-gray-500 text-sm mt-20 text-center w-full">가사가 없습니다.</p>';
+            } else lyricsContent.innerHTML = '<p class="text-gray-500 text-sm mt-20 text-center w-full">가사가 등록되지 않았습니다.</p>';
+        };
+
+        const openPlayer = (index, newPlaylist = null) => {
+            if (newPlaylist) {
+                currentPlaylist = newPlaylist;
+            }
+            isPlayerVisible = true;
+            activeTab = 'music';
+            isPillOpen = false; 
+            updatePillState();
+            isLyricsOpen = false;
+            lyricsOverlay.classList.add('lyrics-closed');
+            lyricsOverlay.classList.remove('lyrics-open');
+            btnLyrics.classList.remove('text-[#3182F6]');
+            btnLyrics.classList.add('text-gray-400');
+            stopLyricsSync();
+            miniPlayer.classList.remove('invisible'); 
+            requestAnimationFrame(() => { 
+                miniPlayer.classList.remove('translate-y-[150%]'); 
+                updatePillState();
+            });
+            
+            if (!currentPlaylist[index]) return;
+            const songToPlay = currentPlaylist[index];
+            
+            const isCurrentlyPlaying = (currentAudioType === 'youtube') ? (isYtReady && ytPlayer.getPlayerState && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) : !audio.paused;
+            const isSameSong = (currentAudioType === 'youtube' && songToPlay.type === 'youtube' && isYtReady && ytPlayer.getVideoData && ytPlayer.getVideoData().video_id === songToPlay.videoId) || 
+                               (currentAudioType === 'html5' && audio.dataset.songId == songToPlay.id);
+
+            if (isSameSong && isCurrentlyPlaying && playerScreen.classList.contains('translate-y-full')) {
+                currentIdx = index;
+                playerScreen.classList.remove('translate-y-full'); 
+                return; 
+            }
+            
+            incrementPlayCount(songToPlay.id);
+            currentIdx = index;
+            loadSongData(index);
+            playerScreen.classList.remove('translate-y-full');
+            togglePlay(true);
+        };
+
+        const togglePlay = (forcePlay = null) => {
+            const shouldPlay = forcePlay === null ? !isPlaying : forcePlay;
+            if (shouldPlay) { 
+                if (currentAudioType === 'youtube') {
+                    if (isYtReady) ytPlayer.playVideo();
+                    silentAudio.play().then(() => {
+                        if (currentPlaylist[currentIdx]) updateMediaSessionMetadata(currentPlaylist[currentIdx]);
+                    }).catch(e => console.warn("Silent audio play failed:", e));
+                } else {
+                    audio.play().then(() => updateUI(true)).catch(e => { console.error(e); errorBox.classList.remove('hidden'); updateUI(false); }); 
+                    silentAudio.pause();
+                }
+                updateUI(true); // 즉각적인 UI 반응
+            } else { 
+                if (currentAudioType === 'youtube') {
+                    if (isYtReady) ytPlayer.pauseVideo();
+                    silentAudio.pause();
+                } else {
+                    audio.pause(); 
+                }
+                updateUI(false); 
+            }
+        };
+
+        const updateUI = (playing) => {
+            isPlaying = playing;
+            if (playing) { miniIconPlay.classList.add('hidden'); miniIconPause.classList.remove('hidden'); iconPlay.classList.add('hidden'); iconPause.classList.remove('hidden'); if('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing"; startLyricsSync(); }
+            else { miniIconPlay.classList.remove('hidden'); miniIconPause.classList.add('hidden'); iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden'); if('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused"; stopLyricsSync(); }
+        };
+
+        miniPlayer.addEventListener('click', () => { playerScreen.classList.remove('translate-y-full'); });
+        
+        const closePlayerScreen = () => { 
+            playerScreen.classList.add('translate-y-full'); 
+            isPlayerVisible = false; 
+            updatePillState(); 
+        };
+        
+        document.getElementById('btn-minimize').onclick = closePlayerScreen;
+        
+        let swipeStartY = 0;
+        let isSwiping = false;
+
+        const onSwipeStart = (e) => { 
+            if (e.target.tagName.toLowerCase() === 'input') return; 
+            isSwiping = true;
+            swipeStartY = e.type.includes('touch') ? e.touches[0].screenY : e.clientY; 
+        };
+        
+        const onSwipeEnd = (e) => {
+            if (!isSwiping) return;
+            isSwiping = false;
+            const endY = e.type.includes('touch') ? e.changedTouches[0].screenY : e.clientY;
+            if (endY - swipeStartY > 40 && isPlayerVisible) { 
+                closePlayerScreen();
+            }
+        };
+
+        playerScreen.addEventListener('touchstart', onSwipeStart, {passive: true});
+        playerScreen.addEventListener('touchend', onSwipeEnd, {passive: true});
+        playerScreen.addEventListener('mousedown', onSwipeStart);
+        playerScreen.addEventListener('mouseup', onSwipeEnd);
+        playerScreen.addEventListener('mouseleave', (e) => {
+            if (isSwiping) onSwipeEnd(e);
+        });
+
+        btnPlay.addEventListener('click', () => togglePlay());
+        miniPlayBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
+        document.getElementById('btn-next').addEventListener('click', () => { 
+            let nextIdx = currentIdx + 1;
+            if (nextIdx >= currentPlaylist.length) nextIdx = 0;
+            openPlayer(nextIdx); 
+        });
+        document.getElementById('btn-prev').addEventListener('click', () => { let prevIdx = currentIdx - 1; if (prevIdx < 0) prevIdx = currentPlaylist.length - 1; openPlayer(prevIdx); });
+
+        audio.addEventListener('ended', () => { 
+            if (isRepeat) { 
+                audio.currentTime = 0; audio.play(); 
+            } else { 
+                let nextIdx = currentIdx + 1; 
+                if (nextIdx < currentPlaylist.length) openPlayer(nextIdx); 
+                else { togglePlay(false); audio.currentTime = 0; } 
+            } 
+        });
+
+        // 실시간 차트 전체보기
+        btnMoreHourlyChart.onclick = () => hourlyFullChartView.classList.remove('translate-x-full');
+        btnCloseHourlyChart.onclick = () => hourlyFullChartView.classList.add('translate-x-full');
+        
+        btnMoreChart.onclick = () => fullChartView.classList.remove('translate-x-full');
+        btnCloseChart.onclick = () => fullChartView.classList.add('translate-x-full');
+        
+        if(btnMoreWeeklyChart) btnMoreWeeklyChart.onclick = () => weeklyFullChartView.classList.remove('translate-x-full');
+        if(btnCloseWeeklyChart) btnCloseWeeklyChart.onclick = () => weeklyFullChartView.classList.add('translate-x-full');
+        
+        btnPlayAll.onclick = () => { openPlayer(0, songs); };
+        
+        if(btnPlayAllHourly) {
+            btnPlayAllHourly.onclick = () => {
+                let orderedSongs = [];
+                hourlyChartData.currentRanking.forEach(id => { const song = songs.find(s => s.id === id); if (song) orderedSongs.push(song); });
+                songs.forEach(s => { if (!hourlyChartData.currentRanking.includes(s.id)) orderedSongs.push(s); });
+                if(orderedSongs.length > 0) {
+                    openPlayer(0, orderedSongs);
+                }
+            };
+        }
+
+        if(btnPlayAllWeekly) {
+            btnPlayAllWeekly.onclick = () => {
+                const targetPrevWeekId = getPrevWeekId(); 
+                let weeklySongs = [...songs].map(s => {
+                    const data = latestWeeklyStats[s.id] || {};
+                    let displayCount = 0;
+                    if (data.lastWeekId === targetPrevWeekId) { displayCount = data.lastWeekCount || 0; }
+                    else if (data.thisWeekId === targetPrevWeekId) { displayCount = data.thisWeekCount || 0; }
+                    return { ...s, weeklyCount: displayCount };
+                });
+                weeklySongs.sort((a, b) => { if (a.isNew && !b.isNew) return -1; if (!a.isNew && b.isNew) return 1; return b.weeklyCount - a.weeklyCount; });
+                if(weeklySongs.length > 0) {
+                    openPlayer(0, weeklySongs);
+                }
+            };
+        }
+
+        const startAIPlay = (list) => {
+            // 전달받은 차트 리스트를 통째로 랜덤하게 섞어서 새로운 플레이리스트로 만듦
+            let shuffledList = [...list];
+            for (let i = shuffledList.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledList[i], shuffledList[j]] = [shuffledList[j], shuffledList[i]];
+            }
+            openPlayer(0, shuffledList);
+        };
+
+        if(btnShuffleHourly) btnShuffleHourly.onclick = () => {
+            let orderedSongs = [];
+            hourlyChartData.currentRanking.forEach(id => { const song = songs.find(s => s.id === id); if (song) orderedSongs.push(song); });
+            songs.forEach(s => { if (!hourlyChartData.currentRanking.includes(s.id)) orderedSongs.push(s); });
+            startAIPlay(orderedSongs);
+        };
+        if(btnShuffleRealtime) btnShuffleRealtime.onclick = () => startAIPlay(songs);
+        if(btnShuffleWeekly) btnShuffleWeekly.onclick = () => {
+            const targetPrevWeekId = getPrevWeekId(); 
+            let weeklySongs = [...songs].map(s => {
+                const data = latestWeeklyStats[s.id] || {};
+                let displayCount = 0;
+                if (data.lastWeekId === targetPrevWeekId) { displayCount = data.lastWeekCount || 0; }
+                else if (data.thisWeekId === targetPrevWeekId) { displayCount = data.thisWeekCount || 0; }
+                return { ...s, weeklyCount: displayCount };
+            });
+            weeklySongs.sort((a, b) => { if (a.isNew && !b.isNew) return -1; if (!a.isNew && b.isNew) return 1; return b.weeklyCount - a.weeklyCount; });
+            startAIPlay(weeklySongs);
+        };
+
+        // 탭 메뉴 컨트롤 로직 (실시간/인기/주간)
+        if(tabHourly && tabRealtime && tabWeekly) {
+            const tabs = [
+                { tab: tabHourly, header: headerHourly, panel: panelHourly },
+                { tab: tabRealtime, header: headerRealtime, panel: panelRealtime },
+                { tab: tabWeekly, header: headerWeekly, panel: panelWeekly }
+            ];
+
+            tabs.forEach((item) => {
+                item.tab.onclick = () => {
+                    tabs.forEach(t => {
+                        t.tab.classList.remove('text-white');
+                        t.tab.classList.add('text-gray-600', 'hover:text-gray-400');
+                        t.tab.querySelector('span').classList.add('opacity-0', 'hidden');
+                        t.header.classList.add('hidden');
+                        t.panel.classList.replace('block', 'hidden');
+                    });
+                    item.tab.classList.remove('text-gray-600', 'hover:text-gray-400');
+                    item.tab.classList.add('text-white');
+                    item.tab.querySelector('span').classList.remove('opacity-0', 'hidden');
+                    item.header.classList.remove('hidden');
+                    item.panel.classList.replace('hidden', 'block');
+                };
+            });
+        }
+
+        function getClientX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
+        function onScrub(e) {
+            const rect = document.getElementById('progress-container').getBoundingClientRect();
+            return Math.max(0, Math.min(100, ((getClientX(e) - rect.left) / rect.width) * 100));
+        }
+        const startScrub = (e) => { isDragging = true; progressFill.style.width = `${onScrub(e)}%`; };
+        const moveScrub = (e) => { if (isDragging) { e.preventDefault(); progressFill.style.width = `${onScrub(e)}%`; } };
+        const endScrub = (e) => { 
+            if (isDragging) { 
+                isDragging = false; 
+                const targetPercent = parseFloat(progressFill.style.width) / 100;
+                if (currentAudioType === 'youtube') {
+                    if (isYtReady && ytPlayer.getDuration) ytPlayer.seekTo(targetPercent * ytPlayer.getDuration(), true);
+                } else {
+                    if (audio.duration) audio.currentTime = targetPercent * audio.duration; 
+                }
+            } 
+        };
+        const pContainer = document.getElementById('progress-container');
+        pContainer.addEventListener('mousedown', startScrub);
+        pContainer.addEventListener('touchstart', startScrub, {passive: false});
+        document.addEventListener('mousemove', moveScrub);
+        document.addEventListener('touchmove', moveScrub, {passive: false});
+        document.addEventListener('mouseup', endScrub);
+        document.addEventListener('touchend', endScrub);
+
+        function formatTime(s) { if (typeof s !== 'number' || isNaN(s) || !isFinite(s)) return "00:00"; const min = Math.floor(s / 60); const sec = Math.floor(s % 60); return `${min}:${sec < 10 ? '0'+sec : sec}`; }
+
+        function updateTimeDisplay() {
+            const curr = (currentAudioType === 'youtube' && isYtReady && ytPlayer.getCurrentTime) ? ytPlayer.getCurrentTime() : audio.currentTime;
+            const dur = (currentAudioType === 'youtube' && isYtReady && ytPlayer.getDuration) ? ytPlayer.getDuration() : audio.duration;
+
+            if (timeCurr) timeCurr.innerText = formatTime(curr);
+            if (timeDur && dur) timeDur.innerText = formatTime(dur);
+            if (!isDragging && dur) {
+                const percent = (curr / dur) * 100;
+                if(progressFill) progressFill.style.width = `${percent}%`;
+                if(progressHandle) progressHandle.style.left = `${percent}%`;
+                if(seekSlider) seekSlider.value = percent;
+                const miniProg = document.getElementById('mini-progress');
+                if(miniProg) miniProg.style.width = `${percent}%`;
+            }
+        }
+        
+        audio.addEventListener('timeupdate', updateTimeDisplay);
+        audio.addEventListener('loadedmetadata', updateTimeDisplay);
+        audio.addEventListener('durationchange', updateTimeDisplay);
+
+        // 유튜브 타이머 루프 (오디오 태그에는 없는 timeupdate 이벤트를 대체)
+        setInterval(() => {
+            if (currentAudioType === 'youtube' && isYtReady && isPlaying) {
+                updateTimeDisplay();
+            }
+        }, 250);
+
+        if (btnClosePlaylist) {
+            btnClosePlaylist.addEventListener('click', () => {
+                currentPlaylistView.classList.add('translate-x-full');
+            });
+        }
+
+        function renderCurrentPlaylist() {
+            const listEl = document.getElementById('current-playlist-list');
+            if(!listEl) return;
+            listEl.innerHTML = '';
+            currentPlaylist.forEach((song, index) => {
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-4 px-5 py-3 hover:bg-white/[0.04] active:bg-white/[0.06] transition-all cursor-pointer group";
+                div.innerHTML = `
+                    <div class="w-[52px] h-[52px] rounded-[16px] bg-gray-900 overflow-hidden relative flex-shrink-0 shadow-md border ${index === currentIdx ? 'border-[#3182F6]' : 'border-white/10'} transition-all">
+                        <img src="${song.cover}" class="w-full h-full object-cover ${index === currentIdx ? 'opacity-80' : ''}">
+                        ${index === currentIdx ? '<div class="absolute inset-0 flex items-center justify-center bg-black/40"><i class="fa-solid fa-volume-high text-[#3182F6] text-xs"></i></div>' : ''}
+                    </div>
+                    <div class="flex-1 min-w-0 pr-2 flex flex-col justify-center">
+                        <h3 class="text-[15px] font-bold ${index === currentIdx ? 'text-[#3182F6]' : 'text-white'} truncate mb-0.5 transition-colors">${song.title}</h3>
+                        <p class="text-[12px] text-gray-400 truncate font-medium">${song.artist}</p>
+                    </div>
+                `;
+                div.addEventListener('click', () => {
+                    openPlayer(index);
+                    currentPlaylistView.classList.add('translate-x-full');
+                });
+                listEl.appendChild(div);
+            });
+        }
+
+        if (btnPlaylist) {
+            btnPlaylist.addEventListener('click', () => {
+                renderCurrentPlaylist();
+                currentPlaylistView.classList.remove('translate-x-full');
+            });
+        }
+
+        if (auth) {
+            onAuthStateChanged(auth, (user) => {
+                if (user) { setupRealtimeListener(); setupNoticeListener(); } 
+                else { if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) signInWithCustomToken(auth, __initial_auth_token); else signInAnonymously(auth); }
+            });
+        } else renderAll();
+    </script>
+</body>
+</html>
