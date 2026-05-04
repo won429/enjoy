@@ -666,7 +666,9 @@
                         if (currentAudioType !== 'youtube') return;
                         if (event.data === YT.PlayerState.PLAYING) {
                             updateUI(true);
-                            document.getElementById('silent-audio').play().catch(e => {});
+                            document.getElementById('silent-audio').play().then(() => {
+                                if (currentPlaylist[currentIdx]) updateMediaSessionMetadata(currentPlaylist[currentIdx]);
+                            }).catch(e => {});
                         } else if (event.data === YT.PlayerState.PAUSED) {
                             updateUI(false);
                             document.getElementById('silent-audio').pause();
@@ -1820,7 +1822,9 @@
             if (shouldPlay) { 
                 if (currentAudioType === 'youtube') {
                     if (isYtReady) ytPlayer.playVideo();
-                    silentAudio.play().catch(e => console.warn("Silent audio play failed:", e));
+                    silentAudio.play().then(() => {
+                        if (currentPlaylist[currentIdx]) updateMediaSessionMetadata(currentPlaylist[currentIdx]);
+                    }).catch(e => console.warn("Silent audio play failed:", e));
                 } else {
                     audio.play().then(() => updateUI(true)).catch(e => { console.error(e); errorBox.classList.remove('hidden'); updateUI(false); }); 
                     silentAudio.pause();
