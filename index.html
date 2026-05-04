@@ -257,7 +257,7 @@
                     <div class="flex justify-between items-end mb-5 px-1">
                         <h2 class="text-[28px] font-black text-white tracking-tight leading-none">YouTube Music<span class="text-[#FF0000]">.</span></h2>
                     </div>
-                    <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x px-1 pb-4" id="youtube-music-list"></div>
+                    <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-1 pb-4" id="youtube-music-list"></div>
                 </div>
 
                 <!-- Unified Chart Section (Tabs) -->
@@ -557,17 +557,13 @@
             { id: 4, title: "끝없는 여름밤", artist: "그날, 엔조이 이야기 OST", src: "./music4.mp3", cover: "./cover3.jpg", lrc: "./music4.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
             { id: 5, title: "행복을 꿈꾸며 울다", artist: "엔조이", src: "./music5.mp3", cover: "./cover4.jpg", lrc: "./music5.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
             { id: 6, title: "털어", artist: "엔조이", src: "./music6.mp3", cover: "./cover5.jpg", lrc: "./music6.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
-            { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", lrc: "./music3.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" } 
+            { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", lrc: "./music3.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" },
+            { id: 19, title: "MOON", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "8cFKPrxrrJM", cover: "./cover18.jpg", playCount: 0, rankStatus: 'new', releaseDate: '2026-05-05' },
+            { id: 20, title: "춤(CHOOM)", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "QmJbHPYx97M", cover: "./cover18.jpg", playCount: 0, rankStatus: 'new', releaseDate: '2026-05-05' },
+            { id: 21, title: "I LIKE IT", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "QmJbHPYx97M", cover: "./cover18.jpg", playCount: 0, rankStatus: 'new', releaseDate: '2026-05-05' },
+            { id: 22, title: "LOCKED IN", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "PDs_wgMaG48", cover: "./cover18.jpg", playCount: 0, rankStatus: 'new', releaseDate: '2026-05-05' }
         ];
 
-        // 추가할 유튜브 4곡 (비디오 ID를 videoId에 넣어주세요. 예: "dQw4w9WgXcQ")
-        const youtubeSongs = [
-            { id: 'yt-1', title: "MOON", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "8cFKPrxrrJM", cover: "./cover1.jpg", playCount: 0, lrc: null },
-            { id: 'yt-2', title: "춤(CHOOM)", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "QmJbHPYx97M", cover: "./cover1.jpg", playCount: 0, lrc: null },
-            { id: 'yt-3', title: "I LIKE IT", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "QmJbHPYx97M", cover: "./cover1.jpg", playCount: 0, lrc: null },
-            { id: 'yt-4', title: "LOCKED IN", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "PDs_wgMaG48", cover: "./cover1.jpg", playCount: 0, lrc: null }
-        ];
-        
         // 현재 선택된 재생목록
         let currentPlaylist = songs;
 
@@ -1311,26 +1307,20 @@
             if(!container) return;
             container.innerHTML = '';
             
-            youtubeSongs.forEach((song, idx) => {
+            const ytSongs = songs.filter(s => s.type === 'youtube');
+            
+            ytSongs.forEach((song, idx) => {
                 const div = document.createElement('div');
                 div.className = "flex-shrink-0 w-[140px] group cursor-pointer snap-start";
-                const hasVideoId = song.videoId && song.videoId.trim() !== "";
-                const coverImage = hasVideoId ? `https://img.youtube.com/vi/${song.videoId}/maxresdefault.jpg` : song.cover;
-                
                 div.innerHTML = `
-                    <div class="w-[140px] h-[140px] rounded-[24px] overflow-hidden bg-[#1C1C1E] mb-3.5 shadow-[0_8px_24px_rgba(0,0,0,0.4)] border border-white/5 relative group-hover:shadow-[0_12px_32px_rgba(255,0,0,0.2)] transition-all duration-500">
-                        <img src="${coverImage}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" onerror="this.src='./cover1.jpg'">
-                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 flex items-center justify-center">
-                            <i class="fa-brands fa-youtube text-3xl text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md"></i>
-                        </div>
+                    <div class="w-[140px] h-[140px] rounded-[24px] overflow-hidden bg-[#1C1C1E] mb-3.5 shadow-[0_8px_24px_rgba(0,0,0,0.4)] border border-white/5 relative group-hover:shadow-[0_12px_32px_rgba(49,130,246,0.2)] transition-all duration-500">
+                        <img src="${song.cover}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500"></div>
                     </div>
                     <h3 class="text-[15px] font-bold text-white truncate px-1">${song.title}</h3>
                     <p class="text-[12px] text-gray-400 truncate font-medium mt-1 px-1">${song.artist}</p>
                 `;
-                div.addEventListener('click', () => {
-                    if(!hasVideoId) return alert('유튜브 비디오 ID가 아직 등록되지 않았습니다!');
-                    openPlayer(idx, youtubeSongs);
-                });
+                div.addEventListener('click', () => openPlayer(idx, ytSongs));
                 container.appendChild(div);
             });
         }
