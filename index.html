@@ -252,6 +252,14 @@
                     <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-1 pb-4" id="new-album-list"></div>
                 </div>
 
+                <!-- YouTube Music Section -->
+                <div class="mb-12"> 
+                    <div class="flex justify-between items-end mb-5 px-1">
+                        <h2 class="text-[28px] font-black text-white tracking-tight leading-none">YouTube Music<span class="text-[#FF0000]">.</span></h2>
+                    </div>
+                    <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x px-1 pb-4" id="youtube-music-list"></div>
+                </div>
+
                 <!-- Unified Chart Section (Tabs) -->
                 <div class="mb-12 relative">
                     <div class="flex items-end mb-4 px-1">
@@ -500,6 +508,11 @@
 
     </main>
 
+    <!-- 유튜브 플레이어 컨테이너 (화면에서 완벽하게 숨김 처리) -->
+    <div class="fixed top-[-9999px] left-[-9999px] w-0 h-0 opacity-0 pointer-events-none z-[-9999]">
+        <div id="yt-player-container"></div>
+    </div>
+
     <audio id="audio" playsinline webkit-playsinline></audio>
 
     <script type="module">
@@ -545,6 +558,14 @@
             { id: 5, title: "행복을 꿈꾸며 울다", artist: "엔조이", src: "./music5.mp3", cover: "./cover4.jpg", lrc: "./music5.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
             { id: 6, title: "털어", artist: "엔조이", src: "./music6.mp3", cover: "./cover5.jpg", lrc: "./music6.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" }, 
             { id: 3, title: "빵글빵글 빵글송", artist: "성심당", src: "./music3.mp3", cover: "./cover2.jpg", lrc: "./music3.lrc", playCount: 0, rankStatus: '-', releaseDate: "2024-01-01" } 
+        ];
+
+        // 추가할 유튜브 4곡 (비디오 ID를 videoId에 넣어주세요. 예: "dQw4w9WgXcQ")
+        const youtubeSongs = [
+            { id: 'yt-1', title: "MOON", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "8cFKPrxrrJM", cover: "./cover1.jpg", playCount: 0, lrc: null },
+            { id: 'yt-2', title: "춤(CHOOM)", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "QmJbHPYx97M", cover: "./cover1.jpg", playCount: 0, lrc: null },
+            { id: 'yt-3', title: "I LIKE IT", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "QmJbHPYx97M", cover: "./cover1.jpg", playCount: 0, lrc: null },
+            { id: 'yt-4', title: "LOCKED IN", artist: "BABYMONSTER(베이비몬스터)", type: "youtube", videoId: "PDs_wgMaG48", cover: "./cover1.jpg", playCount: 0, lrc: null }
         ];
         
         // 현재 선택된 재생목록
@@ -617,6 +638,53 @@
         let currentLyrics = [];
         let isLyricsOpen = false;
         let isPlayerVisible = false;
+
+        let ytPlayer = null;
+        let isYtReady = false;
+        let pendingYtVideo = null;
+        let currentAudioType = 'html5'; // 'html5' or 'youtube'
+        let ytTimer = null;
+
+        // YouTube IFrame API 백그라운드 로드
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        window.onYouTubeIframeAPIReady = function() {
+            ytPlayer = new YT.Player('yt-player-container', {
+                height: '0',
+                width: '0',
+                videoId: '',
+                playerVars: { 'autoplay': 0, 'controls': 0, 'disablekb': 1, 'fs': 0, 'rel': 0, 'playsinline': 1 },
+                events: {
+                    'onReady': (event) => {
+                        isYtReady = true;
+                        if(pendingYtVideo) {
+                            ytPlayer.loadVideoById(pendingYtVideo);
+                            pendingYtVideo = null;
+                        }
+                    },
+                    'onStateChange': (event) => {
+                        if (currentAudioType !== 'youtube') return;
+                        if (event.data === YT.PlayerState.PLAYING) {
+                            updateUI(true);
+                        } else if (event.data === YT.PlayerState.PAUSED) {
+                            updateUI(false);
+                        } else if (event.data === YT.PlayerState.ENDED) {
+                            if (isRepeat) {
+                                ytPlayer.seekTo(0);
+                                ytPlayer.playVideo();
+                            } else {
+                                let nextIdx = currentIdx + 1;
+                                if (nextIdx < currentPlaylist.length) openPlayer(nextIdx);
+                                else { togglePlay(false); ytPlayer.seekTo(0); ytPlayer.stopVideo(); }
+                            }
+                        }
+                    }
+                }
+            });
+        };
 
         const audio = document.getElementById('audio');
         
@@ -1196,6 +1264,7 @@
 
         function renderAll() { 
             renderNewAlbumList(); 
+            renderYoutubeList();
             renderHourlyChart();
             renderWeeklyChart(); 
             renderChartList(); 
@@ -1234,6 +1303,35 @@
                 `;
                 div.addEventListener('click', () => openPlayer(idx, sortedByNewest));
                 newAlbumList.appendChild(div);
+            });
+        }
+
+        function renderYoutubeList() {
+            const container = document.getElementById('youtube-music-list');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            youtubeSongs.forEach((song, idx) => {
+                const div = document.createElement('div');
+                div.className = "flex-shrink-0 w-[140px] group cursor-pointer snap-start";
+                const hasVideoId = song.videoId && song.videoId.trim() !== "";
+                const coverImage = hasVideoId ? `https://img.youtube.com/vi/${song.videoId}/maxresdefault.jpg` : song.cover;
+                
+                div.innerHTML = `
+                    <div class="w-[140px] h-[140px] rounded-[24px] overflow-hidden bg-[#1C1C1E] mb-3.5 shadow-[0_8px_24px_rgba(0,0,0,0.4)] border border-white/5 relative group-hover:shadow-[0_12px_32px_rgba(255,0,0,0.2)] transition-all duration-500">
+                        <img src="${coverImage}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" onerror="this.src='./cover1.jpg'">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 flex items-center justify-center">
+                            <i class="fa-brands fa-youtube text-3xl text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-[15px] font-bold text-white truncate px-1">${song.title}</h3>
+                    <p class="text-[12px] text-gray-400 truncate font-medium mt-1 px-1">${song.artist}</p>
+                `;
+                div.addEventListener('click', () => {
+                    if(!hasVideoId) return alert('유튜브 비디오 ID가 아직 등록되지 않았습니다!');
+                    openPlayer(idx, youtubeSongs);
+                });
+                container.appendChild(div);
             });
         }
 
@@ -1513,7 +1611,7 @@
 
         function scrollToActiveLyricImmediate() {
             if (!isLyricsOpen || currentLyrics.length === 0) return;
-            const currentTime = audio.currentTime;
+            const currentTime = (currentAudioType === 'youtube' && isYtReady && ytPlayer.getCurrentTime) ? ytPlayer.getCurrentTime() : audio.currentTime;
             let activeIdx = -1;
             for (let i = 0; i < currentLyrics.length; i++) { if (currentTime >= currentLyrics[i].time) activeIdx = i; else break; }
             if (activeIdx === -1) activeIdx = 0; 
@@ -1527,7 +1625,7 @@
 
         function syncLyrics() {
             if (!isLyricsOpen || currentLyrics.length === 0) return;
-            const currentTime = audio.currentTime;
+            const currentTime = (currentAudioType === 'youtube' && isYtReady && ytPlayer.getCurrentTime) ? ytPlayer.getCurrentTime() : audio.currentTime;
             let activeIdx = -1;
             for (let i = 0; i < currentLyrics.length; i++) { if (currentTime >= currentLyrics[i].time) activeIdx = i; else break; }
             const lines = lyricsContent.getElementsByClassName('lyric-line');
@@ -1542,7 +1640,7 @@
             }
         }
         
-        function animateLyrics() { if (isLyricsOpen && !audio.paused) { syncLyrics(); rafId = requestAnimationFrame(animateLyrics); } }
+        function animateLyrics() { if (isLyricsOpen && isPlaying) { syncLyrics(); rafId = requestAnimationFrame(animateLyrics); } }
         function startLyricsSync() { if (rafId) cancelAnimationFrame(rafId); animateLyrics(); }
         function stopLyricsSync() { if (rafId) cancelAnimationFrame(rafId); rafId = null; }
         
@@ -1628,8 +1726,24 @@
         const loadSongData = async (index) => {
             const song = currentPlaylist[index];
             if (!song) return;
-            audio.src = song.src;
-            audio.dataset.songId = song.id; 
+
+            // 기존 재생 모두 중지
+            audio.pause();
+            if (isYtReady && ytPlayer.stopVideo) ytPlayer.stopVideo();
+
+            currentAudioType = song.type === 'youtube' ? 'youtube' : 'html5';
+
+            if (currentAudioType === 'youtube') {
+                if (isYtReady) {
+                    ytPlayer.loadVideoById(song.videoId);
+                } else {
+                    pendingYtVideo = song.videoId;
+                }
+            } else {
+                audio.src = song.src;
+                audio.dataset.songId = song.id; 
+            }
+
             document.getElementById('song-title').innerText = song.title;
             document.getElementById('song-artist').innerText = song.artist;
             document.getElementById('cover-image').src = song.cover;
@@ -1652,7 +1766,12 @@
                     currentLyrics = parsed;
                     lyricsContent.innerHTML = parsed.map(line => `<p class="lyric-line py-2 cursor-pointer hover:text-white transition-colors">${line.text}</p>`).join('');
                     const lineElements = lyricsContent.getElementsByClassName('lyric-line');
-                    Array.from(lineElements).forEach((el, idx) => { el.addEventListener('click', () => { audio.currentTime = currentLyrics[idx].time; }); });
+                    Array.from(lineElements).forEach((el, idx) => { 
+                        el.addEventListener('click', () => { 
+                            if (currentAudioType === 'youtube' && isYtReady) ytPlayer.seekTo(currentLyrics[idx].time, true);
+                            else audio.currentTime = currentLyrics[idx].time; 
+                        }); 
+                    });
                 } else lyricsContent.innerHTML = '<p class="text-gray-500 text-sm mt-20 text-center w-full">가사가 없습니다.</p>';
             } else lyricsContent.innerHTML = '<p class="text-gray-500 text-sm mt-20 text-center w-full">가사가 등록되지 않았습니다.</p>';
         };
@@ -1680,7 +1799,11 @@
             if (!currentPlaylist[index]) return;
             const songToPlay = currentPlaylist[index];
             
-            if (audio.dataset.songId == songToPlay.id && !audio.paused && playerScreen.classList.contains('translate-y-full')) {
+            const isCurrentlyPlaying = (currentAudioType === 'youtube') ? (isYtReady && ytPlayer.getPlayerState && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) : !audio.paused;
+            const isSameSong = (currentAudioType === 'youtube' && songToPlay.type === 'youtube' && isYtReady && ytPlayer.getVideoData && ytPlayer.getVideoData().video_id === songToPlay.videoId) || 
+                               (currentAudioType === 'html5' && audio.dataset.songId == songToPlay.id);
+
+            if (isSameSong && isCurrentlyPlaying && playerScreen.classList.contains('translate-y-full')) {
                 currentIdx = index;
                 playerScreen.classList.remove('translate-y-full'); 
                 return; 
@@ -1694,9 +1817,22 @@
         };
 
         const togglePlay = (forcePlay = null) => {
-            const shouldPlay = forcePlay === null ? audio.paused : forcePlay;
-            if (shouldPlay) { audio.play().then(() => updateUI(true)).catch(e => { console.error(e); errorBox.classList.remove('hidden'); updateUI(false); }); }
-            else { audio.pause(); updateUI(false); }
+            const shouldPlay = forcePlay === null ? !isPlaying : forcePlay;
+            if (shouldPlay) { 
+                if (currentAudioType === 'youtube') {
+                    if (isYtReady) ytPlayer.playVideo();
+                } else {
+                    audio.play().then(() => updateUI(true)).catch(e => { console.error(e); errorBox.classList.remove('hidden'); updateUI(false); }); 
+                }
+                updateUI(true); // 즉각적인 UI 반응
+            } else { 
+                if (currentAudioType === 'youtube') {
+                    if (isYtReady) ytPlayer.pauseVideo();
+                } else {
+                    audio.pause(); 
+                }
+                updateUI(false); 
+            }
         };
 
         const updateUI = (playing) => {
@@ -1863,7 +1999,17 @@
         }
         const startScrub = (e) => { isDragging = true; progressFill.style.width = `${onScrub(e)}%`; };
         const moveScrub = (e) => { if (isDragging) { e.preventDefault(); progressFill.style.width = `${onScrub(e)}%`; } };
-        const endScrub = (e) => { if (isDragging) { isDragging = false; if(audio.duration) audio.currentTime = (parseFloat(progressFill.style.width) / 100) * audio.duration; } };
+        const endScrub = (e) => { 
+            if (isDragging) { 
+                isDragging = false; 
+                const targetPercent = parseFloat(progressFill.style.width) / 100;
+                if (currentAudioType === 'youtube') {
+                    if (isYtReady && ytPlayer.getDuration) ytPlayer.seekTo(targetPercent * ytPlayer.getDuration(), true);
+                } else {
+                    if (audio.duration) audio.currentTime = targetPercent * audio.duration; 
+                }
+            } 
+        };
         const pContainer = document.getElementById('progress-container');
         pContainer.addEventListener('mousedown', startScrub);
         pContainer.addEventListener('touchstart', startScrub, {passive: false});
@@ -1875,10 +2021,13 @@
         function formatTime(s) { if (typeof s !== 'number' || isNaN(s) || !isFinite(s)) return "00:00"; const min = Math.floor(s / 60); const sec = Math.floor(s % 60); return `${min}:${sec < 10 ? '0'+sec : sec}`; }
 
         function updateTimeDisplay() {
-            if (timeCurr) timeCurr.innerText = formatTime(audio.currentTime);
-            if (timeDur && audio.duration) timeDur.innerText = formatTime(audio.duration);
-            if (!isDragging && audio.duration) {
-                const percent = (audio.currentTime / audio.duration) * 100;
+            const curr = (currentAudioType === 'youtube' && isYtReady && ytPlayer.getCurrentTime) ? ytPlayer.getCurrentTime() : audio.currentTime;
+            const dur = (currentAudioType === 'youtube' && isYtReady && ytPlayer.getDuration) ? ytPlayer.getDuration() : audio.duration;
+
+            if (timeCurr) timeCurr.innerText = formatTime(curr);
+            if (timeDur && dur) timeDur.innerText = formatTime(dur);
+            if (!isDragging && dur) {
+                const percent = (curr / dur) * 100;
                 if(progressFill) progressFill.style.width = `${percent}%`;
                 if(progressHandle) progressHandle.style.left = `${percent}%`;
                 if(seekSlider) seekSlider.value = percent;
@@ -1886,9 +2035,17 @@
                 if(miniProg) miniProg.style.width = `${percent}%`;
             }
         }
+        
         audio.addEventListener('timeupdate', updateTimeDisplay);
         audio.addEventListener('loadedmetadata', updateTimeDisplay);
         audio.addEventListener('durationchange', updateTimeDisplay);
+
+        // 유튜브 타이머 루프 (오디오 태그에는 없는 timeupdate 이벤트를 대체)
+        setInterval(() => {
+            if (currentAudioType === 'youtube' && isYtReady && isPlaying) {
+                updateTimeDisplay();
+            }
+        }, 250);
 
         if (btnClosePlaylist) {
             btnClosePlaylist.addEventListener('click', () => {
