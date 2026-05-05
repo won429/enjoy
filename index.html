@@ -508,13 +508,7 @@
 
     </main>
 
-    <!-- 유튜브 플레이어 컨테이너 (화면에서 완벽하게 숨김 처리) -->
-    <div class="fixed top-[-9999px] left-[-9999px] w-10 h-10 opacity-0 pointer-events-none z-[-9999]">
-        <div id="yt-player-container"></div>
-    </div>
-
     <audio id="audio" playsinline webkit-playsinline></audio>
-    <audio id="silent-audio" loop playsinline webkit-playsinline src="data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gSWxsaXF1aWRTb3VuZHMuY29t//MUxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -636,64 +630,7 @@
         let isLyricsOpen = false;
         let isPlayerVisible = false;
 
-        let ytPlayer = null;
-        let isYtReady = false;
-        let pendingYtVideo = null;
-        let currentAudioType = 'html5'; // 'html5' or 'youtube'
-        let ytTimer = null;
-
-        // YouTube IFrame API 백그라운드 로드
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-        window.onYouTubeIframeAPIReady = function() {
-            ytPlayer = new YT.Player('yt-player-container', {
-                height: '10',
-                width: '10',
-                videoId: '',
-                playerVars: { 'autoplay': 1, 'controls': 0, 'disablekb': 1, 'fs': 0, 'rel': 0, 'playsinline': 1 },
-                events: {
-                    'onReady': (event) => {
-                        isYtReady = true;
-                        if(pendingYtVideo) {
-                            ytPlayer.loadVideoById(pendingYtVideo);
-                            pendingYtVideo = null;
-                        }
-                    },
-                    'onStateChange': (event) => {
-                        if (currentAudioType !== 'youtube') return;
-                        if (event.data === YT.PlayerState.PLAYING) {
-                            updateUI(true);
-                            document.getElementById('silent-audio').play().then(() => {
-                                if (currentPlaylist[currentIdx]) updateMediaSessionMetadata(currentPlaylist[currentIdx]);
-                            }).catch(e => {});
-                        } else if (event.data === YT.PlayerState.PAUSED) {
-                            updateUI(false);
-                            document.getElementById('silent-audio').pause();
-                        } else if (event.data === YT.PlayerState.ENDED) {
-                            document.getElementById('silent-audio').pause();
-                            if (isRepeat) {
-                                ytPlayer.seekTo(0);
-                                ytPlayer.playVideo();
-                            } else {
-                                let nextIdx = currentIdx + 1;
-                                if (nextIdx < currentPlaylist.length) openPlayer(nextIdx);
-                                else { togglePlay(false); ytPlayer.seekTo(0); ytPlayer.stopVideo(); }
-                            }
-                        } else if (event.data === -1 || event.data === 5) {
-                            if (isPlaying) {
-                                ytPlayer.playVideo();
-                            }
-                        }
-                    }
-                }
-            });
-        };
-
         const audio = document.getElementById('audio');
-        const silentAudio = document.getElementById('silent-audio');
         
         // 차트 UI 요소
         const hourlyChartSlider = document.getElementById('hourly-chart-slider');
@@ -1612,7 +1549,7 @@
 
         function scrollToActiveLyricImmediate() {
             if (!isLyricsOpen || currentLyrics.length === 0) return;
-            const currentTime = (currentAudioType === 'youtube' && isYtReady && ytPlayer.getCurrentTime) ? ytPlayer.getCurrentTime() : audio.currentTime;
+            const currentTime = audio.currentTime;
             let activeIdx = -1;
             for (let i = 0; i < currentLyrics.length; i++) { if (currentTime >= currentLyrics[i].time) activeIdx = i; else break; }
             if (activeIdx === -1) activeIdx = 0; 
@@ -1626,7 +1563,7 @@
 
         function syncLyrics() {
             if (!isLyricsOpen || currentLyrics.length === 0) return;
-            const currentTime = (currentAudioType === 'youtube' && isYtReady && ytPlayer.getCurrentTime) ? ytPlayer.getCurrentTime() : audio.currentTime;
+            const currentTime = audio.currentTime;
             let activeIdx = -1;
             for (let i = 0; i < currentLyrics.length; i++) { if (currentTime >= currentLyrics[i].time) activeIdx = i; else break; }
             const lines = lyricsContent.getElementsByClassName('lyric-line');
@@ -1730,20 +1667,26 @@
 
             // 기존 재생 모두 중지
             audio.pause();
-            if (isYtReady && ytPlayer.stopVideo) ytPlayer.stopVideo();
 
-            currentAudioType = song.type === 'youtube' ? 'youtube' : 'html5';
-
-            if (currentAudioType === 'youtube') {
-                if (isYtReady) {
-                    ytPlayer.loadVideoById(song.videoId);
-                } else {
-                    pendingYtVideo = song.videoId;
+            if (song.type === 'youtube') {
+                try {
+                    // 우회 API를 통해 유튜브 비디오에서 순수 오디오 주소만 추출
+                    const res = await fetch(`https://pipedapi.kavin.rocks/streams/${song.videoId}`);
+                    const data = await res.json();
+                    const audioStream = data.audioStreams.find(s => s.mimeType.startsWith('audio/mp4')) || data.audioStreams[0];
+                    if (audioStream && audioStream.url) {
+                        audio.src = audioStream.url;
+                    } else {
+                        throw new Error('Stream not found');
+                    }
+                } catch (e) {
+                    console.error("YT Fetch Error:", e);
+                    errorBox.classList.remove('hidden');
                 }
             } else {
                 audio.src = song.src;
-                audio.dataset.songId = song.id; 
             }
+            audio.dataset.songId = song.id; 
 
             document.getElementById('song-title').innerText = song.title;
             document.getElementById('song-artist').innerText = song.artist;
@@ -1769,15 +1712,14 @@
                     const lineElements = lyricsContent.getElementsByClassName('lyric-line');
                     Array.from(lineElements).forEach((el, idx) => { 
                         el.addEventListener('click', () => { 
-                            if (currentAudioType === 'youtube' && isYtReady) ytPlayer.seekTo(currentLyrics[idx].time, true);
-                            else audio.currentTime = currentLyrics[idx].time; 
+                            audio.currentTime = currentLyrics[idx].time; 
                         }); 
                     });
                 } else lyricsContent.innerHTML = '<p class="text-gray-500 text-sm mt-20 text-center w-full">가사가 없습니다.</p>';
             } else lyricsContent.innerHTML = '<p class="text-gray-500 text-sm mt-20 text-center w-full">가사가 등록되지 않았습니다.</p>';
         };
 
-        const openPlayer = (index, newPlaylist = null) => {
+        const openPlayer = async (index, newPlaylist = null) => {
             if (newPlaylist) {
                 currentPlaylist = newPlaylist;
             }
@@ -1800,11 +1742,9 @@
             if (!currentPlaylist[index]) return;
             const songToPlay = currentPlaylist[index];
             
-            const isCurrentlyPlaying = (currentAudioType === 'youtube') ? (isYtReady && ytPlayer.getPlayerState && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) : !audio.paused;
-            const isSameSong = (currentAudioType === 'youtube' && songToPlay.type === 'youtube' && isYtReady && ytPlayer.getVideoData && ytPlayer.getVideoData().video_id === songToPlay.videoId) || 
-                               (currentAudioType === 'html5' && audio.dataset.songId == songToPlay.id);
+            const isSameSong = (audio.dataset.songId == songToPlay.id);
 
-            if (isSameSong && isCurrentlyPlaying && playerScreen.classList.contains('translate-y-full')) {
+            if (isSameSong && !audio.paused && playerScreen.classList.contains('translate-y-full')) {
                 currentIdx = index;
                 playerScreen.classList.remove('translate-y-full'); 
                 return; 
@@ -1812,32 +1752,17 @@
             
             incrementPlayCount(songToPlay.id);
             currentIdx = index;
-            loadSongData(index);
+            await loadSongData(index);
             playerScreen.classList.remove('translate-y-full');
             togglePlay(true);
         };
 
         const togglePlay = (forcePlay = null) => {
-            const shouldPlay = forcePlay === null ? !isPlaying : forcePlay;
+            const shouldPlay = forcePlay === null ? audio.paused : forcePlay;
             if (shouldPlay) { 
-                if (currentAudioType === 'youtube') {
-                    if (isYtReady) ytPlayer.playVideo();
-                    silentAudio.play().then(() => {
-                        if (currentPlaylist[currentIdx]) updateMediaSessionMetadata(currentPlaylist[currentIdx]);
-                    }).catch(e => console.warn("Silent audio play failed:", e));
-                } else {
-                    audio.play().then(() => updateUI(true)).catch(e => { console.error(e); errorBox.classList.remove('hidden'); updateUI(false); }); 
-                    silentAudio.pause();
-                }
-                updateUI(true); // 즉각적인 UI 반응
+                audio.play().then(() => updateUI(true)).catch(e => { console.error(e); errorBox.classList.remove('hidden'); updateUI(false); }); 
             } else { 
-                if (currentAudioType === 'youtube') {
-                    if (isYtReady) ytPlayer.pauseVideo();
-                    silentAudio.pause();
-                } else {
-                    audio.pause(); 
-                }
-                updateUI(false); 
+                audio.pause(); updateUI(false); 
             }
         };
 
@@ -2009,11 +1934,7 @@
             if (isDragging) { 
                 isDragging = false; 
                 const targetPercent = parseFloat(progressFill.style.width) / 100;
-                if (currentAudioType === 'youtube') {
-                    if (isYtReady && ytPlayer.getDuration) ytPlayer.seekTo(targetPercent * ytPlayer.getDuration(), true);
-                } else {
-                    if (audio.duration) audio.currentTime = targetPercent * audio.duration; 
-                }
+                if (audio.duration) audio.currentTime = targetPercent * audio.duration; 
             } 
         };
         const pContainer = document.getElementById('progress-container');
@@ -2027,8 +1948,8 @@
         function formatTime(s) { if (typeof s !== 'number' || isNaN(s) || !isFinite(s)) return "00:00"; const min = Math.floor(s / 60); const sec = Math.floor(s % 60); return `${min}:${sec < 10 ? '0'+sec : sec}`; }
 
         function updateTimeDisplay() {
-            const curr = (currentAudioType === 'youtube' && isYtReady && ytPlayer.getCurrentTime) ? ytPlayer.getCurrentTime() : audio.currentTime;
-            const dur = (currentAudioType === 'youtube' && isYtReady && ytPlayer.getDuration) ? ytPlayer.getDuration() : audio.duration;
+            const curr = audio.currentTime;
+            const dur = audio.duration;
 
             if (timeCurr) timeCurr.innerText = formatTime(curr);
             if (timeDur && dur) timeDur.innerText = formatTime(dur);
@@ -2045,13 +1966,6 @@
         audio.addEventListener('timeupdate', updateTimeDisplay);
         audio.addEventListener('loadedmetadata', updateTimeDisplay);
         audio.addEventListener('durationchange', updateTimeDisplay);
-
-        // 유튜브 타이머 루프 (오디오 태그에는 없는 timeupdate 이벤트를 대체)
-        setInterval(() => {
-            if (currentAudioType === 'youtube' && isYtReady && isPlaying) {
-                updateTimeDisplay();
-            }
-        }, 250);
 
         if (btnClosePlaylist) {
             btnClosePlaylist.addEventListener('click', () => {
