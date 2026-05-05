@@ -1670,14 +1670,35 @@
 
             if (song.type === 'youtube') {
                 try {
-                    // 우회 API를 통해 유튜브 비디오에서 순수 오디오 주소만 추출
-                    const res = await fetch(`https://pipedapi.kavin.rocks/streams/${song.videoId}`);
-                    const data = await res.json();
-                    const audioStream = data.audioStreams.find(s => s.mimeType.startsWith('audio/mp4')) || data.audioStreams[0];
-                    if (audioStream && audioStream.url) {
-                        audio.src = audioStream.url;
+                    // 우회 API 서버 목록 (한 곳이 막혀도 다른 곳으로 자동 우회)
+                    const apiServers = [
+                        'https://pipedapi.smnz.de',
+                        'https://api.piped.projectsegfau.lt',
+                        'https://piped-api.garudalinux.org',
+                        'https://pipedapi.kavin.rocks'
+                    ];
+                    
+                    let audioUrl = null;
+                    
+                    for (const server of apiServers) {
+                        try {
+                            const res = await fetch(`${server}/streams/${song.videoId}`);
+                            if (!res.ok) continue;
+                            const data = await res.json();
+                            const audioStream = data.audioStreams.find(s => s.mimeType.startsWith('audio/mp4')) || data.audioStreams[0];
+                            if (audioStream && audioStream.url) {
+                                audioUrl = audioStream.url;
+                                break; // 성공하면 즉시 탈출
+                            }
+                        } catch (e) {
+                            console.warn(`${server} 연결 실패, 다음 서버로 우회합니다.`);
+                        }
+                    }
+
+                    if (audioUrl) {
+                        audio.src = audioUrl;
                     } else {
-                        throw new Error('Stream not found');
+                        throw new Error('모든 우회 서버가 응답하지 않습니다.');
                     }
                 } catch (e) {
                     console.error("YT Fetch Error:", e);
